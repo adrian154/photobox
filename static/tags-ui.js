@@ -1,6 +1,6 @@
 // create tags datalist
 let availableTags;
-fetch("/tags").then(resp => resp.json()).then(tags => {
+fetch("/api/tags").then(resp => resp.json()).then(tags => {
     
     const datalist = document.createElement("datalist");
     datalist.id = "available-tags";
@@ -30,8 +30,9 @@ const createTagList = () => {
     element.append(tags);
 
     const tagSet = new Set();
-    element.addEventListener("submit", () => {
-        if(availableTags.includes(input.value)) {
+    element.addEventListener("submit", event => {
+
+        if(availableTags.includes(input.value) && !tagSet.has(input.value)) {
             
             const tagName = input.value;
             input.value = "";
@@ -49,8 +50,11 @@ const createTagList = () => {
             });
 
         }
+
+        event.preventDefault();
+
     });
 
-    return {element, getValue: () => {}};
+    return {element, getValue: () => Array.from(tagSet)};
 
 };
