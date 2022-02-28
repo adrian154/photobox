@@ -1,0 +1,22 @@
+{
+  "name": "lotus",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrian154/lotus.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/adrian154/lotus/issues"
+  },
+  "homepage": "https://github.com/adrian154/lotus#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
