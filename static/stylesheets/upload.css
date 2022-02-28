@@ -1,0 +1,28 @@
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+#content {
+    max-width: 25em;
+    margin: auto;
+    background-color: #ffffff;
+    padding: 1.5em;
+    border-radius: 5px;
+}
+
+#upload-button {
+    width: 100%;
+    color: #ffffff;
+    background-color: #2bc266;
+    border: none;
+    padding: 0.5em 1.0em;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+h1, h2 {
+    font-weight: 500;
+}
