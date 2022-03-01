@@ -1,3 +1,4 @@
+/* there should always be a default collection */
 CREATE TABLE IF NOT EXISTS collections (
     name          STRING PRIMARY KEY NOT NULL,
     storageEngine STRING NOT NULL
@@ -7,13 +8,14 @@ CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,
     collection      STRING NOT NULL,
     timestamp       INTEGER NOT NULL,
+    url             STRING NOT NULL,
     thumbnailURL    STRING NOT NULL,
-    primaryURL      STRING NOT NULL,
     originalURL     STRING NOT NULL,
     FOREIGN KEY(collection) REFERENCES collections(name)
 );
 
-CREATE INDEX posts_timestamp ON posts(timestamp asc);
+/* we'll pretty much always be retrieving posts in date order, so make an index */
+CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp asc);
 
 CREATE TABLE IF NOT EXISTS postTags (
     postid STRING NOT NULL,

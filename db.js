@@ -5,6 +5,7 @@ const fs = require("fs");
 const db = new Database("data/site.db");
 
 // create tables
+console.log("Creating tables...");
 const schemas = fs.readFileSync("schemas.sql", "utf-8");
 db.exec(schemas);
 
@@ -12,28 +13,46 @@ db.exec(schemas);
 const queries = {
 
     // collections
-    addCollection: "INSERT INTO collections (name, storageEngine) VALUES (?, ?)",
-    getCollection: "SELECT * FROM collections WHERE name = ?",
+    addCollection: db.prepare("INSERT INTO collections (name, storageEngine) VALUES (?, ?)"),
+    getCollection: db.prepare("SELECT * FROM collections WHERE name = ?"),
     
     // post
-    addPost: "INSERT INTO posts (postid, collection, timestamp, thumbnailURL, primaryURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)",
-    getPost: "SELECT * FROM posts WHERE postid = ?",
-    getPostsInCollection: "SELECT * FROM posts WHERE collection = ?",
-    deletePost: "DELETE FROM posts WHERE postid = ?",    
+    addPost: db.prepare("INSERT INTO posts (postid, collection, timestamp, url, thumbnailURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)"),
+    getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
+    getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
+    deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
+    deletePost: db.transaction(postid => {
+        queries.deleteTagsForPost.run(postid);
+        queries.deletePostRow.run(postid);
+    }),
 
     // post tags
-    addTagToPost: "INSERT OR ROLLBACK INTO postTags (postid, tag) VALUES (?, ?)",
-    removeTagFromPost: "DELETE FROM postTags WHERE postid = ? AND tag = ?",
+    getTags: db.prepare("SELECT tag FROM postTags WHERE postid = ?").pluck(),
+    addTagToPost: db.prepare("INSERT INTO postTags (postid, tag) VALUES (?, ?)"),
+    removeTagFromPost: db.prepare("DELETE FROM postTags WHERE postid = ? AND tag = ?"),
+    deleteTagsForPost: db.prepare("DELETE FROM postTags WHERE postid = ?"),
+    deleteTagFromAllPosts: db.prepare("DELETE FROM postTags WHERE tag = ?"),
 
     // tags
-    addTag: "INSERT INTO tags (tag) VALUES (?)"
+    addTag: "INSERT INTO tags (tag) VALUES (?)",
+    deleteTagRow: db.prepare("DELETE FROM tags WHERE tag = ?"),
+    deleteTag: db.transaction(tag => {
+        queries.deleteTagFromAllPosts(tag);
+        queries.deleteTagRow(tag);
+    })
 
 };
 
-for(const queryname in queries) {
-    queries[queryname] = db.prepare(queries[queryname]);
-}
-
 module.exports = {
-
+    addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
+    getCollection: name => queries.getCollection.get(name),
+    addPost: post => queries.addPost.run(post.postid, post.collection, post.timestamp, post.url, post.thumbnailURL, post.originalURL),
+    getPost: postid => queries.getPost.get(postid),
+    getPosts: collectionName => queries.getPostsInCollection.get(collectionName),
+    deletePost: queries.deletePost,
+    getTags: postid => queries.getTags(postid),
+    addTagToPost: (postid, tag) => queries.addTagToPost.run(postid, tag),
+    removeTagFromPost: (postid, tag) => queries.removeTagFromPost.run(postid, tag),
+    addTag: tag => queries.addTag.run(tag),
+    deleteTag: tag => queries.deleteTag.run(tag)
 };

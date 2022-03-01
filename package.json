@@ -19,6 +19,8 @@
   "dependencies": {
     "better-sqlite3": "^7.5.0",
     "express": "^4.17.3",
+    "ffmpeg-static": "^4.4.1",
+    "fluent-ffmpeg": "^2.1.2",
     "multer": "^1.4.4",
     "sharp": "^0.30.1"
   }
