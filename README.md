@@ -24,6 +24,7 @@
 # Collectors
 
 * When to run?
+    * when the collection is viewed, to ensure the user never sees stale content 
 
 # Web Architecture
 
@@ -35,4 +36,4 @@ Two functionalities:
     * Select -> operation...
 * Slideshow view
     * Each collection has its own feed
-    * There are other feed sources
+    * There are other feed sources with no backing collection

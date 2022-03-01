@@ -1,11 +1,18 @@
-const config = require("../config.json").storageEngines.local;
-const fs = require("fs");
+const fs = require("fs/promises");
+const path = require("path");
 
-module.exports = {
-    save: object => {
+module.exports = class {
 
-    },
-    delete: id => {
+    constructor(config) {
+        this.config = config;
+    }
+
+    save(object) {
 
     }
+
+    delete(object) {
+        
+    }
+
 };
