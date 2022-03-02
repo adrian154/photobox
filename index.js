@@ -3,14 +3,13 @@ const ffmpeg = require("fluent-ffmpeg");
 const config = require("./config.json");
 const express = require("express");
 const crypto = require("crypto");
-const multer = require("multer");
+const busboy = require("busboy");
 const stream = require("stream");
 const sharp = require("sharp");
 
 // GLOBALS
 const db = require("./db.js");
 const app = express();
-const upload = multer({storage: multer.memoryStorage()});
 
 // helpers
 const generateID = async () => new Promise((resolve, reject) => crypto.randomBytes(16, (err, buf) => {
@@ -37,11 +36,57 @@ for(const engineName in config.storageEngines) {
 app.use(express.static("static"));
 
 // temporary testing route
-app.get("/api/tags", (req, res) => res.json(["a", "b", "c"]));
+app.get("/api/tags", (req, res) => res.json(db.getAllTags()));
 
 // accept file uploads
-app.post("/api/upload", upload.single("file"), async (req, res) => {
+app.post("/api/upload", async (req, res) => {
 
+    // unique id for the object
+    const id = await generateID();
+
+    // parse the form
+    const parser = busboy({headers: req.headers});
+    req.pipe(parser);
+
+    // if something has gone wrong, ignore further events
+    let failed = false;
+
+    parser.on("file", (name, stream) => {
+
+        // ignore unrelated fields
+        if(name !== "file" || failed) stream.resume();
+
+        // we don't know what type the content is, and guessing based on extension is unreliable
+        // solution: pipe to both ffprobe and sharp, see which fails first
+        let isImage = false;
+
+        // three versions of the image are saved:
+        // * lossless copy, for archival purposes
+        //     * if the original is a JPEG, it is saved as-is
+        //     * other formats are converted to WebP
+        // * lossy full-res copy, which is actually viewed
+        // * 100x100 thumbnail
+        const primaryPipeline = sharp({sequentialRead: true}).webp();
+        const thumbnailPipeline = sharp({sequentialRead: true}).resize(300, 300, {fit: "inside"}).webp({effort: 3});
+
+    });
+
+    let tags;
+    parser.on("field", (name, value) => {
+        if(name === "tags" && !failed) {
+            tags = JSON.parse(value);
+        }
+    });
+
+    parser.on("close", () => {
+        if(!failed) {
+
+            
+
+        }
+    });
+
+    /*
     // check if the file is an image first
     const image = sharp(req.file.buffer);
     let isImage = true;
@@ -98,6 +143,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
         }
 
     }
+    */
 
 });
 

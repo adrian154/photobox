@@ -34,7 +34,8 @@ const queries = {
     deleteTagFromAllPosts: db.prepare("DELETE FROM postTags WHERE tag = ?"),
 
     // tags
-    addTag: "INSERT INTO tags (tag) VALUES (?)",
+    getAllTags: db.prepare("SELECT tag FROM tags").pluck(),
+    addTag: db.prepare("INSERT INTO tags (tag) VALUES (?)"),
     deleteTagRow: db.prepare("DELETE FROM tags WHERE tag = ?"),
     deleteTag: db.transaction(tag => {
         queries.deleteTagFromAllPosts(tag);
@@ -48,11 +49,12 @@ module.exports = {
     getCollection: name => queries.getCollection.get(name),
     addPost: post => queries.addPost.run(post.postid, post.collection, post.timestamp, post.url, post.thumbnailURL, post.originalURL),
     getPost: postid => queries.getPost.get(postid),
-    getPosts: collectionName => queries.getPostsInCollection.get(collectionName),
+    getPosts: collectionName => queries.getPostsInCollection.all(collectionName),
     deletePost: queries.deletePost,
-    getTags: postid => queries.getTags(postid),
+    getTags: postid => queries.getTags.all(postid),
     addTagToPost: (postid, tag) => queries.addTagToPost.run(postid, tag),
     removeTagFromPost: (postid, tag) => queries.removeTagFromPost.run(postid, tag),
+    getAllTags: () => queries.getAllTags.all(),
     addTag: tag => queries.addTag.run(tag),
     deleteTag: tag => queries.deleteTag.run(tag)
 };

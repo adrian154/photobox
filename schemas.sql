@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS collections (
     storageEngine STRING NOT NULL
 );
 
+INSERT OR IGNORE INTO collections VALUES ('default', 'local');
+
 CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,
     collection      STRING NOT NULL,
@@ -28,3 +30,6 @@ CREATE TABLE IF NOT EXISTS postTags (
 CREATE TABLE IF NOT EXISTS tags (
     tag STRING PRIMARY KEY NOT NULL 
 );
+
+/* some meta tags that should always exist */
+INSERT OR IGNORE INTO tags VALUES ('animated'), ('size: small'), ('size: medium'), ('size: large'), ('audio');
