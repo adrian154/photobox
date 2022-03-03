@@ -4,19 +4,17 @@
         <title>Lotus - Upload</title>
         <link rel="stylesheet" href="/stylesheets/common.css">
         <link rel="stylesheet" href="/stylesheets/upload.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
-        <div id="content">
-
-            <h1>Upload Media</h1>
-            <p>It may take a while for images to be processed since they need to be rescaled to several resolutions. Videos and GIFs will be automatically tagged with <span class="tag">animated</span>.</p>
-            
-            <input type="file" id="files" multiple><br>
-            
-            <h2 style="margin-bottom: 0.5em;">Tags</h2>
-
-            <button id="upload-button">Upload</button>
-        
+        <div id="content-outer">
+            <div id="content">
+                <h1>Upload Media</h1>
+                <p>Certain tags may be automatically added to content based on detected properties.</p>
+                <input type="file" id="files" multiple><br>
+                <h2 style="margin-bottom: 0.5em;">Tags</h2>
+                <button id="upload-button">Upload</button>
+            </div>
         </div>
         <script src="tags-ui.js"></script>
         <script src="upload.js"></script>

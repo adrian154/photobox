@@ -5,9 +5,14 @@ body {
     display: flex;
 }
 
+#content-outer {
+    max-width: 27em;
+    margin: auto;
+    padding: 1.0em;
+}
+
 #content {
     max-width: 25em;
-    margin: auto;
     background-color: #ffffff;
     padding: 1.5em;
     border-radius: 5px;

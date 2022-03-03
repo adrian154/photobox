@@ -35,7 +35,7 @@ const queries = {
 
     // tags
     getAllTags: db.prepare("SELECT tag FROM tags").pluck(),
-    addTag: db.prepare("INSERT INTO tags (tag) VALUES (?)"),
+    addTag: db.prepare("INSERT OR IGNORE INTO tags (tag) VALUES (?)"),
     deleteTagRow: db.prepare("DELETE FROM tags WHERE tag = ?"),
     deleteTag: db.transaction(tag => {
         queries.deleteTagFromAllPosts(tag);
