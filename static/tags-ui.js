@@ -1,22 +1,4 @@
-// create tags datalist
-let availableTags;
-fetch("/api/tags").then(resp => resp.json()).then(tags => {
-    
-    const datalist = document.createElement("datalist");
-    datalist.id = "available-tags";
-    availableTags = tags;
-
-    for(const tag of tags) {
-        const option = document.createElement("option");
-        option.value = tag;
-        datalist.append(option);
-    }
-
-    document.body.append(datalist);
-
-});
-
-const createTagList = () => {
+const createTagList = (tagList, onAddTag, onRemoveTag) => {
 
     const element = document.createElement("form");
 

@@ -8,6 +8,10 @@ button {
     cursor: pointer;
 }
 
+h1, h2, b {
+    font-weight: 600;
+}
+
 /* ----- tags ----- */
 .tag-input {
     width: 100%;

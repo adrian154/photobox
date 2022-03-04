@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,
     collection      STRING NOT NULL,
     timestamp       INTEGER NOT NULL,
-    url             STRING NOT NULL,
+    displayurl      STRING NOT NULL,
     thumbnailURL    STRING NOT NULL,
     originalURL     STRING NOT NULL,
     FOREIGN KEY(collection) REFERENCES collections(name)
@@ -28,8 +28,5 @@ CREATE TABLE IF NOT EXISTS postTags (
 );
 
 CREATE TABLE IF NOT EXISTS tags (
-    tag STRING PRIMARY KEY NOT NULL 
+    tag STRING PRIMARY KEY NOT NULL
 );
-
-/* some meta tags that should always exist */
-INSERT OR IGNORE INTO tags VALUES ('animated'), ('size: small'), ('size: medium'), ('size: large'), ('audio');
