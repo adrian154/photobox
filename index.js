@@ -1,10 +1,30 @@
 const config = require("./config.json");
 const express = require("express");
 
+const ENGINES = {
+    backblaze: require("./src/storage-engines/backblaze.js"),
+    local: require("./src/storage-engines/local.js")
+};
+
+const createStorageEngines = app => {
+    const engines = {};
+    for(const name in config.storageEngines) {
+        const properties = config.storageEngines[name];
+        const engine = ENGINES[properties.type];
+        if(engine) {
+            console.log(`Creating storage engine ${name} (${properties.type})`);
+            engines[name] = new engine(properties, app);
+        } else {
+            throw new Error(`Unknown storage engine type "${properties.type}"`);
+        }
+    }
+    return engines;
+};
+
 // GLOBALS
-const storageEngines = require("./src/storage-engines/engines.js");
 const db = require("./src/db.js");
 const app = express();
+const storageEngines = createStorageEngines(app);
 
 // serve static files
 app.use(express.static("static"));

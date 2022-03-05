@@ -13,6 +13,12 @@ const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 
+// tell sharp not to hold onto files for extended periods of time
+// this fixes issues with failing to delete temp files on Windows
+sharp.cache(false);
+
+const THUMBNAIL_SIZE = 256;
+
 // manage temporary storage
 const TEMP_DIR = "./tmp";
 if(!fs.existsSync(TEMP_DIR)) {
@@ -31,24 +37,32 @@ const processAsImage = async (filepath, tags) => {
 
     const image = sharp(filepath, {sequentialRead: true, animated: true});
     const meta = await image.metadata();
-    console.log(meta);
 
+    const thumbnail = {stream: image.clone().resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {fit: "cover"}).webp(), contentType: "image/webp"};
+
+    // if the image is animated (gif/webm), do no further processing
     if(meta.pages > 1) {
         tags.add(metaTags.ANIMATED);
+        return {
+            original: {stream: image, contentType: "image/" + meta.format}, // FIXME: meta.format is not necessarily a MIME type!
+            display: null,
+            thumbnail
+        };
     }
 
-    // converting lossy jpeg to lossless webp creates issues, avoid that
-    const versions = {};
-    versions.original = meta.format === "jpeg" ? image.clone() : image.clone().webp({lossless: true, effort: 6}); 
-    versions.display = image.clone().webp()
-    versions.thumbnail = image.clone().resize(100, 100, {fit: "inside"}).webp();
-    return versions;
+    // avoid converting JPEGs to lossless webp
+    return {
+        original: meta.format === "jpeg" ? {stream: image.clone(), contentType: "image/jpeg"} : {stream: image.clone().webp({lossless: true}), contentType: "image/webp"},
+        display: {stream: image.clone().webp(), contentType: "image/webp"},
+        thumbnail
+    };
 
 };
 
 const processAsVideo = async filepath => {
 
     // TODO
+    throw new Error("Video processing isn't implemented yet.");
 
 };
 
@@ -56,9 +70,11 @@ const processUpload = async (filePath, tagSet) => {
     try {
         return await processAsImage(filePath, tagSet);
     } catch(error) {
+        console.error(error);
         try {
             return await processAsVideo(filePath, tagSet);
         } catch(error) {
+            console.error(error);
             throw new Error("File appears to be neither an image nor a video");
         }
     }
@@ -83,6 +99,11 @@ module.exports = (req, res) => {
         failed = true;
         req.unpipe(parser);
         res.status(400).json({error: message});
+        if(writeStream) {
+            fs.unlink(filePath, err => {
+                if(err) console.error("Failed to delete temporary file: ", err); // FIXME: DRY
+            });
+        }
     };
 
     parser.on("file", (name, stream) => {
@@ -107,15 +128,39 @@ module.exports = (req, res) => {
 
     parser.on("close", () => {
         if(!writeStream) res.status(400).json({error: "No file was uploaded"});
-        writeStream.on("finish", () => {
+        writeStream.on("finish", async () => {
             if(!failed) {
-                try {
-                    const versions = processUpload(filePath, fields);
-                    res.sendStatus(200);
-                    // TODO: send off to storage engines
+                
+                process: try {
+
+                    const collection = req.db.getCollection(fields.collection);
+                    if(!collection) {
+                        res.status(400).json({error: "No such collection", stopUpload: true});
+                        break process;
+                    }
+                    
+                    const storageEngine = req.storageEngines[collection.storageEngine];
+                    if(!storageEngine) {
+                        res.status(400).json({error: "Storage engine not configured", stopUpload: true});
+                        break process;
+                    }
+
+                    const tagSet = new Set(JSON.parse(fields.tags));
+                    const versions = await processUpload(filePath, tagSet);
+                    const urls = await storageEngine.save(id, versions);
+                    req.db.addPost(id, fields.collection, urls, Array.from(tagSet));
+                    res.json({}); // uploader expects json response
+
                 } catch(error) {
+                    console.error(error);
                     res.status(400).json({error: "Error occurred while processing"});
                 }
+
+                // remove the temp file
+                fs.unlink(filePath, err => {
+                    if(err) console.error("Failed to delete temporary file: ", err); // FIXME: DRY
+                })
+
             }
         });
     });

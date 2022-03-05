@@ -1,10 +1,14 @@
+/* for some bizarre reason foreign keys must be enabled */
+PRAGMA foreign_keys = ON;
+
 /* there should always be a default collection */
 CREATE TABLE IF NOT EXISTS collections (
     name          STRING PRIMARY KEY NOT NULL,
     storageEngine STRING NOT NULL
 );
 
-INSERT OR IGNORE INTO collections VALUES ('default', 'local');
+/* FIXME: TEST */
+INSERT OR IGNORE INTO collections VALUES ('test', 'local');
 
 CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,

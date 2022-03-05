@@ -19,7 +19,13 @@ const queries = {
     getCollections: db.prepare("SELECT name FROM collections").pluck(),
     
     // post
-    addPost: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, thumbnailURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)"),
+    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, thumbnailURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)"),
+    addPost: db.transaction((id, collection, urls, tags) => {
+        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.thumbnail, urls.original);
+        for(const tag of tags) {
+            queries.addTagToPost.run(id, tag);
+        }
+    }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
     getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
@@ -55,7 +61,7 @@ module.exports = {
     addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
     getCollection: name => queries.getCollection.get(name),
     getCollections: name => queries.getCollections.get(name),
-    addPost: post => queries.addPost.run(post.postid, post.collection, post.timestamp, post.url, post.thumbnailURL, post.originalURL),
+    addPost: queries.addPost,
     getPost: postid => queries.getPost.get(postid),
     getPosts: collectionName => queries.getPostsInCollection.all(collectionName),
     deletePost: queries.deletePost,

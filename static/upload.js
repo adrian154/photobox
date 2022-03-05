@@ -4,7 +4,7 @@ const filePicker = document.getElementById("files"),
 const tagList = createTagList();
 document.getElementById("content").insertBefore(tagList.element, submit);
 
-submit.addEventListener("click", () => {
+submit.addEventListener("click", async () => {
 
     if(filePicker.files.length == 0) {
         alert("You didn't select any files to upload.");
@@ -16,6 +16,7 @@ submit.addEventListener("click", () => {
     
         // build formdata
         const formData = new FormData();
+        formData.append("collection", "test");
         formData.append("tags", JSON.stringify(tagList.getValue()));
         formData.append("file", filePicker.files[i]);
 
@@ -27,7 +28,15 @@ submit.addEventListener("click", () => {
             console.log(event.loaded / event.total);
         });
 
+        request.responseType = "json";
         request.send(formData);
+
+        await new Promise((resolve, reject) => {
+            request.addEventListener("load", () => {
+                console.log(i, request.response);
+                resolve();
+            });
+        });
 
     }
 
