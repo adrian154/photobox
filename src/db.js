@@ -21,7 +21,7 @@ const queries = {
     // post
     addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, thumbnailURL, thumbnailWidth, thumbnailHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
     addPost: db.transaction((id, collection, urls, thumbnailWidth, thumbnailHeight, tags) => {
-        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.thumbnail, thumbnailWidth, thumbnailHeight, urls.original);
+        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.original, urls.thumbnail, thumbnailWidth, thumbnailHeight);
         for(const tag of tags) {
             queries.addTagToPost.run(id, tag);
         }
