@@ -21,10 +21,10 @@ const readRequest = req => new Promise((resolve, reject) => {
     const onField = (name, value) => fields[name] = value;
 
     // FIXME: if an error on the writestream occurs before 'close', it goes unhandled
-    let tempFile;
+    let tempFilePromise;
     const onFile = (name, stream) => {
-        if(name === "file" && !tempFile) {
-            tempFile = storeToTempFile(stream);
+        if(name === "file" && !tempFilePromise) {
+            tempFilePromise = storeToTempFile(stream);
         } else {
             stream.resume();
         }
@@ -38,19 +38,23 @@ const readRequest = req => new Promise((resolve, reject) => {
         parser.removeListener("file", onFile);
     });
 
-    parser.on("close", () => {
-        resolve({tempFile: tempFile, fields});
+    parser.on("close", async () => {
+        try {
+            resolve({tempFile: await tempFilePromise, fields});
+        } catch(error) {
+            reject(error);
+        }
     });
 
 });
 
 module.exports = async (req, res) => {
 
-    const {tempFile, fields} = await readRequest(req);
-    if(!tempFile) return res.status(400).json({error: "No file was uploaded"});
-
     const collection = req.db.getCollection(req.params.collection);
     if(!collection) return res.status(400).json({error: "No such collection"});
+
+    const {tempFile, fields} = await readRequest(req);
+    if(!tempFile) return res.status(400).json({error: "No file was uploaded"});
 
     const storageEngine = req.storageEngines[collection.storageEngine];
     if(!storageEngine) return res.status(400).json({error: "Storage engine not configured"});

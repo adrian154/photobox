@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 
 const DIRECTORY = "data/objects";
+if(!fs.existsSync(DIRECTORY)) fs.mkdirSync(DIRECTORY);
 
 const resolveOnFinish = stream => new Promise((resolve, reject) => stream.on("close", resolve));
 

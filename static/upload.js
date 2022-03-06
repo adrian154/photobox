@@ -4,6 +4,7 @@ const filePicker = document.getElementById("files"),
 const tagList = createTagList();
 document.getElementById("content").insertBefore(tagList.element, submit);
 
+let collection;
 submit.addEventListener("click", async () => {
 
     if(filePicker.files.length == 0) {
@@ -21,7 +22,7 @@ submit.addEventListener("click", async () => {
 
         // send it off
         const request = new XMLHttpRequest();
-        request.open("POST", "/api/collections/test");
+        request.open("POST", `/api/collections/${collection}`);
 
         request.upload.addEventListener("progress", event => {
             console.log(event.loaded / event.total);

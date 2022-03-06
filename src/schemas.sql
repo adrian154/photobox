@@ -7,9 +7,6 @@ CREATE TABLE IF NOT EXISTS collections (
     storageEngine STRING NOT NULL
 );
 
-/* FIXME: TEST */
-INSERT OR IGNORE INTO collections VALUES ('test', 'local');
-
 CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,
     collection      STRING NOT NULL,

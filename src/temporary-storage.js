@@ -16,16 +16,22 @@ if(!fs.existsSync(TEMP_DIR)) {
     }
 }
 
+const generateID = () => crypto.randomBytes(18).toString("base64").replaceAll('+', '-').replaceAll('/', '_');
+
 module.exports = srcStream => {
-    const id = crypto.randomUUID();
+
+    const id = generateID();
     const filePath = path.join(TEMP_DIR, id);
-    const stream = fs.createWriteStream(filePath);
-    srcStream.pipe(stream);
+    const writeStream = fs.createWriteStream(filePath);
+    srcStream.pipe(writeStream);
+    
     return new Promise((resolve, reject) => {
-        stream.on("error", error => {
+        writeStream.on("error", error => {
+            console.log("error");
             fs.unlink(filePath, unlinkErr => console.error("Failed to delete temporary file", unlinkErr));
             reject(error);
         });
-        stream.on("close", () => resolve({id, path: filePath}));
+        writeStream.on("close", () => resolve({id, path: filePath}));
     });
+
 };

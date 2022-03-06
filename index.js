@@ -40,11 +40,6 @@ app.get("/api/tags", require("./src/routes/get-tags.js"));
 app.post("/api/collections/:collection", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));
 
-// 404 handler
-app.use((req, res, next) => {
-    res.status(404).text("You took a wrong turn.");
-});
-
 // 500 handler
 app.use((err, req, res, next) => {
     console.error(err);
