@@ -20,6 +20,7 @@ const readRequest = req => new Promise((resolve, reject) => {
     const fields = {};
     const onField = (name, value) => fields[name] = value;
 
+    // FIXME: if an error on the writestream occurs before 'close', it goes unhandled
     let tempFile;
     const onFile = (name, stream) => {
         if(name === "file" && !tempFile) {
