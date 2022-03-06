@@ -29,11 +29,12 @@ submit.addEventListener("click", async () => {
         });
 
         request.responseType = "json";
+        console.log("Uploading " + filePicker.files[i].name)
         request.send(formData);
 
         await new Promise((resolve, reject) => {
             request.addEventListener("load", () => {
-                console.log(i, request.response);
+                console.log(`${i + 1}/${filePicker.files.length} uploaded`, request.response);
                 resolve();
             });
         });

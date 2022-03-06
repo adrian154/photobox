@@ -37,7 +37,18 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/tags", require("./src/routes/get-tags.js"));
-app.post("/api/upload", require("./src/routes/handle-upload.js"));
+app.post("/api/upload", require("./src/routes/upload.js"));
+
+// 404 handler
+app.use((req, res, next) => {
+    res.status(404).text("You took a wrong turn.");
+});
+
+// 500 handler
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({error: "Internal server error"});
+});
 
 app.listen(config.port, () => {
     console.log("Server now listening");

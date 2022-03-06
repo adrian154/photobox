@@ -16,7 +16,7 @@ const queries = {
     // collections
     addCollection: db.prepare("INSERT INTO collections (name, storageEngine) VALUES (?, ?)"),
     getCollection: db.prepare("SELECT * FROM collections WHERE name = ?"),
-    getCollections: db.prepare("SELECT name FROM collections").pluck(),
+    getCollectionNames: db.prepare("SELECT name FROM collections").pluck(),
     
     // post
     addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, thumbnailURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)"),
@@ -60,7 +60,7 @@ for(const tag of Object.values(tags)) {
 module.exports = {
     addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
     getCollection: name => queries.getCollection.get(name),
-    getCollections: name => queries.getCollections.get(name),
+    getCollectionNames: name => queries.getCollections.get(name),
     addPost: queries.addPost,
     getPost: postid => queries.getPost.get(postid),
     getPosts: collectionName => queries.getPostsInCollection.all(collectionName),
