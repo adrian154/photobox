@@ -14,9 +14,11 @@ CREATE TABLE IF NOT EXISTS posts (
     postid          STRING PRIMARY KEY NOT NULL,
     collection      STRING NOT NULL,
     timestamp       INTEGER NOT NULL,
-    displayurl      STRING NOT NULL,
-    thumbnailURL    STRING NOT NULL,
+    displayURL      STRING NOT NULL,
     originalURL     STRING NOT NULL,
+    thumbnailURL    STRING NOT NULL,
+    thumbnailWidth  INTEGER NOT NULL,
+    thumbnailHeight INTEGER NOT NULL,
     FOREIGN KEY(collection) REFERENCES collections(name)
 );
 

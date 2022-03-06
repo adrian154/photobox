@@ -1,6 +1,6 @@
 /*
- * POST /api/upload
- * Parameters: (multipart/form-data)
+ * POST /api/collections/<collection>
+ * Parameters: (should be passed as multipart/form-data)
  *     - file: file to upload
  *     - tags: (JSON) array of tags to apply to all uploaded files
  * Response: nothing
@@ -19,35 +19,36 @@ const readRequest = req => new Promise((resolve, reject) => {
 
     const fields = {};
     const onField = (name, value) => fields[name] = value;
-    parser.on("field", onField);
 
-    let tempFilePromise;
+    let tempFile;
     const onFile = (name, stream) => {
-        if(name === "file" && !tempFilePromise) {
-            tempFilePromise = storeToTempFile(stream);
+        if(name === "file" && !tempFile) {
+            tempFile = storeToTempFile(stream);
         } else {
             stream.resume();
         }
     };
-    parser.on("file", onFile);
 
-    parser.on("close", () => resolve({fields, tempFilePromise}));
+    parser.on("field", onField);
+    parser.on("file", onFile);
     parser.on("error", error => {
         reject(error);
         parser.removeListener("field", onField);
         parser.removeListener("file", onFile);
     });
 
+    parser.on("close", () => {
+        resolve({tempFile: tempFile, fields});
+    });
+
 });
 
 module.exports = async (req, res) => {
 
-    const {tempFilePromise, fields} = await readRequest(req);
-    const tempFile = await tempFilePromise;
-
+    const {tempFile, fields} = await readRequest(req);
     if(!tempFile) return res.status(400).json({error: "No file was uploaded"});
 
-    const collection = req.db.getCollection(fields.collection);
+    const collection = req.db.getCollection(req.params.collection);
     if(!collection) return res.status(400).json({error: "No such collection"});
 
     const storageEngine = req.storageEngines[collection.storageEngine];
@@ -57,7 +58,7 @@ module.exports = async (req, res) => {
         const tagSet = new Set(JSON.parse(fields.tags));
         const versions = await processUpload(tempFile.path, tagSet);
         const urls = await storageEngine.save(tempFile.id, versions);
-        req.db.addPost(tempFile.id, collection.name, urls, Array.from(tagSet));
+        req.db.addPost(tempFile.id, collection.name, urls, versions.thumbnail.width, versions.thumbnail.height, Array.from(tagSet));
         res.status(200).json({});
     } catch(error) {
         console.error(error);

@@ -6,29 +6,30 @@ const sharp = require("sharp");
 // this fixes issues with failing to delete temp files on Windows
 sharp.cache(false);
 
-const THUMBNAIL_SIZE = 320;
+const THUMBNAIL_HEIGHT = 240;
 
 const processAsImage = async (filepath, tags) => {
 
     const image = sharp(filepath, {sequentialRead: true, animated: true});
     const meta = await image.metadata();
-    console.log(meta);
 
     // pass the original through sharp to strip metadata
-    const original = {stream: image, contentType: "image/" + meta.format}; // FIXME: meta.format is not guaranteed to be a MIME type!
-    const thumbnail = {stream: image.clone().resize(THUMBNAIL_SIZE, THUMBNAIL_SIZE, {fit: "inside"}).webp(), contentType: "image/webp"};
+    const versions = {};
+    versions.original = {stream: image, contentType: "image/" + meta.format}; // FIXME: meta.format is not guaranteed to be a MIME type!
+    
+    const width = Math.round(meta.width * THUMBNAIL_HEIGHT / meta.height);
+    versions.thumbnail = {stream: image.clone().resize({width, height: THUMBNAIL_HEIGHT, fit: "cover"}).webp(), contentType: "image/webp"};
+    versions.thumbnail.width = width;
+    versions.thumbnail.height = THUMBNAIL_HEIGHT;
 
     // if the image is animated, skip generation of a display version
     if(meta.pages > 1) {
         tags.add(metaTags.ANIMATED);
-        return {original, thumbnail};
+    } else {
+        versions.display = {stream: image.clone().webp(), contentType: "image/webp"};
     }
-
-    return {
-        original,
-        display: {stream: image.clone().webp(), contentType: "image/webp"},
-        thumbnail
-    };
+    
+    return versions;
 
 };
 

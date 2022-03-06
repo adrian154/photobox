@@ -19,9 +19,9 @@ const queries = {
     getCollectionNames: db.prepare("SELECT name FROM collections").pluck(),
     
     // post
-    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, thumbnailURL, originalURL) VALUES (?, ?, ?, ?, ?, ?)"),
-    addPost: db.transaction((id, collection, urls, tags) => {
-        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.thumbnail, urls.original);
+    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, thumbnailURL, thumbnailWidth, thumbnailHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+    addPost: db.transaction((id, collection, urls, thumbnailWidth, thumbnailHeight, tags) => {
+        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.thumbnail, thumbnailWidth, thumbnailHeight, urls.original);
         for(const tag of tags) {
             queries.addTagToPost.run(id, tag);
         }
@@ -57,18 +57,48 @@ for(const tag of Object.values(tags)) {
     queries.addTag.run(tag);
 }
 
+// the API represents some objects differently from the database schema
+// mappings for objects that occur in multiple contexts (like posts) are performed here
+// others objects (collections) are translated in the route handling code
+// is it bad practice to obfuscate the coupling between the database and the API like that? objectively, yes
+// but for now, i don't think it's that important. who knows how bad this code is.
+// maybe it will stay like this forever. maybe it'll be refactored in a couple days.
+// this message will probably be lost to time.
+// if you're reading this: i don't know how you got here, but take a moment to rest and take it all in.
+
+const createPost = (row, tags) => {
+    return {
+        id: row.id,
+        collection: row.collection,
+        timestamp: row.timestamp,
+        displayURL: row.displayURL,
+        originalURL: row.originalURL,
+        thumbnail: {
+            url: row.thumbnailURL,
+            width: row.thumbnailWidth,
+            height: row.thumbnailHeight
+        },
+        tags
+    }
+};
+
 module.exports = {
+
     addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
     getCollection: name => queries.getCollection.get(name),
     getCollectionNames: name => queries.getCollections.get(name),
+    
     addPost: queries.addPost,
-    getPost: postid => queries.getPost.get(postid),
-    getPosts: collectionName => queries.getPostsInCollection.all(collectionName),
+    getPost: postid => createPost(queries.getPost.get(postid), queries.getTags(postid).all()),
+    getPosts: collectionName => queries.getPostsInCollection.all(collectionName).map(row => createPost(row, queries.getTags.all(row.postid))),
     deletePost: queries.deletePost,
+    
     getTags: postid => queries.getTags.all(postid),
     addTagToPost: (postid, tag) => queries.addTagToPost.run(postid, tag),
     removeTagFromPost: (postid, tag) => queries.removeTagFromPost.run(postid, tag),
+    
     getAllTags: () => queries.getAllTags.all(),
     addTag: tag => queries.addTag.run(tag),
     deleteTag: tag => queries.deleteTag.run(tag)
+
 };

@@ -16,13 +16,12 @@ submit.addEventListener("click", async () => {
     
         // build formdata
         const formData = new FormData();
-        formData.append("collection", "test");
         formData.append("tags", JSON.stringify(tagList.getValue()));
         formData.append("file", filePicker.files[i]);
 
         // send it off
         const request = new XMLHttpRequest();
-        request.open("POST", "/api/upload");
+        request.open("POST", "/api/collections/test");
 
         request.upload.addEventListener("progress", event => {
             console.log(event.loaded / event.total);
