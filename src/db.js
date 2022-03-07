@@ -27,7 +27,7 @@ const queries = {
         }
     }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
-    getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
+    getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp DESC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
     deletePost: db.transaction(postid => {
         queries.deleteTagsForPost.run(postid);

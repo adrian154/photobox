@@ -1,0 +1,30 @@
+<!-- Quick proof of concept of photogrid -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="stylesheets/main.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+    <body>
+        <div class="scroll">
+            <div id="center-column">
+            <div id="photogrid"></div>
+            </div>
+        </div>
+        <div class="background" id="uploader" style="display: none">
+            <div class="dialog-outer">
+                <div class="dialog">
+                    <h1>Upload Media</h1>
+                    <p>Select images or videos to upload to <b id="upload-collection-name">[COLLECTION NAME]</b>. Meta tags will be automatically added per file.</p>
+                    <input type="file" id="upload-files" multiple><br>
+                    <p><b>Tags</b></p>
+                    <div id="upload-tags"></div>
+                    <button id="upload-button">Upload</button>
+                </div>
+            </div>
+        </div>
+        <script src="scripts/photogrid.js"></script>
+        <script src="scripts/upload.js"></script>
+        <script src="scripts/main.js"></script>
+    </body>
+</html>
