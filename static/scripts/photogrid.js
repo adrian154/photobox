@@ -12,6 +12,7 @@ class PhotoGrid {
 
         // add image to row
         const img = document.createElement("img");
+        img.classList.add("clickable");
         img.loading = "lazy";
         img.width = post.thumbnail.width * 0.6;
         img.height = post.thumbnail.height * 0.6;

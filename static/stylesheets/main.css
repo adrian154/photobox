@@ -11,6 +11,16 @@ h1, h2, b {
     font-weight: 600;
 }
 
+.close-button {
+    position: absolute;
+    top: 0.3em;
+    right: 0.3em;
+    border: none;
+    background: none;
+    font-size: 24pt;
+}
+
+/* ----- layout ----- */
 #center-column {
     max-width: 80em;
     padding: 1.0em;
@@ -55,6 +65,7 @@ h1, h2, b {
 }
 
 .dialog {
+    position: relative;
     background-color: #ffffff;
     padding: 1.5em;
     border-radius: 5px;

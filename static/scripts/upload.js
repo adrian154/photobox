@@ -1,10 +1,27 @@
 class HiddenLayer {
 
     constructor(elementID) {
+        
         this.layer = document.getElementById(elementID);
         if(!this.layer) {
             throw new Error("No such layer");
         }
+
+        window.addEventListener("keydown", event => {
+            if(event.key === "Escape") {
+                this.hide();
+            }
+        })
+
+        this.dialog = this.layer.querySelector(".dialog");
+        if(this.dialog) {
+            const closeButton = document.createElement("button");
+            closeButton.classList.add("close-button");
+            closeButton.textContent = "\u00D7";
+            this.dialog.append(closeButton);
+            closeButton.addEventListener("click", () => this.hide());
+        }
+
     }
 
     show() {
