@@ -20,6 +20,8 @@ class PhotoGrid {
         img.style.flexGrow = post.thumbnail.width;
         this.grid.insertBefore(img, this.last);
 
+        img.addEventListener("click", () => slideshow.show(post));
+
         if(!bulk) {
             this.fixAspectRatios();
         }
@@ -28,7 +30,6 @@ class PhotoGrid {
 
     fixAspectRatios() {
         this.grid.querySelectorAll("img").forEach(image => {
-            console.log(image.width, image.height);
             image.style.height = Math.round(image.width * image.heightPerWidth) + "px";
         });
     }

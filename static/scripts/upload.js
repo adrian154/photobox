@@ -1,3 +1,20 @@
+class HiddenLayer {
+
+    constructor(elementID) {
+        this.layer = document.getElementById(elementID);
+        console.log(this.layer);
+    }
+
+    show() {
+        this.layer.style.display = "";
+    }
+
+    hide() {
+        this.layer.style.display = "none";
+    }
+
+}
+
 class TagPicker {
 
     constructor(element, onAdd, onRemove, tagList) {
@@ -81,9 +98,10 @@ class TagPicker {
 
 }
 
-class Uploader {
+class Uploader extends HiddenLayer {
 
     constructor() {
+        super("uploader");
         this.tags = new Set();
         this.filePicker = document.getElementById("upload-files");
         document.getElementById("upload-button").addEventListener("click", () => this.upload());
