@@ -60,7 +60,7 @@ class TagPicker {
 
             const div = document.createElement("div");
             div.textContent = tag;
-            div.classList.add("tag-option");
+            div.classList.add("tag-option", "clickable");
             picker.append(div);
 
             // add logic
@@ -70,7 +70,7 @@ class TagPicker {
 
                         // add a new tag to the list
                         const newTag = document.createElement("span");
-                        newTag.classList.add("tag", "removable-tag");
+                        newTag.classList.add("tag", "clickable");
                         newTag.textContent = tag + " \u00d7";
                         this.element.prepend(newTag, " ");
                         div.style.display = "none"; // hide tag from menu after it's been added
@@ -116,37 +116,57 @@ class UploadTracker extends HiddenLayer {
 
     constructor() {
         super("upload-progress");
+        this.numTracked = 0;
         this.trackers = document.getElementById("progress");
     }
 
     add(formData, request) {
         
-        const tracker = document.createElement("div");
-        
-        const p = document.createElement("p");
-        p.textContent = formData.get("file").name;
-        tracker.append(p);
+        this.numTracked++;
 
+        const tracker = document.createElement("div");
+        const fileName = document.createElement("span");
+        fileName.textContent = formData.get("file").name;
+        tracker.append(fileName);
+        const statusText = document.createElement("span");
+        statusText.classList.add("upload-status");
+        tracker.append(statusText);
         const progress = document.createElement("progress");
         progress.max = 100;
         tracker.append(progress);
-        
         this.trackers.append(tracker);
 
         request.upload.addEventListener("progress", event => {
             const percent = Math.floor(100 * event.loaded / event.total);
             progress.value = percent;
-            p.textContent = `${percent}%`;
+            if(event.loaded == event.total) {
+                statusText.textContent = "Processing...";
+            } else {
+                statusText.textContent = `${percent}%`;
+            }
         });
 
-        request.addEventListener("error", error => {
+        const fail = () => {
+            statusText.textContent = "Failed";
+            statusText.style.color = "#ff0000";
+            const retryButton = document.createElement("span");
+            retryButton.classList.add("retry-button", "clickable");
+            retryButton.textContent = "\u21BA";
+            fileName.append(" ", retryButton);
+            retryButton.addEventListener("click", () => {
+                tracker.remove();
+                uploader.uploadItem(formData);
+            });
+        };
 
-        });
-
+        request.addEventListener("error", fail);
         request.addEventListener("load", () => {
             if(request.response.error) {
-
+                fail();
             } else {
+                tracker.remove();
+                this.numTracked--;
+                if(this.numTracked == 0) this.hide();
                 photoGrid.addPost(request.response);
             }
         });
@@ -184,10 +204,14 @@ class Uploader extends HiddenLayer {
         request.responseType = "json";        
         uploadTracker.add(formData, request);
         request.send(formData);
-        
+
         return new Promise((resolve, reject) => {
             request.addEventListener("error", resolve);
-            request.addEventListener("load", resolve);
+            request.upload.addEventListener("progress", event => {
+                if(event.loaded == event.total) {
+                    resolve();
+                }
+            });
         });
 
     }
@@ -200,20 +224,17 @@ class Uploader extends HiddenLayer {
         }
 
         const tags = Array.from(this.tags);
-        const files = this.filePicker.files;
-        //this.reset();
+        const files = [];
+        for(let i = 0; i < this.filePicker.files.length; i++) files.push(this.filePicker.files[i]);
+        this.reset();
         this.hide();
         uploadTracker.show();
 
-        console.log(files);
-        for(let i = 0; i < files.length; i++) {
-
-            // build formdata
+        for(const file of files) {
             const formData = new FormData();
             formData.append("tags", JSON.stringify(tags));
-            formData.append("file", files[i]);
+            formData.append("file", file);
             await this.uploadItem(formData);
-
         }
 
     }
