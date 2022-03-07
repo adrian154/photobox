@@ -1,1 +1,6 @@
-NOTE: fluent-ffmpeg/lib/ffprobe.js:161, add 'EOF' to list of errors
+# TODO
+* upload button
+* video processing
+* find a way to gracefully handle super long images
+* debounce onresize
+* slideshow
