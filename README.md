@@ -4,3 +4,4 @@
 * find a way to gracefully handle super long images
 * debounce onresize
 * slideshow
+* processing queue so that processing doesn't block uploading

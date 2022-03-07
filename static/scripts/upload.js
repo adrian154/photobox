@@ -2,7 +2,9 @@ class HiddenLayer {
 
     constructor(elementID) {
         this.layer = document.getElementById(elementID);
-        console.log(this.layer);
+        if(!this.layer) {
+            throw new Error("No such layer");
+        }
     }
 
     show() {
@@ -41,6 +43,10 @@ class TagPicker {
 
     }
 
+    reset() {
+        this.element.querySelectorAll(".tag").forEach(tag => tag.remove());
+    }
+
     createTagPicker(tagList) {
 
         // create picker
@@ -59,23 +65,31 @@ class TagPicker {
 
             // add logic
             div.addEventListener("click", async () => {
-                if(await this.onAdd(tag)) {
+                try {
+                    if(await this.onAdd(tag)) {
 
-                    // add a new tag to the list
-                    const newTag = document.createElement("span");
-                    newTag.classList.add("tag", "removable-tag");
-                    newTag.textContent = tag + " \u00d7";
-                    this.element.prepend(newTag, " ");
-                    div.style.display = "none"; // hide tag from menu after it's been added
-                
-                    // tag logic
-                    newTag.addEventListener("click", async () => {
-                        if(await this.onRemove(tag)) {
-                            newTag.remove();
-                            div.style.display = ""; // re-add tag to menu after it's been removed
-                        }                        
-                    });
-                
+                        // add a new tag to the list
+                        const newTag = document.createElement("span");
+                        newTag.classList.add("tag", "removable-tag");
+                        newTag.textContent = tag + " \u00d7";
+                        this.element.prepend(newTag, " ");
+                        div.style.display = "none"; // hide tag from menu after it's been added
+                    
+                        // tag logic
+                        newTag.addEventListener("click", async () => {
+                            try {
+                                if(await this.onRemove(tag)) {
+                                    newTag.remove();
+                                    div.style.display = ""; // re-add tag to menu after it's been removed
+                                }    
+                            } catch(error) {
+                                alert("Failed to remove tag: " + error.message);
+                            }                 
+                        });
+                    
+                    }
+                } catch(error) {
+                    alert("Failed to add tag: " + error.message);
                 }
                 picker.style.display = "none";
             });
@@ -98,6 +112,49 @@ class TagPicker {
 
 }
 
+class UploadTracker extends HiddenLayer {
+
+    constructor() {
+        super("upload-progress");
+        this.trackers = document.getElementById("progress");
+    }
+
+    add(formData, request) {
+        
+        const tracker = document.createElement("div");
+        
+        const p = document.createElement("p");
+        p.textContent = formData.get("file").name;
+        tracker.append(p);
+
+        const progress = document.createElement("progress");
+        progress.max = 100;
+        tracker.append(progress);
+        
+        this.trackers.append(tracker);
+
+        request.upload.addEventListener("progress", event => {
+            const percent = Math.floor(100 * event.loaded / event.total);
+            progress.value = percent;
+            p.textContent = `${percent}%`;
+        });
+
+        request.addEventListener("error", error => {
+
+        });
+
+        request.addEventListener("load", () => {
+            if(request.response.error) {
+
+            } else {
+                photoGrid.addPost(request.response);
+            }
+        });
+
+    }
+
+}
+
 class Uploader extends HiddenLayer {
 
     constructor() {
@@ -108,8 +165,31 @@ class Uploader extends HiddenLayer {
         fetch("/api/tags").then(resp => resp.json()).then(tags => this.ingestTags(tags));
     }
 
+    reset() {
+        this.filePicker.value = "";
+        this.tagPicker?.reset();
+    }
+
     onCollectionLoaded(collection) {
         document.getElementById("upload-collection-name").textContent = collection.name;
+    }
+
+    // this function should NEVER throw, even if the upload failed
+    // failure is indicated to the user via the upload progress dialog
+    async uploadItem(formData) {
+        
+        // send upload
+        const request = new XMLHttpRequest();
+        request.open("POST", `/api/collections/${collection}`);
+        request.responseType = "json";        
+        uploadTracker.add(formData, request);
+        request.send(formData);
+        
+        return new Promise((resolve, reject) => {
+            request.addEventListener("error", resolve);
+            request.addEventListener("load", resolve);
+        });
+
     }
 
     async upload() {
@@ -119,49 +199,27 @@ class Uploader extends HiddenLayer {
             return;
         }
 
-        for(let i = 0; i < this.filePicker.files.length; i++) {
+        const tags = Array.from(this.tags);
+        const files = this.filePicker.files;
+        //this.reset();
+        this.hide();
+        uploadTracker.show();
+
+        console.log(files);
+        for(let i = 0; i < files.length; i++) {
 
             // build formdata
             const formData = new FormData();
-            formData.append("tags", JSON.stringify(Array.from(this.tags)));
-            formData.append("file", this.filePicker.files[i]);
-
-            // send it off
-            const request = new XMLHttpRequest();
-            request.open("POST", `/api/collections/${collection}`);
-
-            request.upload.addEventListener("progress", event => {
-                console.log(event.loaded / event.total);
-            });
-
-            request.responseType = "json";
-            request.send(formData);
-
-            try {
-                await new Promise((resolve, reject) => {
-                    request.addEventListener("error", reject);
-                    request.addEventListener("load", () => {
-                        console.log(request.response);
-                        resolve();
-                    });
-                });
-            } catch(error) {
-                // ... error
-                continue;
-            }
-
-            if(request.response.error) {
-                // ... error
-            } else {
-                photoGrid.addPost(request.response);
-            }
+            formData.append("tags", JSON.stringify(tags));
+            formData.append("file", files[i]);
+            await this.uploadItem(formData);
 
         }
 
     }
 
     ingestTags(tags) {
-        const picker = new TagPicker(document.getElementById("upload-tags"), tag => this.tags.add(tag), tag => this.tags.delete(tag), tags);
+        this.tagPicker = new TagPicker(document.getElementById("upload-tags"), tag => this.tags.add(tag), tag => this.tags.delete(tag), tags);
     }
 
 }

@@ -112,3 +112,8 @@ h1, h2, b {
 .tag-option:hover {
     background-color: #e9e9e9;
 }
+
+/* ----- upload progress ----- */
+#progress div p {
+    margin-bottom: 0;
+}
