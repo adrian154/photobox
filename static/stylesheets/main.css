@@ -20,16 +20,10 @@ h1, h2, b {
 /* ----- photogrid stuff ----- */
 #photogrid {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
 }
 
-.row {
-    display: flex;
-    flex-direction: row;
-}
-
-.row img {
-    min-width: 0;
+#photogrid img {
     margin: 3px;
     border-radius: 5px;
 }
