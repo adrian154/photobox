@@ -7,6 +7,7 @@ const sharp = require("sharp");
 sharp.cache(false);
 
 const THUMBNAIL_HEIGHT = 320;
+const MAX_DISPLAY_SIZE = 1200;
 
 const processAsImage = async (filepath, tags) => {
 
@@ -26,7 +27,7 @@ const processAsImage = async (filepath, tags) => {
     if(meta.pages > 1) {
         tags.add(metaTags.ANIMATED);
     } else {
-        versions.display = {stream: image.clone().webp(), contentType: "image/webp"};
+        versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
     }
     
     return versions;
