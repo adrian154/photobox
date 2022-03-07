@@ -89,7 +89,7 @@ module.exports = {
     getCollectionNames: name => queries.getCollections.get(name),
     
     addPost: queries.addPost,
-    getPost: postid => createPost(queries.getPost.get(postid), queries.getTags(postid).all()),
+    getPost: postid => createPost(queries.getPost.get(postid), queries.getTags.all(postid)),
     getPosts: collectionName => queries.getPostsInCollection.all(collectionName).map(row => createPost(row, queries.getTags.all(row.postid))),
     deletePost: queries.deletePost,
     

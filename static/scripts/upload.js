@@ -119,12 +119,24 @@ class Uploader {
             request.responseType = "json";
             request.send(formData);
 
-            await new Promise((resolve, reject) => {
-                request.addEventListener("load", () => {
-                    console.log(request.response);
-                    resolve();
+            try {
+                await new Promise((resolve, reject) => {
+                    request.addEventListener("error", reject);
+                    request.addEventListener("load", () => {
+                        console.log(request.response);
+                        resolve();
+                    });
                 });
-            });
+            } catch(error) {
+                // ... error
+                continue;
+            }
+
+            if(request.response.error) {
+                // ... error
+            } else {
+                photoGrid.addPost(request.response);
+            }
 
         }
 

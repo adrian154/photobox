@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
         const versions = await processUpload(tempFile.path, tagSet);
         const urls = await storageEngine.save(tempFile.id, versions);
         req.db.addPost(tempFile.id, collection.name, urls, versions.thumbnail.width, versions.thumbnail.height, Array.from(tagSet));
-        res.status(200).json({});
+        res.status(200).json(req.db.getPost(tempFile.id));
     } catch(error) {
         console.error(error);
         res.status(400).json({error: "Error occurred while processing"});

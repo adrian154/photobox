@@ -17,7 +17,7 @@ class PhotoGrid {
         img.height = post.thumbnail.height * 0.6;
         img.heightPerWidth = img.height / img.width;
         img.src = post.thumbnail.url;
-        img.style.flexGrow = post.thumbnail.width; // ridiculous hack
+        img.style.flexGrow = post.thumbnail.width;
         this.grid.insertBefore(img, this.last);
 
         if(!bulk) {
