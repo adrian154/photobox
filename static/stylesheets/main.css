@@ -28,6 +28,10 @@ h1, h2, b {
     border-radius: 5px;
 }
 
+#photogrid div:last-child {
+    flex-grow: 10000; /* utterly insane */
+}
+
 /* background for modals/slideshow */
 .scroll, .background {
     position: absolute;

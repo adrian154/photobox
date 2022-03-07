@@ -3,10 +3,12 @@ class PhotoGrid {
     // FIXME: resize not debounced; but is it really important? more at 10
     constructor() {
         this.grid = document.getElementById("photogrid");
+        this.last = document.createElement("div");
+        this.grid.append(this.last);
         window.addEventListener("resize", () => this.fixAspectRatios());
     }
 
-    addPost(post) {
+    addPost(post, bulk) {
 
         // add image to row
         const img = document.createElement("img");
@@ -16,7 +18,11 @@ class PhotoGrid {
         img.heightPerWidth = img.height / img.width;
         img.src = post.thumbnail.url;
         img.style.flexGrow = post.thumbnail.width; // ridiculous hack
-        this.grid.append(img);
+        this.grid.insertBefore(img, this.last);
+
+        if(!bulk) {
+            this.fixAspectRatios();
+        }
 
     }
 
@@ -29,8 +35,9 @@ class PhotoGrid {
 
     onPostsLoaded(posts) {
         for(const post of posts) {
-            this.addPost(post);
+            this.addPost(post, true);
         }
+        this.fixAspectRatios();
     }
 
 }
