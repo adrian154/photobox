@@ -27,10 +27,20 @@ h1, h2, b {
     margin: auto;
 }
 
+#header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    height: 3em;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 85%);
+}
+
 /* ----- photogrid stuff ----- */
 #photogrid {
     display: flex;
     flex-wrap: wrap;
+    margin-top: 2.0em;
 }
 
 #photogrid img {
@@ -60,6 +70,7 @@ h1, h2, b {
 /* ----- dialogs ----- */
 .dialog-outer {
     max-width: 29em;
+    flex-grow: 1;
     margin: auto;
     padding: 1.0em;
 }
@@ -118,7 +129,7 @@ h1, h2, b {
 
 /* ----- upload progress ----- */
 #progress {
-    max-height: 30em;
+    height: 20em;
     overflow: auto;
     padding: 1.0em;
     border: 1px solid #aaaaaa;

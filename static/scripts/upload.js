@@ -70,7 +70,7 @@ class TagPicker {
         const picker = document.createElement("div");
         picker.classList.add("tag-picker");
         picker.style.display = "none";
-        picker.tabIndex = 0;
+        picker.tabIndex = 0; // make picker focusable
 
         // add tags
         for(const tag of tagList) {
