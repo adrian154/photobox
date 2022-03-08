@@ -209,6 +209,9 @@ class Uploader extends HiddenLayer {
 
     onCollectionLoaded(collection) {
         document.getElementById("upload-collection-name").textContent = collection.name;
+        const button = document.getElementById("show-upload");
+        button.style.display = "";
+        button.addEventListener("click", () => this.show());
     }
 
     // this function should NEVER throw, even if the upload failed
@@ -218,7 +221,7 @@ class Uploader extends HiddenLayer {
         
         // send upload
         const request = new XMLHttpRequest();
-        request.open("POST", `/api/collections/${collection}`);
+        request.open("POST", `/api/collections/${collectionName}`);
         request.responseType = "json";        
         uploadTracker.add(formData, request);
         request.send(formData);

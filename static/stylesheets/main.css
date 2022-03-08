@@ -45,6 +45,19 @@ h1, h2, b {
     display: flex;
 }
 
+#header-inner button {
+    border: none;
+    background: none;
+    color: #ffffff;
+    font-size: 11pt;
+    font-weight: bold;
+    margin: 0 1.0em;
+}
+
+#header-inner button:hover {
+    color: #cacaca;
+}
+
 #logo {
     padding: 0.5em;
     margin-right: auto;
@@ -52,6 +65,12 @@ h1, h2, b {
 
 #logo img {
     height: 2.5em;
+}
+
+.vert-align {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
 }
 
 /* ----- photogrid stuff ----- */
@@ -63,7 +82,7 @@ h1, h2, b {
 
 #photogrid img {
     margin: 3px;
-    border-radius: 5px;
+    /*border-radius: 5px;*/
 }
 
 #photogrid div:last-child {

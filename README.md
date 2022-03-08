@@ -1,3 +1,5 @@
+![logo](photobox-logo-black.png)
+
 # TODO
 * upload button
 * video processing
