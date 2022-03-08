@@ -63,7 +63,7 @@ module.exports = async (req, res) => {
         const tagSet = new Set(JSON.parse(fields.tags));
         const versions = await processUpload(tempFile.path, tagSet);
         const urls = await storageEngine.save(tempFile.id, versions);
-        req.db.addPost(tempFile.id, collection.name, urls, versions.thumbnail.width, versions.thumbnail.height, Array.from(tagSet));
+        req.db.addPost(tempFile.id, collection.name, urls, versions.preview.width, versions.preview.height, Array.from(tagSet));
         res.status(200).json(req.db.getPost(tempFile.id));
     } catch(error) {
         console.error(error);

@@ -19,9 +19,9 @@ const queries = {
     getCollectionNames: db.prepare("SELECT name FROM collections").pluck(),
     
     // post
-    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, thumbnailURL, thumbnailWidth, thumbnailHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
-    addPost: db.transaction((id, collection, urls, thumbnailWidth, thumbnailHeight, tags) => {
-        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.original, urls.thumbnail, thumbnailWidth, thumbnailHeight);
+    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
+    addPost: db.transaction((id, collection, urls, previewWidth, previewHeight, tags) => {
+        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.original, urls.preview, previewWidth, previewHeight);
         for(const tag of tags) {
             queries.addTagToPost.run(id, tag);
         }
@@ -73,10 +73,10 @@ const createPost = (row, tags) => {
         timestamp: row.timestamp,
         displayURL: row.displayURL,
         originalURL: row.originalURL,
-        thumbnail: {
-            url: row.thumbnailURL,
-            width: row.thumbnailWidth,
-            height: row.thumbnailHeight
+        preview: {
+            url: row.previewURL,
+            width: row.previewWidth,
+            height: row.previewHeight
         },
         tags
     }

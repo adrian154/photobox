@@ -1,5 +1,5 @@
 {
-  "name": "lotus",
+  "name": "photobox",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adrian154/lotus.git"
+    "url": "git+https://github.com/adrian154/photobox.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/adrian154/lotus/issues"
+    "url": "https://github.com/adrian154/photobox/issues"
   },
-  "homepage": "https://github.com/adrian154/lotus#readme",
+  "homepage": "https://github.com/adrian154/photobox#readme",
   "dependencies": {
     "better-sqlite3": "^7.5.0",
     "busboy": "^1.4.0",

@@ -15,9 +15,9 @@ CREATE TABLE IF NOT EXISTS posts (
     timestamp       INTEGER NOT NULL,
     displayURL      STRING NOT NULL,
     originalURL     STRING NOT NULL,
-    thumbnailURL    STRING NOT NULL,
-    thumbnailWidth  INTEGER NOT NULL,
-    thumbnailHeight INTEGER NOT NULL,
+    previewURL    STRING NOT NULL,
+    previewWidth  INTEGER NOT NULL,
+    previewHeight INTEGER NOT NULL,
     FOREIGN KEY(collection) REFERENCES collections(name)
 );
 

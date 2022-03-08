@@ -28,12 +28,30 @@ h1, h2, b {
 }
 
 #header {
+    display: block;
     position: sticky;
     top: 0;
     left: 0;
-    height: 3em;
     width: 100%;
-    background-color: rgba(0, 0, 0, 85%);
+    background-color: rgba(0, 0, 0, 80%);
+    color: #ffffff;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+#header-inner {
+    max-width: 80em;
+    margin: auto;
+    display: flex;
+}
+
+#logo {
+    padding: 0.5em;
+    margin-right: auto;
+}
+
+#logo img {
+    height: 2.5em;
 }
 
 /* ----- photogrid stuff ----- */
@@ -141,6 +159,7 @@ h1, h2, b {
 
 #progress div progress {
     width: 100%;
+    transition: 0.5s;
 }
 
 .upload-status {

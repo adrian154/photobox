@@ -7,7 +7,7 @@
  *   timestamp: number,
  *   displayURL: number,
  *   originalURL: number,
- *   thumbnail: {
+ *   preview: {
  *     url: string,
  *     width: number,
  *     height: number

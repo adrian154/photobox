@@ -14,11 +14,11 @@ class PhotoGrid {
         const img = document.createElement("img");
         img.classList.add("clickable");
         img.loading = "lazy";
-        img.width = post.thumbnail.width * 0.6;
-        img.height = post.thumbnail.height * 0.6;
+        img.width = post.preview.width * 0.6;
+        img.height = post.preview.height * 0.6;
         img.heightPerWidth = img.height / img.width;
-        img.src = post.thumbnail.url;
-        img.style.flexGrow = post.thumbnail.width;
+        img.src = post.preview.url;
+        img.style.flexGrow = post.preview.width;
         this.grid.insertBefore(img, this.last);
 
         img.addEventListener("click", () => slideshow.show(post));

@@ -213,6 +213,7 @@ class Uploader extends HiddenLayer {
 
     // this function should NEVER throw, even if the upload failed
     // failure is indicated to the user via the upload progress dialog
+    // resolves as soon as the file is finished *uploading* (not necessarily processing)
     async uploadItem(formData) {
         
         // send upload

@@ -38,11 +38,11 @@ module.exports = class {
             urls.display = urls.original;
         }
 
-        const thumbnailName = `${id}-thumbnail.${versions.thumbnail.contentType.split('/')[1]}`;
-        const thumbnail = fs.createWriteStream(path.join(DIRECTORY, thumbnailName));
-        promises.push(resolveOnFinish(thumbnail));
-        versions.thumbnail.stream.pipe(thumbnail);
-        urls.thumbnail = `/local-objects/${thumbnailName}`;
+        const previewName = `${id}-preview.${versions.preview.contentType.split('/')[1]}`;
+        const preview = fs.createWriteStream(path.join(DIRECTORY, previewName));
+        promises.push(resolveOnFinish(preview));
+        versions.preview.stream.pipe(preview);
+        urls.preview = `/local-objects/${previewName}`;
 
         await Promise.all(promises);
         return urls;
