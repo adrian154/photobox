@@ -9,3 +9,4 @@ WIP, come back later.
 * debounce onresize
 * find a way to gracefully handle super long images
 * show progress in header
+* view all collections

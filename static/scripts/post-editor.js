@@ -4,6 +4,7 @@ class PostEditor extends HiddenLayer {
         super("post-editor");
         this.image = document.getElementById("preview");
         this.originalLink = document.getElementById("original-link");
+        this.tagsOuter = document.getElementById("editor-tags");
     }
 
     // operations:
@@ -12,9 +13,13 @@ class PostEditor extends HiddenLayer {
     // tags
 
     show(post) {
+        
         super.show();
         this.image.src = post.displayURL;
         this.originalLink.href = post.originalURL;
+        
+        const picker = new TagPicker();
+
     }
 
 }

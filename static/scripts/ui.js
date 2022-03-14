@@ -42,61 +42,54 @@ class HiddenLayer {
 
 }
 
-/* an abstract tag picker */
+// base tag picker
+// it's meant to be disposable, create new ones instead of resetting them
 class TagPicker {
 
-    constructor(element, onAdd, onRemove, tagList) {
+    constructor(parent, tagList) {
 
-        // save handlers
-        this.onAdd = onAdd;
-        this.onRemove = onRemove;
-
-        // create elements
-        this.element = element;
+        this.element = document.createElement("div");
         this.element.classList.add("tags");
+        parent.append(this.element);
 
-        // create a dispoable div that functions as a new absolute positioning frame
-        const div = document.createElement("div");
-        div.style.position = "relative";
-        div.style.display = "inline";
+        // create an absolute positioning frame so that the menu stays with the add button
+        const span = document.createElement("span");
+        span.style.position = "relative";
         this.addButton = document.createElement("button")
         this.addButton.textContent = "+ Add";
-        this.addButton.addEventListener("click", () => this.addNewTag());
         this.picker = this.createTagPicker(tagList);
-        div.append(this.picker);
-        div.append(this.addButton);
-        this.element.append(div);
+        span.append(this.picker, this.addButton);
+        this.element.append(span);
+
+        // open the picker when the button is clicked
+        this.addButton.addEventListener("click", () => {
+            this.picker.style.display = "";
+            this.picker.focus();
+        });
 
     }
 
-    reset() {
-        
-        // remove tags
-        this.element.querySelectorAll(".tag").forEach(tag => tag.remove());
-    
-        // make all tag options visible again
-        this.picker.querySelectorAll("div").forEach(option => option.style.display = "");
-        
-    }
+    addTag(tag) { /* ABSTRACT */ }
+    removeTag(tag) { /* ABSTRACT */ }
 
-    addTag(tag, tagOption) {
+    async insertTag(tag, menuButton) {
 
-        // add a new tag to the list
+        await this.addTag(tag);
+
+        // make the tag element
         const newTag = document.createElement("span");
         newTag.classList.add("tag", "clickable");
         newTag.textContent = tag + " \u00d7";
         this.element.append(" ", newTag);
-        tagOption.style.display = "none"; // hide tag from menu after it's been added
-    
-        // tag logic
+
+        // hide the tag from the menu after it's been added
+        menuButton.style.display = "none";
+
+        // remove logic
         newTag.addEventListener("click", async () => {
-            try {
-                await this.onRemove(tag)
-                newTag.remove();
-                tagOption.style.display = ""; // re-add tag to menu after it's been removed
-            } catch(error) {
-                alert("Failed to remove tag: " + error.message);
-            }                 
+            await this.removeTag(tag);
+            newTag.remove();
+            menuButton.style.display = "";
         });
 
     }
@@ -112,20 +105,15 @@ class TagPicker {
         // add tags
         for(const tag of tagList) {
 
-            const div = document.createElement("div");
-            div.textContent = tag;
-            div.classList.add("tag-option", "clickable");
-            picker.append(div);
+            const button = document.createElement("div");
+            button.textContent = tag;
+            button.classList.add("tag-option", "clickable");
+            picker.append(button);
 
             // add logic
-            div.addEventListener("click", async () => {
-                try {
-                    await this.onAdd(tag);
-                    this.addTag(tag, div);
-                } catch(error) {
-                    alert("Failed to add tag: " + error.message);
-                }
-                picker.style.display = "none";
+            button.addEventListener("click", () => {
+                this.insertTag(tag, button);
+                picker.blur();
             });
 
         }
@@ -139,28 +127,26 @@ class TagPicker {
 
     }
 
-    addNewTag() {
-        this.picker.style.display = "";
-        this.picker.focus();
-    }
-
 }
 
 /* tag picker backed by a set */
 class SetTagPicker extends TagPicker {
 
     constructor(element, tagList) {
-        super(element, tag => this.tags.add(tag), tag => this.tags.delete(tag), tagList);
+        super(element, tagList);
         this.tags = new Set();
+    }
+
+    addTag(tag) {
+        this.tags.add(tag);
+    }
+
+    removeTag(tag) {
+        this.tags.delete(tag);
     }
 
     value() {
         return Array.from(this.tags);
-    }
-
-    reset() {
-        super.reset();
-        this.tags.clear();
     }
 
 }
