@@ -37,6 +37,7 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/tags", require("./src/routes/get-tags.js"));
+app.get("/api/collections", require("./src/routes/get-collections.js"));
 app.post("/api/collections/:collection", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));
 

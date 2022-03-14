@@ -64,13 +64,22 @@ h1, h2, b {
 }
 
 #logo img {
-    height: 2.5em;
+    height: 32px;
 }
 
 .vert-align {
     display: flex;
     flex-direction: row;
     align-items: center;
+}
+
+@media (max-width: 600px) {
+
+    /* hide button text, just show an icon */
+    .vert-align span:last-child {
+        display: none;
+    }
+        
 }
 
 /* ----- photogrid stuff ----- */
@@ -81,12 +90,7 @@ h1, h2, b {
 }
 
 #photogrid img {
-    margin: 3px;
-    /*border-radius: 5px;*/
-}
-
-#photogrid div:last-child {
-    flex-grow: 10000; /* utterly insane */
+    margin: 2px;
 }
 
 /* background for modals/slideshow */
@@ -100,7 +104,7 @@ h1, h2, b {
 }
 
 .background {
-    background-color: rgba(0, 0, 0, 50%);
+    background-color: rgba(0, 0, 0, 75%);
     display: flex;
 }
 
@@ -189,4 +193,40 @@ h1, h2, b {
 
 .retry-button:hover {
     text-decoration: underline;
+}
+
+/* ----- photo editor ----- */
+#post-editor {
+    flex-direction: row;
+}
+
+#settings {
+    flex-basis: 15em;
+    flex-grow: 0;
+    background-color: #ffffff;
+    padding: 1.0em;
+}
+
+#preview-outer {
+    display: flex;
+    flex-grow: 1;
+    pointer-events: none;
+    padding: 1.0em;
+}
+
+#preview {
+    margin: auto;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: all;
+}
+
+#delete-button {
+    border: none;
+    background-color: #ff3d3d;
+    color: #ffffff;
+    padding: 0.5em 1.0em;
+    border-radius: 5px;
+    font-weight: bold;
 }

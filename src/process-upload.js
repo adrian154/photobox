@@ -27,8 +27,7 @@ const processAsImage = async (filepath, tags) => {
     if(meta.pages > 1) {
         tags.add(metaTags.ANIMATED);
     } else {
-        const maxDim = Math.min(Math.max(meta.width, meta.height), MAX_DISPLAY_SIZE);
-        versions.display = {stream: image.clone().resize({width: maxDim, height: maxDim, fit: "inside"}).webp(), contentType: "image/webp"};
+        versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
     }
     
     return versions;

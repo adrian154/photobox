@@ -12,12 +12,12 @@
         <div class="scroll">
             <div id="header">
                 <div id="header-inner">
-                    <a href="/" id="logo"><img src="images/logo-full.png"></a>
-                    <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons inline-icon">upload</span>&nbsp;<span>Upload</span></span></button>
+                    <a href="/" id="logo"><img src="images/logo-header.png"></a>
+                    <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
                 </div>
             </div>
             <div id="center-column">
-            <div id="photogrid"></div>
+                <div id="photogrid"></div>
             </div>
         </div>
 
@@ -30,8 +30,17 @@
             </div>
         </div>
 
-        <div class="background" id="slideshow" style="display: none">
-            <img style="margin: auto; max-width: 100%; max-height: 100%; object-fit: contain;" id="preview">
+        <div class="background" id="post-editor" style="display: none">
+            <div id="preview-outer">
+                <img id="preview">
+            </div>
+            <div id="settings" class="closeable">
+                <h1>Edit Post</h1>
+                <p><a id="original-link" target="_blank" rel="noopener noreferrer">View Original</a></p>
+                <p><b>Tags</b></p>
+                <div id="editor-tags"></div>
+                <button id="delete-button">Delete Post</button>
+            </div>
         </div>
 
         <div class="background" id="uploader" style="display: none">
@@ -47,9 +56,10 @@
             </div>
         </div>
 
+        <script src="scripts/ui.js"></script>
         <script src="scripts/photogrid.js"></script>
         <script src="scripts/upload.js"></script>
-        <script src="scripts/slideshow.js"></script>
+        <script src="scripts/post-editor.js"></script>
         <script src="scripts/main.js"></script>
 
     </body>

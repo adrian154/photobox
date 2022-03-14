@@ -86,7 +86,7 @@ module.exports = {
 
     addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
     getCollection: name => queries.getCollection.get(name),
-    getCollectionNames: name => queries.getCollections.get(name),
+    getCollectionNames: () => queries.getCollectionNames.all(),
     
     addPost: queries.addPost,
     getPost: postid => createPost(queries.getPost.get(postid), queries.getTags.all(postid)),

@@ -1,9 +1,11 @@
 ![logo](photobox-logo-black.png)
 
+WIP, come back later.
+
 # TODO
+* slideshow
 * upload button
 * video processing
-* find a way to gracefully handle super long images
 * debounce onresize
-* slideshow
-* processing queue so that processing doesn't block uploading
+* find a way to gracefully handle super long images
+* show progress in header
