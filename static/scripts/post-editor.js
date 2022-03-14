@@ -18,7 +18,10 @@ class PostEditor extends HiddenLayer {
         this.image.src = post.displayURL;
         this.originalLink.href = post.originalURL;
         
-        const picker = new TagPicker();
+        // replace tag picker
+        this.picker?.element.remove();
+        this.picker = new TagPicker();
+
 
     }
 

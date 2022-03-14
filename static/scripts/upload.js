@@ -68,12 +68,20 @@ class Uploader extends HiddenLayer {
         super("uploader");
         this.filePicker = document.getElementById("upload-files");
         document.getElementById("upload-button").addEventListener("click", () => this.upload());
-        fetch("/api/tags").then(resp => resp.json()).then(tags => this.addTagPicker(tags));
+        fetch("/api/tags").then(resp => resp.json()).then(tags => {
+            this.tags = tags;
+            this.resetTagPicker();
+        });
+    }
+
+    resetTagPicker() {
+        this.tagPicker?.element.remove();
+        this.tagPicker = new SetTagPicker(document.getElementById("upload-tags"), this.tags);
     }
 
     reset() {
         this.filePicker.value = "";
-        this.tagPicker?.reset();
+        this.resetTagPicker();
     }
 
     onCollectionLoaded(collection) {
@@ -127,10 +135,6 @@ class Uploader extends HiddenLayer {
             await this.uploadItem(formData);
         }
 
-    }
-
-    addTagPicker(tags) {
-        this.tagPicker = new SetTagPicker(document.getElementById("upload-tags"), tags);
     }
 
 }
