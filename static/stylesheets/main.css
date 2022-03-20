@@ -158,10 +158,12 @@ h1, h2, b {
     width: 8em;
     background-color: #ffffff;
     border: 1px solid #aaaaaa;
+    border-radius: 5px;
 }
 
 .tag-picker div {
     padding: 0 0.5em;
+    border-bottom: 1px solid #aaaaaa;
 }
 
 .tag-option:hover {

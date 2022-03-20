@@ -16,7 +16,7 @@ module.exports = class {
     }
 
     async save(id, versions) {
-        
+
         const urls = {};
         const promises = [];
 

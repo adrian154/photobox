@@ -48,7 +48,7 @@ class UploadTracker extends HiddenLayer {
 
         request.addEventListener("error", fail);
         request.addEventListener("load", () => {
-            if(request.response.error) {
+            if(request.response.error) { /* BUG */
                 fail();
             } else {
                 tracker.remove();

@@ -12,3 +12,5 @@ WIP, come back later.
 * show ALL uploads, even pending ones
 * view all collections
 * animate progress bar
+* fix bug with progres tracker
+* while uploading, make it so that when 
