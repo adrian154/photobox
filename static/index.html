@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>photobox</title>
+        <title>home - photobox</title>
         <link href="stylesheets/main.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="icon" href="images/favicon.ico">
@@ -9,19 +9,22 @@
     </head>
     <body>
 
-        <div class="scroll">
-            <div id="header">
-                <div id="header-inner">
-                    <a href="/" id="logo"><img src="images/logo-header.png"></a>
-                    <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
-                </div>
-            </div>
-            <div id="center-column">
-                <div id="photogrid">
-                    <div style="flex-grow: 100"></div>
-                </div>
+        <!-- body flow -->
+        <div id="header">
+            <div id="header-inner">
+                <a href="/" id="logo"><img src="images/logo-header.png"></a>
+                <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
+                <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
+                <button id="show-post-selector"><span class="vert-align"><span class="material-icons">dynamic_feed</span><span>&nbsp; Select Posts</span></span></button>
             </div>
         </div>
+        <div id="center-column">
+            <div id="photogrid">
+                <div style="flex-grow: 10000"></div>
+            </div>
+        </div>
+
+        <!-- fixed pos stuff -->
 
         <div class="background" id="upload-progress" style="display: none">
             <div class="dialog-outer">
@@ -32,11 +35,11 @@
             </div>
         </div>
 
-        <div class="background" id="post-editor" style="display: none">
+        <div class="background" id="slideshow" style="display: none">
             <div id="preview-outer">
                 <img id="preview">
             </div>
-            <div id="settings" class="closeable">
+            <div id="editor" class="closeable">
                 <h1>Edit Post</h1>
                 <p><a id="original-link" target="_blank" rel="noopener noreferrer">View Original</a></p>
                 <p><b>Tags</b></p>
@@ -58,10 +61,24 @@
             </div>
         </div>
 
+        <div class="background" id="add-collection" style="display: none">
+            <div class="dialog-outer">
+                <div class="dialog">
+                    <h1>Create Collection</h1>
+                    <p><b>Name</b></p>
+                    <input type="text" class="rounded" id="new-collection-name">
+                    <p><b>Storage Engine</b></p>
+                    <select id="storage-engine" class="rounded"></select>
+                    <button id="create-button">Create</button>
+                </div>
+            </div> 
+        </div>
+
         <script src="scripts/ui.js"></script>
+        <script src="scripts/dialogs.js"></script>
         <script src="scripts/photogrid.js"></script>
         <script src="scripts/upload.js"></script>
-        <script src="scripts/post-editor.js"></script>
+        <script src="scripts/slideshow.js"></script>
         <script src="scripts/main.js"></script>
 
     </body>

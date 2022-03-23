@@ -9,7 +9,7 @@ const fs = require("fs");
 sharp.cache(false);
 
 const PREVIEW_HEIGHT = 320;
-const MAX_DISPLAY_SIZE = 1200;
+const MAX_DISPLAY_SIZE = 1920;
 
 const processAsImage = async (filepath, tags) => {
 

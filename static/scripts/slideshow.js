@@ -1,7 +1,7 @@
-class PostEditor extends HiddenLayer {
+class Slideshow extends HiddenLayer {
 
     constructor() {
-        super("post-editor");
+        super("slideshow");
         this.image = document.getElementById("preview");
         this.originalLink = document.getElementById("original-link");
         this.tagsOuter = document.getElementById("editor-tags");

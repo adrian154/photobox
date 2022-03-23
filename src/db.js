@@ -20,8 +20,8 @@ const queries = {
     
     // post
     addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
-    addPost: db.transaction((id, collection, urls, previewWidth, previewHeight, tags) => {
-        queries.addPostRow.run(id, collection, Date.now(), urls.display, urls.original, urls.preview, previewWidth, previewHeight);
+    addPost: db.transaction((id, collection, urls, previewWidth, previewHeight, tags, timestamp) => {
+        queries.addPostRow.run(id, collection, timestamp, urls.display, urls.original, urls.preview, previewWidth, previewHeight);
         for(const tag of tags) {
             queries.addTagToPost.run(id, tag);
         }

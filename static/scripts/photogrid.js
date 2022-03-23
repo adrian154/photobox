@@ -17,9 +17,9 @@ class PhotoGrid {
         img.heightPerWidth = img.height / img.width;
         img.src = post.preview.url;
         img.style.flexGrow = post.preview.width;
-        this.grid.insertBefore(img, this.last);
+        this.grid.prepend(img);
 
-        img.addEventListener("click", () => postEditor.show(post));
+        img.addEventListener("click", () => slideshow.show(post));
 
         if(!bulk) {
             this.fixAspectRatios();

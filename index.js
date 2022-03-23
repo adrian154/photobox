@@ -29,6 +29,9 @@ const storageEngines = createStorageEngines(app);
 // serve static files
 app.use(express.static("static"));
 
+// --- API stuff
+app.use(express.json());
+
 // expose some objects to API route handlers
 app.use((req, res, next) => {
     req.db = db;
@@ -37,8 +40,10 @@ app.use((req, res, next) => {
 });
 
 app.get("/api/tags", require("./src/routes/get-tags.js"));
+app.get("/api/storage-engines", require("./src/routes/get-storage-engines.js"));
 app.get("/api/collections", require("./src/routes/get-collections.js"));
-app.post("/api/collections/:collection", require("./src/routes/upload.js"));
+app.post("/api/collections/create", require("./src/routes/create-collection.js"));
+app.post("/api/collections/:collection/upload", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));
 
 // 500 handler

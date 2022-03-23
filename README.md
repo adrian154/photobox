@@ -12,5 +12,7 @@ WIP, come back later.
 * show ALL uploads, even pending ones
 * view all collections
 * animate progress bar
-* fix bug with progres tracker
-* while uploading, make it so that when 
+* fix bug with progres tracker (processing never goes away)
+* make timestamp client controlled
+* dominant color thing, frankly the blurry background thing mediahub uses kinda sucks
+* figure out why we're getting 413s

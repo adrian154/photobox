@@ -50,28 +50,37 @@ const readRequest = req => new Promise((resolve, reject) => {
 
 module.exports = async (req, res) => {
 
-    const collection = req.db.getCollection(req.params.collection);
-    if(!collection) return res.status(400).json({error: "No such collection"});
-
-    const {tempFile, fields} = await readRequest(req);
-    if(!tempFile) return res.status(400).json({error: "No file was uploaded"});
-
-    const storageEngine = req.storageEngines[collection.storageEngine];
-    if(!storageEngine) return res.status(400).json({error: "Storage engine not configured"});
-
     try {
+
+        const collection = req.db.getCollection(req.params.collection);
+        if(!collection) throw new Error("No such collection");
+
+        const {tempFile, fields} = await readRequest(req);
+        if(!tempFile) throw new Error("No file was uploaded");
+
+        const storageEngine = req.storageEngines[collection.storageEngine];
+        if(!storageEngine) throw new Error("Storage engine not configured");
+
+        // fields validation
         const tagSet = new Set(JSON.parse(fields.tags));
+        const timestamp = Number(fields.timestamp);
+        if(!timestamp) throw new Error("Invalid timestamp");
+
+        // process and send to the storage engine
         const versions = await processUpload(tempFile.path, tagSet);
         const urls = await storageEngine.save(tempFile.id, versions);
-        req.db.addPost(tempFile.id, collection.name, urls, versions.preview.width, versions.preview.height, Array.from(tagSet));
+        
+        // add row and succeed
+        req.db.addPost(tempFile.id, collection.name, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp);
         res.status(200).json(req.db.getPost(tempFile.id));
+
+        fs.unlink(tempFile.path, err => {
+            if(err) console.error("Failed to delete temporary file", err);
+        });
+
     } catch(error) {
         console.error(error);
-        res.status(400).json({error: "Error occurred while processing"});
+        res.status(400).json({error: error.message}); // FIXME: potential error message exposure!
     }
-
-    fs.unlink(tempFile.path, err => {
-        if(err) console.error("Failed to delete temporary file", err);
-    });
 
 };

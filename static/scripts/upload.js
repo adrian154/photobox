@@ -33,8 +33,8 @@ class UploadTracker extends HiddenLayer {
             }
         });
 
-        const fail = () => {
-            statusText.textContent = "Failed";
+        const fail = reason => {
+            statusText.textContent = reason || "Failed";
             statusText.style.color = "#ff0000";
             const retryButton = document.createElement("span");
             retryButton.classList.add("retry-button", "clickable");
@@ -49,7 +49,7 @@ class UploadTracker extends HiddenLayer {
         request.addEventListener("error", fail);
         request.addEventListener("load", () => {
             if(request.response.error) { /* BUG */
-                fail();
+                fail(request.response.error);
             } else {
                 tracker.remove();
                 this.numTracked--;
@@ -98,7 +98,7 @@ class Uploader extends HiddenLayer {
         
         // send upload
         const request = new XMLHttpRequest();
-        request.open("POST", `/api/collections/${collectionName}`);
+        request.open("POST", `/api/collections/${collectionName}/upload`);
         request.responseType = "json";        
         uploadTracker.add(formData, request);
         request.send(formData);
@@ -132,6 +132,7 @@ class Uploader extends HiddenLayer {
             const formData = new FormData();
             formData.append("tags", JSON.stringify(tags));
             formData.append("file", file);
+            formData.append("timestamp", Date.now());
             await this.uploadItem(formData);
         }
 
