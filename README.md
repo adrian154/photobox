@@ -6,7 +6,7 @@ Photobox is a self-hosted media organizer that I made for my personal use
 
 # Deploying
 
-To run Photobox, just install [NodeJS] and start the app with `node index.js`. A Docker image is available at [Docker Hub](https://hub.docker.com/r/adrian154/photobox).
+To run Photobox, just install [NodeJS](https://nodejs.org/en/download/) and start the app with `node index.js`. A Docker image is available at [Docker Hub](https://hub.docker.com/r/adrian154/photobox).
 
 Photobox doesn't manage TLS, if you want to use it with HTTPS (highly recommended) you'll have to use a reverse proxy like nginx.
 
