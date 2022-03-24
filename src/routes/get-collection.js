@@ -8,7 +8,7 @@
  */
 module.exports = (req, res) => {
     
-    const collection = req.db.getCollection(req.params.collection);
+    const collection = req.db.getCollection(String(req.params.collection));
     if(!collection) return res.sendStatus(404);
 
     const posts = req.db.getPosts(collection.name);

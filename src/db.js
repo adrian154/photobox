@@ -17,7 +17,7 @@ const queries = {
     addCollection: db.prepare("INSERT INTO collections (name, storageEngine) VALUES (?, ?)"),
     getCollection: db.prepare("SELECT * FROM collections WHERE name = ?"),
     getCollectionNames: db.prepare("SELECT name FROM collections").pluck(),
-    
+
     // post
     // TODO: use a proper query builder instead of this silliness
     addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, type, display, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
@@ -28,7 +28,8 @@ const queries = {
         }
     }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
-    getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp DESC"),
+    getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC LIMIT 1"),
+    getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
     deletePost: db.transaction(postid => {
         queries.deleteTagsForPost.run(postid);
@@ -67,7 +68,9 @@ for(const tag of Object.values(tags)) {
 // this message will probably be lost to time.
 // if you're reading this: i don't know how you got here, but take a moment to rest and take it all in.
 
-const createPost = (row, tags) => {
+const createPost = row => {
+    if(!row) return;
+    const tags = queries.getTags.all(row.id);
     return {
         id: row.id,
         collection: row.collection,
@@ -91,8 +94,9 @@ module.exports = {
     getCollectionNames: () => queries.getCollectionNames.all(),
     
     addPost: queries.addPost,
-    getPost: postid => createPost(queries.getPost.get(postid), queries.getTags.all(postid)),
-    getPosts: collectionName => queries.getPostsInCollection.all(collectionName).map(row => createPost(row, queries.getTags.all(row.postid))),
+    getPost: postid => createPost(queries.getPost.get(postid)),
+    getFirstPost: collection => createPost(queries.getFirstPost.get(collection)),
+    getPosts: collectionName => queries.getPostsInCollection.all(collectionName).map(createPost),
     deletePost: queries.deletePost,
     
     getTags: postid => queries.getTags.all(postid),

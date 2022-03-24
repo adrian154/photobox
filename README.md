@@ -37,5 +37,8 @@ This lets Photobox manage upload size limits, but more importantly, it prevents 
     * Handle collection 404s gracefully (show error message)
 * Backend
     * Fix horrible database code
+    * Implement deletion
+    * Implement Backblaze storage engine
+    * (Maybe) Implement S3 storage engine
 * Post selection
     * Implement
