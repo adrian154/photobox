@@ -15,7 +15,7 @@ class Slideshow extends HiddenLayer {
     show(post) {
         
         super.show();
-        this.image.src = post.displayURL;
+        this.image.src = post.display;
         this.originalLink.href = post.originalURL;
         
         // replace tag picker

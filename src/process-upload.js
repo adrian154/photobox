@@ -1,6 +1,8 @@
 const {ffmpegPath, ffprobePath} = require("ffmpeg-ffprobe-static");
 const spawn = require("child_process").spawn;
+const config = require("../config.json");
 const metaTags = require("./tags.js");
+const Queue = require("./queue.js");
 const sharp = require("sharp");
 const fs = require("fs");
 
@@ -17,7 +19,7 @@ const processAsImage = async (filepath, tags) => {
     const meta = await image.metadata();
 
     // pass the original through sharp to strip metadata
-    const versions = {};
+    const versions = {type: "image"};
     versions.original = {stream: image, contentType: "image/" + meta.format}; // FIXME: meta.format is not guaranteed to be a MIME type!
 
     const width = Math.round(meta.width * PREVIEW_HEIGHT / (meta.pageHeight || meta.height));
@@ -81,7 +83,7 @@ const processAsVideo = async (filepath, tags) => {
 
     // ignore images 
     if(data.format?.format_name === "image2" || !mimeTypes[data.format.format_name]) {
-        throw new Error("Unsupported format"); // no one's gonna see this :^)
+        throw new Error("Unsupported format");
     }
 
     // make sure there's a video stream
@@ -97,22 +99,23 @@ const processAsVideo = async (filepath, tags) => {
     }
 
     return {
+        type: "video",
         preview: generatePreview(filepath, videoStream.width, videoStream.height),
         original: {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name]}
     };  
 
 };
 
-module.exports = async (filePath, tagSet) => {
+const process = async task => {
     try {
-        return await processAsImage(filePath, tagSet);
+        return await processAsImage(task.filePath, task.tagSet);
     } catch(error) {
         console.error(error);
-        try {
-            return await processAsVideo(filePath, tagSet);
-        } catch(error) {
-            console.error(error);
-            throw new Error("File appears to be neither an image nor a video");
-        }
+        return await processAsVideo(task.filePath, task.tagSet);
     }
 };
+
+// trying to process uploads as fast as they are received tends to cause exploding memory usage
+// limit the number of posts which can be processed concurrently
+const queue = new Queue(process, config.processingConcurrency);
+module.exports = (filePath, tagSet) => queue.enqueue({filePath, tagSet});

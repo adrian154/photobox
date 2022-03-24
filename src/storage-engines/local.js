@@ -1,4 +1,5 @@
 // This storage engine should ONLY be used for testing purposes!
+
 const express = require("express");
 const path = require("path");
 const fs = require("fs");
@@ -12,6 +13,7 @@ module.exports = class {
 
     constructor(config, app) {
         this.config = config;
+        console.log("warning: Local storage engine should only be used for testing purposes!");
         app.use("/local-objects", express.static(DIRECTORY));
     }
 
@@ -20,7 +22,7 @@ module.exports = class {
         const urls = {};
         const promises = [];
 
-        // ultra hacky crap: parse the mimetype to get the file extension
+        // huge hack: parse the mimetype to get the file extension
         // it works *most* of the time and i'm tired
         const originalName = `${id}-original.${versions.original.contentType.split('/')[1]}`;
         const original = fs.createWriteStream(path.join(DIRECTORY, originalName));

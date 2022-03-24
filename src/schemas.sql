@@ -10,11 +10,12 @@ CREATE TABLE IF NOT EXISTS collections (
 INSERT OR IGNORE INTO collections VALUES ('test', 'local');
 
 CREATE TABLE IF NOT EXISTS posts (
-    postid          STRING PRIMARY KEY NOT NULL,
-    collection      STRING NOT NULL,
-    timestamp       INTEGER NOT NULL,
-    displayURL      STRING NOT NULL,
-    originalURL     STRING NOT NULL,
+    postid        STRING PRIMARY KEY NOT NULL,
+    collection    STRING NOT NULL,
+    timestamp     INTEGER NOT NULL,
+    type          STRING NOT NULL,
+    display       STRING NOT NULL,
+    originalURL   STRING NOT NULL,
     previewURL    STRING NOT NULL,
     previewWidth  INTEGER NOT NULL,
     previewHeight INTEGER NOT NULL,

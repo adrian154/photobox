@@ -67,12 +67,14 @@ module.exports = async (req, res) => {
         if(!timestamp) throw new Error("Invalid timestamp");
 
         // process and send to the storage engine
-        const versions = await processUpload(tempFile.path, tagSet);
-        const urls = await storageEngine.save(tempFile.id, versions);
-        
-        // add row and succeed
-        req.db.addPost(tempFile.id, collection.name, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp);
-        res.status(200).json(req.db.getPost(tempFile.id));
+        try {
+            const versions = await processUpload(tempFile.path, tagSet);
+            const urls = await storageEngine.save(tempFile.id, versions);
+            req.db.addPost(tempFile.id, collection.name, versions.type, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp);
+            res.status(200).json(req.db.getPost(tempFile.id));
+        } catch(error) {
+            throw new Error("Internal processing error");
+        }
 
         fs.unlink(tempFile.path, err => {
             if(err) console.error("Failed to delete temporary file", err);

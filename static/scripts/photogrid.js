@@ -1,6 +1,6 @@
 class PhotoGrid {
 
-    // FIXME: resize not debounced; but is it really important? more at 10
+    // FIXME: resize not debounced; but is it really important? more at 10!!
     constructor() {
         this.grid = document.getElementById("photogrid");
         window.addEventListener("resize", () => this.fixAspectRatios());

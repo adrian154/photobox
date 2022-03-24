@@ -19,9 +19,10 @@ const queries = {
     getCollectionNames: db.prepare("SELECT name FROM collections").pluck(),
     
     // post
-    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, displayURL, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"),
-    addPost: db.transaction((id, collection, urls, previewWidth, previewHeight, tags, timestamp) => {
-        queries.addPostRow.run(id, collection, timestamp, urls.display, urls.original, urls.preview, previewWidth, previewHeight);
+    // TODO: use a proper query builder instead of this silliness
+    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, type, display, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+    addPost: db.transaction((id, collection, type, urls, previewWidth, previewHeight, tags, timestamp) => {
+        queries.addPostRow.run(id, collection, timestamp, type, urls.display, urls.original, urls.preview, previewWidth, previewHeight);
         for(const tag of tags) {
             queries.addTagToPost.run(id, tag);
         }
@@ -71,7 +72,8 @@ const createPost = (row, tags) => {
         id: row.id,
         collection: row.collection,
         timestamp: row.timestamp,
-        displayURL: row.displayURL,
+        type: row.type,
+        display: row.display,
         originalURL: row.originalURL,
         preview: {
             url: row.previewURL,
