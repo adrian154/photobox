@@ -1,3 +1,5 @@
+const SCALE = 0.6;
+
 class PhotoGrid {
 
     // FIXME: resize not debounced; but is it really important? more at 10!!
@@ -12,8 +14,8 @@ class PhotoGrid {
         const img = document.createElement("img");
         img.classList.add("clickable");
         img.loading = "lazy";
-        img.width = post.preview.width * 0.6;
-        img.height = post.preview.height * 0.6;
+        img.width = post.preview.width * SCALE;
+        img.height = post.preview.height * SCALE;
         img.heightPerWidth = img.height / img.width;
         img.src = post.preview.url;
         img.style.flexGrow = post.preview.width;

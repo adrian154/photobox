@@ -10,7 +10,7 @@ const fs = require("fs");
 // this fixes issues with failing to delete temp files on Windows
 sharp.cache(false);
 
-const PREVIEW_HEIGHT = 320;
+const PREVIEW_HEIGHT = 480;
 const MAX_DISPLAY_SIZE = 1920;
 
 const processAsImage = async (filepath, tags) => {
@@ -71,16 +71,16 @@ const mimeTypes = {
 	"webm" : "video/webm"
 };
 
-const generatePreview = (filepath, originalWidth, originalHeight) => {
+const generatePreview = (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * PREVIEW_HEIGHT / originalHeight);
-    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", "00:00", "-vframes", "1", "-filter:v", `scale=${width}:${PREVIEW_HEIGHT}`, "-f", "webp", "-"]);
+    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${PREVIEW_HEIGHT}`, "-f", "webp", "-"]);
     return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: PREVIEW_HEIGHT};
 };
 
 const processAsVideo = async (filepath, tags) => {
 
     const data = await probe(filepath);
-
+    
     // ignore images 
     if(data.format?.format_name === "image2" || !mimeTypes[data.format.format_name]) {
         throw new Error("Unsupported format");
@@ -93,14 +93,18 @@ const processAsVideo = async (filepath, tags) => {
     }
 
     // tags
-    tags.add(metaTags.VIDEO);
+    tags.add(metaTags.VIDEO); // (duh)
+
     if(data.streams.find(stream => stream.codec_type === "audio")) {
         tags.add(metaTags.SOUND);
     }
 
+    // swap video stream dimensions based on rotation
+    if(videoStream.tags.rotate == "90" || videoStream.tags.rotate == "-90") [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
+
     return {
         type: "video",
-        preview: generatePreview(filepath, videoStream.width, videoStream.height),
+        preview: generatePreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height),
         original: {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name]}
     };  
 

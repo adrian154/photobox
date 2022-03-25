@@ -73,6 +73,7 @@ module.exports = async (req, res) => {
             req.db.addPost(tempFile.id, collection.name, versions.type, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp);
             res.status(200).json(req.db.getPost(tempFile.id));
         } catch(error) {
+            console.error(error);
             throw new Error("Internal processing error");
         }
 

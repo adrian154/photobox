@@ -35,3 +35,38 @@ class CreateCollectionDialog extends HiddenLayer {
     }
 
 }
+
+class Collections {
+
+    constructor() {
+        this.element = document.getElementById("collections");
+    }
+
+    render() {
+        fetch("/api/homepage").then(resp => resp.json()).then(collections => this.consume(collections));
+    }
+
+    consume(collections) {
+        for(const collection of collections) {
+            
+            const element = document.createElement("div");
+            element.classList.add("collection-preview");
+            this.element.append(element);
+
+            const img = document.createElement("img"); img.src = collection.preview;
+            element.append(img);
+
+            const title = document.createElement("span");
+            title.classList.add("collection-title");
+            title.textContent = collection.name;
+            element.append(title);
+            
+            const postCount = document.createElement("span");
+            postCount.classList.add("post-count");
+            postCount.textContent = `${collection.numPosts} posts`;
+            element.append(postCount);
+            
+        }
+    }
+
+}

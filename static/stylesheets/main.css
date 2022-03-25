@@ -253,3 +253,35 @@ input[type="text"] {
     border-radius: 5px;
     font-weight: bold;
 }
+
+/* ----- homepage ----- */
+#collections {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.collection-preview {
+    flex-basis: 15em;
+    margin: 1.0em;
+}
+
+.collection-preview img {
+    width: 15em;
+    height: 15em;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.collection-preview span { display: block; }
+
+.collection-title {
+    font-size: 1.5em;
+    font-weight: 500;
+}
+
+.post-count {
+    font-size: 1.1em;
+    font-weight: normal;
+    opacity: 60%;
+}

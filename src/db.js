@@ -28,6 +28,7 @@ const queries = {
         }
     }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
+    getNumPosts: db.prepare("SELECT COUNT(*) FROM posts WHERE collection = ?").pluck(),
     getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC LIMIT 1"),
     getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
@@ -92,11 +93,12 @@ module.exports = {
     addCollection: collection => queries.addCollection.run(collection.name, collection.storageEngine),
     getCollection: name => queries.getCollection.get(name),
     getCollectionNames: () => queries.getCollectionNames.all(),
-    
+
     addPost: queries.addPost,
     getPost: postid => createPost(queries.getPost.get(postid)),
     getFirstPost: collection => createPost(queries.getFirstPost.get(collection)),
     getPosts: collectionName => queries.getPostsInCollection.all(collectionName).map(createPost),
+    getNumPosts: collectionName => queries.getNumPosts.get(collectionName),
     deletePost: queries.deletePost,
     
     getTags: postid => queries.getTags.all(postid),

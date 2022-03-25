@@ -1,6 +1,7 @@
 // parse URL
 const collectionName = new URL(window.location).searchParams.get("collection");
 
+const collections = new Collections();
 const photoGrid = new PhotoGrid();
 const uploader = new Uploader();
 const uploadTracker = new UploadTracker();
@@ -13,4 +14,6 @@ if(collectionName) {
         uploader.onCollectionLoaded(collection);
         photoGrid.onPostsLoaded(collection.posts);
     });
+} else {
+    collections.render();
 }
