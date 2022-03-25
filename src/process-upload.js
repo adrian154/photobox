@@ -114,7 +114,6 @@ const process = async task => {
     try {
         return await processAsImage(task.filePath, task.tagSet);
     } catch(error) {
-        console.error(error);
         return await processAsVideo(task.filePath, task.tagSet);
     }
 };

@@ -231,18 +231,17 @@ input[type="text"] {
     display: none; /* TMP */
 }
 
-#preview-outer {
+#slideshow-content {
     display: flex;
     flex-grow: 1;
-    pointer-events: none;
 }
 
-#preview {
+/* styling for replaced elements */
+.slideshow-replaced {
     margin: auto;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    pointer-events: all;
 }
 
 #delete-button {

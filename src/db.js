@@ -71,9 +71,8 @@ for(const tag of Object.values(tags)) {
 
 const createPost = row => {
     if(!row) return;
-    const tags = queries.getTags.all(row.id);
     return {
-        id: row.id,
+        id: row.postid,
         collection: row.collection,
         timestamp: row.timestamp,
         type: row.type,
@@ -84,7 +83,7 @@ const createPost = row => {
             width: row.previewWidth,
             height: row.previewHeight
         },
-        tags
+        tags: queries.getTags.all(row.postid)
     }
 };
 

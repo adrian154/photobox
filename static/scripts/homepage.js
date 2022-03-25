@@ -53,8 +53,11 @@ class Collections {
             element.classList.add("collection-preview");
             this.element.append(element);
 
+            const a = document.createElement("a");
+            a.href = `/?collection=${encodeURIComponent(collection.name)}`;
             const img = document.createElement("img"); img.src = collection.preview;
-            element.append(img);
+            a.append(img);
+            element.append(a);
 
             const title = document.createElement("span");
             title.classList.add("collection-title");
