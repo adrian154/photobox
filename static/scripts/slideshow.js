@@ -1,10 +1,14 @@
 class Slideshow extends HiddenLayer {
 
     constructor() {
+        
         super("slideshow");
         this.slideshow = document.getElementById("slideshow-content");
         this.originalLink = document.getElementById("original-link");
         this.tagsOuter = document.getElementById("editor-tags");
+        
+        this.slideshow.querySelector(".close-button").addEventListener("click", () => this.hide());
+
     }
 
     // operations:
@@ -23,6 +27,7 @@ class Slideshow extends HiddenLayer {
             const video = document.createElement("video");
             video.classList.add("slideshow-replaced");
             video.controls = true;
+            video.loop = true;
             video.src = post.display;
             return video;
         } else {
@@ -36,13 +41,15 @@ class Slideshow extends HiddenLayer {
         this.originalLink.href = post.originalURL;
         
         // kludge
-        this.slideshow.innerHTML = "";
-        const content = this.createContent(post);
-        this.slideshow.append(content);
+        if(this.slideshowContent) this.slideshowContent.remove();
+        this.slideshowContent = this.createContent(post);
+        this.slideshow.append(this.slideshowContent);
 
         // replace tag picker
+        /*
         this.picker?.element.remove();
         this.picker = new TagPicker();
+        */
 
 
     }
