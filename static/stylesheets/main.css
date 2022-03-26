@@ -105,6 +105,22 @@ input[type="text"] {
 }
 
 /* ----- photogrid stuff ----- */
+#collection-name, #num-posts {
+    text-align: center;
+}
+
+#collection-name {
+    font-size: 2.0em;
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+#num-posts {
+    font-size: 1.1em;
+    opacity: 50%;
+    margin: 0;
+}
+
 #photogrid {
     display: flex;
     flex-wrap: wrap;
@@ -270,6 +286,7 @@ input[type="text"] {
     height: 15em;
     border-radius: 10px;
     object-fit: cover;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 
 .collection-preview span { display: block; }

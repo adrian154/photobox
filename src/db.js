@@ -29,7 +29,7 @@ const queries = {
     }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
     getNumPosts: db.prepare("SELECT COUNT(*) FROM posts WHERE collection = ?").pluck(),
-    getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC LIMIT 1"),
+    getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp DESC LIMIT 1"),
     getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
     deletePost: db.transaction(postid => {

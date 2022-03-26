@@ -1,16 +1,22 @@
 class Slideshow extends HiddenLayer {
 
     constructor() {
+        
         super("slideshow");
         this.slideshow = document.getElementById("slideshow-content");
         this.originalLink = document.getElementById("original-link");
         this.tagsOuter = document.getElementById("editor-tags");
+        
+        
+        this.slideshow.addEventListener("click", event => {
+            if(event.target === this.slideshow) {
+                this.hide();
+            }
+        });
+        this.slideshow.querySelector(".close-button").addEventListener("click", () => this.hide());
+
     }
 
-    // operations:
-    // delete
-    // original
-    // tags
 
     createContent(post) {
         console.log(post);
@@ -23,10 +29,11 @@ class Slideshow extends HiddenLayer {
             const video = document.createElement("video");
             video.classList.add("slideshow-replaced");
             video.controls = true;
+            video.loop = true;
             video.src = post.display;
             return video;
         } else {
-            alert("oopsie daisy. unsupported post type");
+            alert("Unsupported post type");
         }
     }
 
@@ -35,14 +42,16 @@ class Slideshow extends HiddenLayer {
         super.show();
         this.originalLink.href = post.originalURL;
         
-        // kludge
-        this.slideshow.innerHTML = "";
-        const content = this.createContent(post);
-        this.slideshow.append(content);
+        // TODO: fix 
+        if(this.slideshowContent) this.slideshowContent.remove();
+        this.slideshowContent = this.createContent(post);
+        this.slideshow.append(this.slideshowContent);
 
-        // replace tag picker
+        // TODO: implement editor
+        /*
         this.picker?.element.remove();
         this.picker = new TagPicker();
+        */
 
 
     }
