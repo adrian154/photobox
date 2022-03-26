@@ -18,6 +18,8 @@ const processAsImage = async (filepath, tags) => {
     const image = sharp(filepath, {sequentialRead: true, animated: true});
     const meta = await image.metadata();
 
+    image.withMetadata({orientation: meta.orientation});
+
     // pass the original through sharp to strip metadata
     const versions = {type: "image"};
     versions.original = {stream: image, contentType: "image/" + meta.format}; // FIXME: meta.format is not guaranteed to be a MIME type!

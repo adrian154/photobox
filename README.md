@@ -23,6 +23,8 @@ This lets Photobox manage upload size limits, but more importantly, it prevents 
 * Slideshow
     * Handle video content
     * Content background: dominant color or blurred image?
+    * Big problem: uploaded photos are just appended to the end of the photogrid, causing desync w/ the slideshow
+        * Ugh, it's 2AM...
 * Photogrid
     * Debounce onresize handler
     * Add sorting

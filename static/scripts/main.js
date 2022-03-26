@@ -22,6 +22,7 @@ if(collectionName) {
 
         uploader.onCollectionLoaded(collection);
         photoGrid.onPostsLoaded(collection.posts);
+        slideshow.onPostsLoaded(collection.posts);
 
     });
 } else {

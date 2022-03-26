@@ -14,7 +14,6 @@ module.exports = (req, res) => {
     const posts = req.db.getPosts(collection.name);
     res.json({
         name: collection.name,
-        managed: Boolean(req.storageEngines[collection.storageEngine]),
         posts
     });
 
