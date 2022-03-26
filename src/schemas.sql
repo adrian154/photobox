@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS posts (
     type          STRING NOT NULL,
     display       STRING NOT NULL,
     originalURL   STRING NOT NULL,
+    duration      REAL,
     previewURL    STRING NOT NULL,
     previewWidth  INTEGER NOT NULL,
     previewHeight INTEGER NOT NULL,

@@ -62,8 +62,6 @@ class Slideshow extends HiddenLayer {
 
     updateContent() {
 
-        console.log(this.index);
-
         // get rid of contents that are too far from the current post
         for(const index in this.postContents) {
             if(Math.abs(index - this.index) > PRELOAD_RANGE) {

@@ -13,27 +13,52 @@ sharp.cache(false);
 const PREVIEW_HEIGHT = 480;
 const MAX_DISPLAY_SIZE = 1920;
 
+const generateImagePreview = async sharp => {
+    
+    // get image dimensions
+    const meta = await sharp.metadata();
+    const originalHeight = meta.pageHeight || meta.height;
+    
+    // figure out the actual size, taking EXIF orientation into account
+    let width, height;
+    if([5, 6, 7, 8].includes(meta.orientation)) {
+        width = originalHeight;
+        height = meta.width;
+    } else {
+        width = meta.width;
+        height = originalHeight;
+    }
+    
+    // calculate output width
+    const outputWidth = Math.round(meta.width * PREVIEW_HEIGHT / height);
+    return {width: outputWidth, height: PREVIEW_HEIGHT, stream: sharp.rotate().resize({outputWidth, height: PREVIEW_HEIGHT, fit: "cover"}).webp(), contentType: "image/webp"};
+    
+};
+
 const processAsImage = async (filepath, tags) => {
 
-    const image = sharp(filepath, {sequentialRead: true, animated: true});
+    // read image data
+    // .rotate() called with no args rotates the image based on EXIF orientation
+    const image = sharp(filepath, {sequentialRead: true, pages: 1}).rotate();
     const meta = await image.metadata();
 
-    image.withMetadata({orientation: meta.orientation});
-
     // pass the original through sharp to strip metadata
-    const versions = {type: "image"};
-    versions.original = {stream: image, contentType: "image/" + meta.format}; // FIXME: meta.format is not guaranteed to be a MIME type!
+    const versions = {type: "image", preview: await generateImagePreview(image)};
 
-    const width = Math.round(meta.width * PREVIEW_HEIGHT / (meta.pageHeight || meta.height));
-    versions.preview = {stream: image.clone().resize({width, height: PREVIEW_HEIGHT, fit: "cover"}).webp(), contentType: "image/webp"};
-    versions.preview.width = width;
-    versions.preview.height = PREVIEW_HEIGHT;
-
-    // if the image is animated, skip generation of a display version
     if(meta.pages > 1) {
+        
+        // add meta tag
         tags.add(metaTags.VIDEO);
+
+        // create a new Sharp object to read all frames of the animated image
+        const fullImage = sharp(filepath, {sequentialRead: true, animated: true}).rotate(); 
+        versions.original = {stream: fullImage, contentType: "image/" + meta.format};
+        versions.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000,
+        console.log(versions.duration);
+
     } else {
         versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
+        versions.original = {stream: image, contentType: "image/" + meta.format};
     }
     
     return versions;
@@ -73,7 +98,7 @@ const mimeTypes = {
 	"webm" : "video/webm"
 };
 
-const generatePreview = (filepath, time, originalWidth, originalHeight) => {
+const generateVideoPreview = (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * PREVIEW_HEIGHT / originalHeight);
     const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${PREVIEW_HEIGHT}`, "-f", "webp", "-"]);
     return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: PREVIEW_HEIGHT};
@@ -106,7 +131,8 @@ const processAsVideo = async (filepath, tags) => {
 
     return {
         type: "video",
-        preview: generatePreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height),
+        duration: videoStream.duration,
+        preview: generateVideoPreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height),
         original: {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name]}
     };  
 
@@ -116,6 +142,7 @@ const process = async task => {
     try {
         return await processAsImage(task.filePath, task.tagSet);
     } catch(error) {
+        console.error(error);
         return await processAsVideo(task.filePath, task.tagSet);
     }
 };

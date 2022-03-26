@@ -20,7 +20,7 @@ const queries = {
 
     // post
     // TODO: use a proper query builder instead of this silliness
-    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, type, display, originalURL, previewURL, previewWidth, previewHeight) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"),
+    addPostRow: db.prepare("INSERT INTO posts (postid, collection, timestamp, type, display, originalURL, previewURL, previewWidth, previewHeight, duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
     addPost: db.transaction((id, collection, type, urls, previewWidth, previewHeight, tags, timestamp) => {
         queries.addPostRow.run(id, collection, timestamp, type, urls.display, urls.original, urls.preview, previewWidth, previewHeight);
         for(const tag of tags) {
@@ -29,7 +29,7 @@ const queries = {
     }),
     getPost: db.prepare("SELECT * FROM posts WHERE postid = ?"),
     getNumPosts: db.prepare("SELECT COUNT(*) FROM posts WHERE collection = ?").pluck(),
-    getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp DESC LIMIT 1"),
+    getFirstPost: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC LIMIT 1"),
     getPostsInCollection: db.prepare("SELECT * FROM posts WHERE collection = ? ORDER BY timestamp ASC"),
     deletePostRow: db.prepare("DELETE FROM posts WHERE postid = ?"),
     deletePost: db.transaction(postid => {
@@ -77,6 +77,7 @@ const createPost = row => {
         timestamp: row.timestamp,
         type: row.type,
         display: row.display,
+        duration: row.duration,
         originalURL: row.originalURL,
         preview: {
             url: row.previewURL,

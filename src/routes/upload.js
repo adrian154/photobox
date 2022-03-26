@@ -70,7 +70,7 @@ module.exports = async (req, res) => {
         try {
             const versions = await processUpload(tempFile.path, tagSet);
             const urls = await storageEngine.save(tempFile.id, versions);
-            req.db.addPost(tempFile.id, collection.name, versions.type, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp);
+            req.db.addPost(tempFile.id, collection.name, versions.type, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp, versions.duration);
             res.status(200).json(req.db.getPost(tempFile.id));
         } catch(error) {
             console.error(error);
