@@ -10,9 +10,19 @@ const slideshow = new Slideshow();
 
 if(collectionName) {
     fetch(`/api/collections/${collectionName}`).then(resp => resp.json()).then(collection => {
+        
+        if(collection.error) {
+            alert("No such collection"); // FIXME
+            return;
+        }
+        
         document.title = `${collection.name} - photobox`;
+        document.getElementById("collection-name").textContent = collection.name;
+        document.getElementById("num-posts").textContent = collection.posts.length + " posts";
+
         uploader.onCollectionLoaded(collection);
         photoGrid.onPostsLoaded(collection.posts);
+
     });
 } else {
     collections.render();

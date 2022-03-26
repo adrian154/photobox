@@ -7,14 +7,16 @@ class Slideshow extends HiddenLayer {
         this.originalLink = document.getElementById("original-link");
         this.tagsOuter = document.getElementById("editor-tags");
         
+        
+        this.slideshow.addEventListener("click", event => {
+            if(event.target === this.slideshow) {
+                this.hide();
+            }
+        });
         this.slideshow.querySelector(".close-button").addEventListener("click", () => this.hide());
 
     }
 
-    // operations:
-    // delete
-    // original
-    // tags
 
     createContent(post) {
         console.log(post);
@@ -31,7 +33,7 @@ class Slideshow extends HiddenLayer {
             video.src = post.display;
             return video;
         } else {
-            alert("oopsie daisy. unsupported post type");
+            alert("Unsupported post type");
         }
     }
 
@@ -40,12 +42,12 @@ class Slideshow extends HiddenLayer {
         super.show();
         this.originalLink.href = post.originalURL;
         
-        // kludge
+        // TODO: fix 
         if(this.slideshowContent) this.slideshowContent.remove();
         this.slideshowContent = this.createContent(post);
         this.slideshow.append(this.slideshowContent);
 
-        // replace tag picker
+        // TODO: implement editor
         /*
         this.picker?.element.remove();
         this.picker = new TagPicker();
