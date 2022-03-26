@@ -27,16 +27,17 @@ class Query {
     }
 
     stmt(options) {
+        console.log(this.query());
         const stmt = this.table.db.prepare(this.query());
-        if(options.pluck) stmt.pluck();
+        if(options?.pluck) stmt.pluck();
         return stmt;
     }
 
     fn(options) {
         const stmt = this.stmt(options);
         if(stmt.reader) {
-            if(options.all) return stmt.all.bind(stmt);
-            if(options.iterate) return stmt.iterate.bind(stmt);
+            if(options?.all) return stmt.all.bind(stmt);
+            if(options?.iterate) return stmt.iterate.bind(stmt);
             return stmt.get.bind(stmt);
         }
         return stmt.run.bind(stmt);
@@ -61,9 +62,9 @@ class InsertQuery extends Query {
         if(this.fallback) parts.push("OR", this.fallback);
         parts.push("INTO", this.table.name);
         if(Array.isArray(this.values)) 
-            parts.push("(" + this.values.join(",") + ") VALUES (" + this.values.map(s => ":" + s).join(","));
+            parts.push("(" + this.values.join(",") + ") VALUES (" + this.values.map(s => ":" + s).join(",") + ")");
         else
-            parts.push("(" + Object.keys(values).join(",") + ") VALUES (" + Object.values(values).join(",") + ")");
+            parts.push("(" + Object.keys(this.values).join(",") + ") VALUES (" + Object.values(this.values).join(",") + ")");
         return parts.join(" ");
     }
 
@@ -92,7 +93,7 @@ class SelectQuery extends Query {
     }
 
     query() {
-        const parts = ["SELECT", columns.join(","), "FROM", this.table.name];
+        const parts = ["SELECT", this.columns.join(","), "FROM", this.table.name];
         if(this.condition) parts.push("WHERE", this.condition);
         if(this.sortColumn) parts.push("ORDER BY", this.sortColumn);
         if(this.count) parts.push("LIMIT", this.count);
@@ -129,7 +130,7 @@ class DeleteQuery extends Query {
     }
 
     query() {
-        const parts = ["DELETE FROM", this.table.name, "WHERE", this.condition];
+        return `DELETE FROM ${this.table.name} WHERE ${this.condition}`;
     }
 
 }

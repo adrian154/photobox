@@ -22,7 +22,7 @@ const createStorageEngines = app => {
 };
 
 // GLOBALS
-const db = require("./src/db.js");
+const dataLayer = require("./src/data-layer.js");
 const app = express();
 const storageEngines = createStorageEngines(app);
 
@@ -34,7 +34,7 @@ app.use(express.json());
 
 // expose some objects to API route handlers
 app.use((req, res, next) => {
-    req.db = db;
+    req.data = dataLayer;
     req.storageEngines = storageEngines;
     next();
 });
