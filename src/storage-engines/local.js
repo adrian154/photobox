@@ -1,4 +1,4 @@
-// This storage engine should ONLY be used for testing purposes!
+// This storage engine should ONLY be used for testing purposes in its current state!
 
 const express = require("express");
 const path = require("path");
@@ -51,8 +51,8 @@ module.exports = class {
 
     }
 
-    delete(object) {
-        
-    }
+    delete(id) {
+        throw new Error("Delete isn't supported for the local storage engine");
+    }  
 
 };

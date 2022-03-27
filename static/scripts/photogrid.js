@@ -38,7 +38,7 @@ class PhotoGrid {
             container.append(duration);
         }
 
-        const index = slideshow.addPost(post);
+        const index = slideshow.addPost(post, start);
         img.addEventListener("click", () => slideshow.goto(index));
 
     }

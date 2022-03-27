@@ -13,6 +13,7 @@ class UploadTracker extends HiddenLayer {
         
         this.numTracked++;
         this.indicator.style.display = "";
+        window.onbeforeunload = () => true;
 
         const tracker = document.createElement("div");
         this.trackers.append(tracker);
@@ -70,6 +71,8 @@ class UploadTracker extends HiddenLayer {
                 if(this.numTracked == 0) {
                     this.hide();
                     this.indicator.style.display = "none";
+                    window.onbeforeunload = null;
+                    location.reload();
                 }
                 photoGrid.addPost(request.response, true);
             }

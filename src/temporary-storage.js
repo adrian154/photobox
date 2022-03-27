@@ -18,19 +18,25 @@ if(!fs.existsSync(TEMP_DIR)) {
 
 const generateID = () => crypto.randomBytes(18).toString("base64").replaceAll('+', '-').replaceAll('/', '_');
 
-module.exports = srcStream => {
+module.exports = (srcStream, calculateHash) => {
 
     const id = generateID();
     const filePath = path.join(TEMP_DIR, id);
     const writeStream = fs.createWriteStream(filePath);
     srcStream.pipe(writeStream);
     
+    let hash;
+    if(calculateHash) {
+        hash = crypto.createHash("sha1");
+        srcStream.pipe(hash);
+    }
+
     return new Promise((resolve, reject) => {
         writeStream.on("error", error => {
             fs.unlink(filePath, unlinkErr => console.error("Failed to delete temporary file", unlinkErr));
             reject(error);
         });
-        writeStream.on("close", () => resolve({id, path: filePath}));
+        writeStream.on("close", () => resolve({id, path: filePath, bytesWritten: writeStream.bytesWritten, hash: hash?.read()}));
     });
 
 };
