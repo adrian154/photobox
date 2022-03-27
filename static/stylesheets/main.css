@@ -254,6 +254,20 @@ input[type="text"] {
     text-decoration: underline;
 }
 
+.progress-bar {
+    display: block;
+    background-color: #cacaca;
+    border-radius: 6px;
+}
+
+.progress-bar div {
+    width: 0;
+    background-color: #3480eb;
+    height: 6px;
+    transition: 0.3s;
+    border-radius: inherit;
+}
+
 /* ----- photo editor ----- */
 #slideshow {
     flex-direction: row;

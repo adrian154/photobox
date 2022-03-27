@@ -12,6 +12,7 @@ sharp.cache(false);
 
 const PREVIEW_HEIGHT = 480;
 const MAX_DISPLAY_SIZE = 1920;
+const MIN_DISPLAY_SIZE = 900;
 
 const generateImagePreview = async sharp => {
     
@@ -58,6 +59,8 @@ const processAsImage = async (filepath, tags) => {
     } else {
         if(Math.max(meta.width, meta.height) > MAX_DISPLAY_SIZE)
             versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
+        else if(Math.max(meta.width, meta.height) < MIN_DISPLAY_SIZE)
+            versions.display = {stream: image.clone().resize({width: MIN_DISPLAY_SIZE, height: MIN_DISPLAY_SIZE}).webp(), contentType: "image/webp"};
         else
             versions.display = {stream: image.clone().webp(), contentType: "image/webp"};
         versions.original = {stream: image, contentType: "image/" + meta.format};

@@ -12,26 +12,34 @@ class UploadTracker extends HiddenLayer {
         this.numTracked++;
 
         const tracker = document.createElement("div");
+        this.trackers.append(tracker);
+        
         const fileName = document.createElement("span");
         fileName.textContent = formData.get("file").name;
         tracker.append(fileName);
+
         const statusText = document.createElement("span");
         statusText.classList.add("upload-status");
+        statusText.textContent = "Pending...";
         tracker.append(statusText);
-        const progress = document.createElement("progress");
-        progress.max = 100;
-        tracker.append(progress);
-        this.trackers.append(tracker);
+        
+        const progressOuter = document.createElement("div");
+        progressOuter.classList.add("progress-bar");
+        const progressBar = document.createElement("div");
+        progressOuter.append(progressBar);
+        tracker.append(progressOuter);
 
-        request.upload.addEventListener("progress", event => {
-            const percent = Math.floor(100 * event.loaded / event.total);
-            progress.value = percent;
+        const onProgress = event => {
+            const percent = 100 * event.loaded / event.total;
+            progressBar.style.width = percent + "%";
             if(event.loaded == event.total) {
                 statusText.textContent = "Processing...";
             } else {
-                statusText.textContent = `${percent}%`;
+                statusText.textContent = `${Math.floor(percent)}%`;
             }
-        });
+        };
+
+        request.upload.addEventListener("progress", onProgress);
 
         const fail = reason => {
             statusText.textContent = reason || "Failed";
@@ -42,13 +50,15 @@ class UploadTracker extends HiddenLayer {
             fileName.append(" ", retryButton);
             retryButton.addEventListener("click", () => {
                 tracker.remove();
-                uploader.uploadItem(formData);
+                const request = uploader.openRequest();
+                this.add(formData, request);   
+                request.send(formData);
             });
         };
 
-        request.addEventListener("error", fail);
+        request.addEventListener("error", () => fail("Network error"));
         request.addEventListener("load", () => {
-            if(request.response.error) { /* BUG */
+            if(request.response?.error) {
                 fail(request.response.error);
             } else {
                 tracker.remove();
@@ -91,27 +101,12 @@ class Uploader extends HiddenLayer {
         button.addEventListener("click", () => this.show());
     }
 
-    // this function should NEVER throw, even if the upload failed
-    // failure is indicated to the user via the upload progress dialog
-    // resolves as soon as the file is finished *uploading* (not necessarily processing)
-    async uploadItem(formData) {
-        
-        // send upload
+    // open a new request
+    openRequest() {
         const request = new XMLHttpRequest();
         request.open("POST", `/api/collections/${collectionName}/upload`);
         request.responseType = "json";        
-        uploadTracker.add(formData, request);
-        request.send(formData);
-
-        return new Promise((resolve, reject) => {
-            request.addEventListener("error", resolve);
-            request.upload.addEventListener("progress", event => {
-                if(event.loaded == event.total) {
-                    resolve();
-                }
-            });
-        });
-
+        return request;
     }
 
     async upload() {
@@ -128,12 +123,29 @@ class Uploader extends HiddenLayer {
         this.hide();
         uploadTracker.show();
 
+        // open requests
+        const uploads = [];
         for(const file of files) {
             const formData = new FormData();
             formData.append("tags", JSON.stringify(tags));
             formData.append("file", file);
             formData.append("timestamp", Date.now());
-            await this.uploadItem(formData);
+            const upload = {formData, request: this.openRequest(formData)};
+            uploads.push(upload);
+            uploadTracker.add(upload.formData, upload.request);
+        }
+
+        // start uploading
+        for(const {request, formData} of uploads) {
+            request.send(formData);
+            await new Promise((resolve, reject) => {
+                request.addEventListener("error", resolve);
+                request.upload.addEventListener("progress", event => {
+                    if(event.loaded == event.total) {
+                        resolve();
+                    }
+                });
+            });
         }
 
     }
