@@ -47,12 +47,12 @@ class Slideshow extends HiddenLayer {
     createContent(post) {
         if(post.type === "image") {
             const img = document.createElement("img");
-            img.classList.add("slideshow-replaced");
+            img.classList.add("slideshow-centered");
             img.src = post.displaySrc;
             return img;
         } else if(post.type === "video") {
             const video = document.createElement("video");
-            video.classList.add("slideshow-replaced");
+            video.classList.add("slideshow-centered");
             video.controls = true;
             video.loop = true;
             video.src = post.displaySrc;

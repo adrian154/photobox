@@ -51,6 +51,7 @@ input[type="text"] {
     color: #ffffff;
     align-items: center;
     box-sizing: border-box;
+    z-index: 1;
 }
 
 #header-inner {
@@ -128,13 +129,14 @@ input[type="text"] {
 }
 
 .photogrid-item {
+    position: relative;
     margin: 2px;
     min-width: 0;
 }
 
 .photogrid-item img {
     width: 100%;
-    height: auto;
+    display: block;
 }
 
 /* background for modals/slideshow */
@@ -257,12 +259,10 @@ input[type="text"] {
     flex-grow: 1;
 }
 
-/* styling for replaced elements */
-.slideshow-replaced {
+.slideshow-centered {
     margin: auto;
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
 }
 
 #delete-button {
@@ -291,7 +291,7 @@ input[type="text"] {
     height: 15em;
     border-radius: 10px;
     object-fit: cover;
-    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .collection-preview span { display: block; }

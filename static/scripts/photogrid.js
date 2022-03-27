@@ -14,7 +14,6 @@ class PhotoGrid {
         container.classList.add("photogrid-item");
         container.style.flexBasis = post.preview.width * SCALE + "px";
         container.style.flexGrow = post.preview.width;
-        container.aspectRatio = post.preview.height / post.preview.width;
         this.grid.insertBefore(container, this.placeholder);
 
         // add image
@@ -23,6 +22,8 @@ class PhotoGrid {
         img.loading = "lazy";
         img.src = post.preview.url;
         container.append(img);
+
+        // if its a video, add some 
 
         const index = slideshow.addPost(post);
         img.addEventListener("click", () => slideshow.goto(index));
