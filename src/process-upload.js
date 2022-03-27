@@ -56,7 +56,10 @@ const processAsImage = async (filepath, tags) => {
         versions.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000;
 
     } else {
-        versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
+        if(Math.max(meta.width, meta.height) > MAX_DISPLAY_SIZE)
+            versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
+        else
+            versions.display = {stream: image.clone().webp(), contentType: "image/webp"};
         versions.original = {stream: image, contentType: "image/" + meta.format};
     }
     

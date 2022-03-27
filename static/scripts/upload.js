@@ -54,7 +54,7 @@ class UploadTracker extends HiddenLayer {
                 tracker.remove();
                 this.numTracked--;
                 if(this.numTracked == 0) this.hide();
-                photoGrid.addPost(request.response);
+                photoGrid.addPost(request.response, true);
             }
         });
 

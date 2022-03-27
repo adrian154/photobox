@@ -7,23 +7,36 @@ class PhotoGrid {
         this.placeholder = document.getElementById("photogrid-placeholder");
     }
 
-    addPost(post) {
+    addPost(post, start) {
 
         // create container
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
         container.style.flexBasis = post.preview.width * SCALE + "px";
         container.style.flexGrow = post.preview.width;
-        this.grid.insertBefore(container, this.placeholder);
+
+        if(start) {
+            this.grid.prepend(container);
+        } else {
+            this.grid.insertBefore(container, this.placeholder);
+        }
 
         // add image
         const img = document.createElement("img");
         img.classList.add("clickable");
         img.loading = "lazy";
+        img.width = post.preview.width;
+        img.height = post.preview.height;
         img.src = post.preview.url;
         container.append(img);
 
-        // if its a video, add some 
+        // if its a video, add the duration
+        if(post.duration) {
+            const duration = document.createElement("span");
+            duration.classList.add("duration");
+            duration.textContent = "00:00";
+            container.append(duration);
+        }
 
         const index = slideshow.addPost(post);
         img.addEventListener("click", () => slideshow.goto(index));
@@ -34,7 +47,7 @@ class PhotoGrid {
         for(let i = 0; i < posts.length; i++) {
             const post = posts[i];
             post.index = i;
-            this.addPost(post, true);
+            this.addPost(post);
         }
     }
 

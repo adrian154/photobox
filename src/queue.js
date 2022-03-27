@@ -32,6 +32,7 @@ module.exports = class {
             const task = await this.nextTask();
             try {
                 task.resolve(await this.fn(task.data));
+                console.log(`Memory usage (RSS): ${process.memoryUsage.rss()/1024/1024}M`);
             } catch(error) {
                 task.reject(error);
             }

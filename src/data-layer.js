@@ -30,6 +30,7 @@ const Posts = new Table(db, "posts", [
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
     "displaySrc STRING NOT NULL",
+    "duration REAL",
     "originalURL STRING NOT NULL",
     "previewURL STRING NOT NULL",
     "previewWidth STRING NOT NULL",
@@ -69,7 +70,7 @@ Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck:
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
 Posts.removeAllTags = PostTags.delete("postid = ?");
 
-const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "displaySrc", "originalURL", "previewURL", "previewWidth", "previewHeight"]).fn();
+const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "displaySrc", "originalURL", "previewURL", "previewWidth", "previewHeight", "duration"]).fn();
 Posts.add = db.transaction(post => {
     addPost(post);
     for(const tag of post.tags) {
