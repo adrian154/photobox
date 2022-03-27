@@ -9,6 +9,7 @@ class Slideshow extends HiddenLayer {
         this.slideshow = document.getElementById("slideshow-content");
         this.originalLink = document.getElementById("original-link");
         this.tagsOuter = document.getElementById("editor-tags");
+        this.posts = [];
         this.postContents = {};
         
         this.slideshow.tabIndex = 0;
@@ -38,22 +39,23 @@ class Slideshow extends HiddenLayer {
 
     }
 
-    onPostsLoaded(posts) {
-        this.posts = posts;
+    addPost(post) {
+        this.posts.push(post);
+        return this.posts.length - 1;
     }
 
     createContent(post) {
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-replaced");
-            img.src = post.display;
+            img.src = post.displaySrc;
             return img;
         } else if(post.type === "video") {
             const video = document.createElement("video");
             video.classList.add("slideshow-replaced");
             video.controls = true;
             video.loop = true;
-            video.src = post.display;
+            video.src = post.displaySrc;
             return video;
         } else {
             alert("Unsupported post type");

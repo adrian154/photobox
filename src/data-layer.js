@@ -13,6 +13,9 @@ const Collections = new Table(db, "collections", [
     "storageEngine STRING NOT NULL"
 ]);
 
+// FIXME
+db.exec("INSERT OR IGNORE INTO collections (name, storageEngine) VALUES ('test', 'local')");
+
 const PostTags = new Table(db, "postTags", [
     "postid STRING NOT NULL",
     "tag STRING NOT NULL",
@@ -26,7 +29,7 @@ const Posts = new Table(db, "posts", [
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
-    "display STRING NOT NULL",
+    "displaySrc STRING NOT NULL",
     "originalURL STRING NOT NULL",
     "previewURL STRING NOT NULL",
     "previewWidth STRING NOT NULL",
@@ -38,7 +41,7 @@ const Tags = new Table(db, "tags", [
     "tag STRING PRIMARY KEY NOT NULL"
 ]);
 
-db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)")
+db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
 
 // --- posts
 const rowToPost = row => {
@@ -48,13 +51,13 @@ const rowToPost = row => {
             collection: row.collection,
             timestamp: row.timestamp,
             type: row.type,
-            display: row.display,
+            displaySrc: row.displaySrc,
             duration: row.duration,
             originalURL: row.originalURL,
             preview: {
                 url: row.previewURL,
                 width: row.previewWidth,
-                height: row.previewHight
+                height: row.previewHeight
             },
             tags: Posts.getTags(row.postid)
         };
@@ -66,7 +69,7 @@ Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck:
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
 Posts.removeAllTags = PostTags.delete("postid = ?");
 
-const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "display", "originalURL", "previewURL", "previewWidth", "previewHeight"]).fn();
+const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "displaySrc", "originalURL", "previewURL", "previewWidth", "previewHeight"]).fn();
 Posts.add = db.transaction(post => {
     addPost(post);
     for(const tag of post.tags) {
@@ -74,7 +77,7 @@ Posts.add = db.transaction(post => {
     }  
 });
 
-const getPost = Posts.select("postid = ?").fn();
+const getPost = Posts.select("*").where("postid = ?").fn();
 Posts.get = postid => rowToPost(getPost(postid));
 
 const deletePost = Posts.delete("postid = ?").fn();
@@ -86,15 +89,16 @@ Posts.remove = postid => {
 // --- collections
 Collections.add = Collections.insert(["name", "storageEngine"]).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
-Collections.getNames = Collections.select("name").fn({all: true});
+Collections.getNames = Collections.select("name").fn({all: true, pluck: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});
 
-const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp ASC").fn({all: true});
+const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").fn({all: true});
 const getPreviewPost = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").limit(1).fn();
 Collections.getPosts = collection => getPosts(collection).map(rowToPost);
 Collections.getPreviewPost = collection => rowToPost(getPreviewPost(collection));
 
 // --- tags
 Tags.getAll = Tags.select("tag").fn({all: true, pluck: true});
+Tags.add = Tags.insert({tag: "?"}).or("ignore").fn();
 
 module.exports = {Collections, Posts, Tags};

@@ -6,6 +6,7 @@
  * Response: nothing
  */
 const storeToTempFile = require("../temporary-storage.js");
+const {Collections, Posts} = require("../data-layer.js");
 const processUpload = require("../process-upload.js");
 const busboy = require("busboy");
 const fs = require("fs");
@@ -52,7 +53,7 @@ module.exports = async (req, res) => {
 
     try {
 
-        const collection = req.db.getCollection(req.params.collection);
+        const collection = Collections.get(String(req.params.collection));
         if(!collection) throw new Error("No such collection");
 
         const {tempFile, fields} = await readRequest(req);
@@ -70,8 +71,20 @@ module.exports = async (req, res) => {
         try {
             const versions = await processUpload(tempFile.path, tagSet);
             const urls = await storageEngine.save(tempFile.id, versions);
-            req.db.addPost(tempFile.id, collection.name, versions.type, urls, versions.preview.width, versions.preview.height, Array.from(tagSet), timestamp, versions.duration);
-            res.status(200).json(req.db.getPost(tempFile.id));
+            Posts.add({
+                postid: tempFile.id,
+                collection: collection.name,
+                type: versions.type,
+                originalURL: urls.original,
+                displaySrc: urls.display,
+                previewURL: urls.preview,
+                previewWidth: versions.preview.width,
+                previewHeight: versions.preview.height,
+                tags: Array.from(tagSet),
+                timestamp,
+                duration: versions.duration
+            });
+            res.status(200).json(Posts.get(tempFile.id));
         } catch(error) {
             console.error(error);
             throw new Error("Internal processing error");

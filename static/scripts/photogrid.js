@@ -1,4 +1,4 @@
-const SCALE = 0.6;
+const SCALE = 0.5;
 
 class PhotoGrid {
 
@@ -22,7 +22,8 @@ class PhotoGrid {
         img.style.flexGrow = post.preview.width;
         this.grid.insertBefore(img, this.placeholder);
 
-        img.addEventListener("click", () => slideshow.goto(post.index));
+        const index = slideshow.addPost(post);
+        img.addEventListener("click", () => slideshow.goto(index));
 
         if(!bulk) {
             this.fixAspectRatios();

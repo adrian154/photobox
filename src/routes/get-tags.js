@@ -3,4 +3,5 @@
  * Parameters: none
  * Response: (JSON) list of tags 
  */
-module.exports = (req, res) => res.json(req.db.getAllTags());
+const {Tags} = require("../data-layer.js");
+module.exports = (req, res) => res.json(Tags.getAll());

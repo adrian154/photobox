@@ -3,9 +3,11 @@
  * Parameters: none
  * Response: (JSON) list of collection names
  */
+const {Collections} = require("../data-layer.js");
+
 module.exports = (req, res) => {
-    res.json(req.db.getCollectionNames().map(collection => {
-        const post = req.db.getFirstPost(collection);
-        return {name: collection, preview: post?.preview.url || "/images/default-post.png", numPosts: req.db.getNumPosts(collection)};
+    res.json(Collections.getNames().map(collection => {
+        const post = Collections.getPreviewPost(collection);
+        return {name: collection, preview: post?.preview.url || "/images/default-post.png", numPosts: Collections.getNumPosts(collection)};
     }));
 };

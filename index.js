@@ -1,3 +1,5 @@
+const {Tags} = require("./src/data-layer.js");
+const metaTags = require("./src/tags.js");
 const config = require("./config.json");
 const express = require("express");
 
@@ -22,9 +24,13 @@ const createStorageEngines = app => {
 };
 
 // GLOBALS
-const dataLayer = require("./src/data-layer.js");
 const app = express();
 const storageEngines = createStorageEngines(app);
+
+// insert meta tags
+for(const tag of Object.values(metaTags)) {
+    Tags.add(tag);
+}
 
 // serve static files
 app.use(express.static("static"));
@@ -34,7 +40,6 @@ app.use(express.json());
 
 // expose some objects to API route handlers
 app.use((req, res, next) => {
-    req.data = dataLayer;
     req.storageEngines = storageEngines;
     next();
 });
