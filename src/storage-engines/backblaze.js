@@ -59,7 +59,7 @@ module.exports = class {
         
         // Backblaze's API demands to know the length of the file being uploaded beforehand
         // Therefore, we need to save the stream to yet another temporary file
-        const {path, bytesWritten, hash} = await storeToTempFile(stream, true);
+        const {path, bytesWritten, hash, delete: deleteTemp} = await storeToTempFile(stream, true);
 
         for(let i = 0; i < UPLOAD_ATTEMPTS; i++) {
 
@@ -90,10 +90,12 @@ module.exports = class {
                 continue;
             }
 
+            deleteTemp();
             return new URL(`/file/${this.config.bucket}/${response.fileName}`, this.downloadUrl).href;
 
         }
 
+        deleteTemp();
         throw new Error("Failed to upload file after retrying");
 
     }

@@ -36,7 +36,17 @@ module.exports = (srcStream, calculateHash) => {
             fs.unlink(filePath, unlinkErr => console.error("Failed to delete temporary file", unlinkErr));
             reject(error);
         });
-        writeStream.on("close", () => resolve({id, path: filePath, bytesWritten: writeStream.bytesWritten, hash: hash?.read()}));
+        writeStream.on("close", () => resolve({
+            id,
+            path: filePath,
+            bytesWritten: writeStream.bytesWritten,
+            hash: hash?.read(),
+            delete: () => fs.unlink(filePath, (err) => {
+                if(err) {
+                    console.log("failed to delete temporary file " + filePath);
+                }
+            })
+        }));
     });
 
 };

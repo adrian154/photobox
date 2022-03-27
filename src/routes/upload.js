@@ -90,9 +90,7 @@ module.exports = async (req, res) => {
             throw new Error("Internal processing error");
         }
 
-        fs.unlink(tempFile.path, err => {
-            if(err) console.error("Failed to delete temporary file", err);
-        });
+        tempFile.delete();
 
     } catch(error) {
         console.error(error);
