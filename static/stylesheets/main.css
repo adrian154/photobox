@@ -333,3 +333,15 @@ input[type="text"] {
     font-weight: normal;
     opacity: 60%;
 }
+
+/* ----- upload indicator ----- */
+#upload-indicator {
+    background-color: #32a852;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    position: fixed;
+    bottom: 1.5em;
+    right: 1.5em;
+}

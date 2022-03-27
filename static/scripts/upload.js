@@ -5,11 +5,14 @@ class UploadTracker extends HiddenLayer {
         super("upload-progress");
         this.numTracked = 0;
         this.trackers = document.getElementById("progress");
+        this.indicator = document.getElementById("upload-indicator");
+        this.indicator.addEventListener("click", () => this.show());
     }
 
     add(formData, request) {
         
         this.numTracked++;
+        this.indicator.style.display = "";
 
         const tracker = document.createElement("div");
         this.trackers.append(tracker);
@@ -50,6 +53,7 @@ class UploadTracker extends HiddenLayer {
             fileName.append(" ", retryButton);
             retryButton.addEventListener("click", () => {
                 tracker.remove();
+                this.numTracked--;
                 const request = uploader.openRequest();
                 this.add(formData, request);   
                 request.send(formData);
@@ -63,7 +67,10 @@ class UploadTracker extends HiddenLayer {
             } else {
                 tracker.remove();
                 this.numTracked--;
-                if(this.numTracked == 0) this.hide();
+                if(this.numTracked == 0) {
+                    this.hide();
+                    this.indicator.style.display = "none";
+                }
                 photoGrid.addPost(request.response, true);
             }
         });
