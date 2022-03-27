@@ -7,35 +7,21 @@ class Slideshow extends HiddenLayer {
         
         super("slideshow");
         this.slideshow = document.getElementById("slideshow-content");
-        this.originalLink = document.getElementById("original-link");
-        this.tagsOuter = document.getElementById("editor-tags");
         this.posts = [];
         this.postContents = {};
         
         this.slideshow.tabIndex = 0;
-        this.slideshow.addEventListener("click", event => {
-            if(event.target === this.slideshow) {
-                this.hide();
-            }
-        });
 
-        this.slideshow.querySelector(".close-button").addEventListener("click", () => this.hide());
+        this.layer.querySelector(".close-button").addEventListener("click", () => this.hide());
         this.slideshow.addEventListener("keydown", event => {
             if(event.key === "ArrowLeft") {
                 this.goto(this.index - 1);
+                event.preventDefault();
             } else if(event.key === "ArrowRight") {
                 this.goto(this.index + 1);
+                event.preventDefault();
             }
         });  
-        
-        this.slideshow.addEventListener("wheel", event => {
-            if(event.deltaY > 0) {
-                this.goto(this.index + 1);
-            } else {
-                this.goto(this.index - 1);
-            }
-            event.preventDefault();
-        });
 
     }
 
@@ -45,21 +31,24 @@ class Slideshow extends HiddenLayer {
     }
 
     createContent(post) {
+        const div = document.createElement("div");
+        div.classList.add("slideshow-item");
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
             img.src = post.displaySrc;
-            return img;
+            div.append(img);
         } else if(post.type === "video") {
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
             video.controls = true;
             video.loop = true;
             video.src = post.displaySrc;
-            return video;
+            div.append(video);
         } else {
             alert("Unsupported post type");
         }
+        return div;
     }
 
     updateContent() {
@@ -77,7 +66,6 @@ class Slideshow extends HiddenLayer {
             const idx = this.index + i;
             if(idx >= 0 && idx < this.posts.length && !this.postContents[idx]) {
                 const content = this.createContent(this.posts[idx]);
-                content.style.display = "none";
                 this.slideshow.append(content);
                 this.postContents[idx] = content;
             }
@@ -92,26 +80,9 @@ class Slideshow extends HiddenLayer {
         this.index = Math.min(this.posts.length - 1, Math.max(nextIndex, 0));
         this.updateContent();
 
-        // hide prev post
-        if(this.shownContent) {
-            this.shownContent.style.display = "none";
-        }
-
         // update slideshow
         const content = this.postContents[this.index];
-        content.style.display = "";
-        this.shownContent = content;
-
-        // update editor
-        const post = this.posts[this.index];
-        this.originalLink.href = post.originalURL;
-
-        // TODO: implement editor
-        /*
-        this.picker?.element.remove();
-        this.picker = new TagPicker();
-        */
-
+        content.scrollIntoView();
 
     }
 
