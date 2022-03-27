@@ -44,7 +44,7 @@ const processAsImage = async (filepath, tags) => {
     const meta = await image.metadata();
 
     // pass the original through sharp to strip metadata
-    const versions = {type: "image", preview: await generateImagePreview(image)};
+    const versions = {type: "image", preview: await generateImagePreview(image.clone())};
 
     if(meta.pages > 1) {
         
@@ -60,7 +60,7 @@ const processAsImage = async (filepath, tags) => {
         if(Math.max(meta.width, meta.height) > MAX_DISPLAY_SIZE)
             versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
         else if(Math.max(meta.width, meta.height) < MIN_DISPLAY_SIZE)
-            versions.display = {stream: image.clone().resize({width: MIN_DISPLAY_SIZE, height: MIN_DISPLAY_SIZE}).webp(), contentType: "image/webp"};
+            versions.display = {stream: image.clone().resize({width: MIN_DISPLAY_SIZE, height: MIN_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};
         else
             versions.display = {stream: image.clone().webp(), contentType: "image/webp"};
         versions.original = {stream: image, contentType: "image/" + meta.format};

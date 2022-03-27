@@ -34,7 +34,7 @@ class PhotoGrid {
         if(post.duration) {
             const duration = document.createElement("span");
             duration.classList.add("duration");
-            duration.textContent = "00:00";
+            duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
             container.append(duration);
         }
 
