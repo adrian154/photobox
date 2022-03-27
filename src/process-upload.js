@@ -53,8 +53,7 @@ const processAsImage = async (filepath, tags) => {
         // create a new Sharp object to read all frames of the animated image
         const fullImage = sharp(filepath, {sequentialRead: true, animated: true}).rotate(); 
         versions.original = {stream: fullImage, contentType: "image/" + meta.format};
-        versions.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000,
-        console.log(versions.duration);
+        versions.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000;
 
     } else {
         versions.display = {stream: image.clone().resize({width: MAX_DISPLAY_SIZE, height: MAX_DISPLAY_SIZE, fit: "inside"}).webp(), contentType: "image/webp"};

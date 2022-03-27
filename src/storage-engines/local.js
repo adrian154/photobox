@@ -7,7 +7,7 @@ const fs = require("fs");
 const DIRECTORY = "data/objects";
 if(!fs.existsSync(DIRECTORY)) fs.mkdirSync(DIRECTORY);
 
-const resolveOnFinish = stream => new Promise((resolve, reject) => stream.on("close", resolve));
+const resolveOnFinish = stream => new Promise(resolve => stream.on("close", resolve));
 
 module.exports = class {
 

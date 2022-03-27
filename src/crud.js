@@ -27,7 +27,6 @@ class Query {
     }
 
     stmt(options) {
-        console.log(this.query());
         const stmt = this.table.db.prepare(this.query());
         if(options?.pluck) stmt.pluck();
         return stmt;

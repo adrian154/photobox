@@ -27,7 +27,6 @@ module.exports = srcStream => {
     
     return new Promise((resolve, reject) => {
         writeStream.on("error", error => {
-            console.log("error");
             fs.unlink(filePath, unlinkErr => console.error("Failed to delete temporary file", unlinkErr));
             reject(error);
         });
