@@ -127,9 +127,14 @@ input[type="text"] {
     margin-top: 2.0em;
 }
 
-#photogrid img {
+.photogrid-item {
     margin: 2px;
     min-width: 0;
+}
+
+.photogrid-item img {
+    width: 100%;
+    height: auto;
 }
 
 /* background for modals/slideshow */
