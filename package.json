@@ -21,6 +21,7 @@
     "busboy": "^1.4.0",
     "express": "^4.17.3",
     "ffmpeg-ffprobe-static": "^4.4.0-rc.11",
+    "node-fetch": "^2.6.7",
     "sharp": "^0.30.1"
   }
 }

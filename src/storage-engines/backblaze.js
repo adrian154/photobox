@@ -94,6 +94,8 @@ module.exports = class {
 
         }
 
+        throw new Error("Failed to upload file after retrying");
+
     }
 
     async save(id, versions) {
@@ -105,7 +107,7 @@ module.exports = class {
     }
 
     delete(object) {
-        
+           
     }
 
 };
