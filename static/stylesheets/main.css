@@ -161,7 +161,7 @@ input[type="text"] {
     width: 100%; /* has to be percent or the scrollbar will clip part of the editor */
     height: 100vh;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 75%);
+    background-color: rgba(0, 0, 0, 80%);
     display: flex;
     z-index: 1;
 }
@@ -299,16 +299,18 @@ input[type="text"] {
     height: 0;
 }
 
-.slideshow-item {
+.slideshow-frame {
     display: flex;
     scroll-snap-align: start;
     flex-shrink: 0;
     width: 100vw;
     height: 100vh;
+    margin-right: 1.0em;
+    position: relative;
     pointer-events: none;
 }
 
-.slideshow-item img, .slideshow-item video {
+.slideshow-frame img, .slideshow-frame video {
     margin: auto;
     max-width: 100%;
     max-height: 100%;
