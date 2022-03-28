@@ -1,4 +1,4 @@
-// preload some content
+// how far ahead to preload content
 const PRELOAD_RANGE = 2;
 
 class Slideshow extends HiddenLayer {
@@ -8,11 +8,12 @@ class Slideshow extends HiddenLayer {
         super("slideshow");
         this.slideshow = document.getElementById("slideshow-content");
         this.posts = [];
-        this.postContents = {};
+        this.renderedPosts = {};
         
         this.slideshow.tabIndex = 0;
-
         this.layer.querySelector(".close-button").addEventListener("click", () => this.hide());
+
+        // keyboard controls
         this.slideshow.addEventListener("keydown", event => {
             if(event.key === "ArrowLeft") {
                 this.goto(this.index - 1);
@@ -22,6 +23,14 @@ class Slideshow extends HiddenLayer {
                 event.preventDefault();
             }
         });  
+
+        this.observer = new IntersectionObserver(entries => {
+            for(const entry of entries) {
+                if(entry.isIntersecting) {
+                    this.updateContent(entry.target.index);
+                }
+            }
+        }, {root: this.slideshow, threshold: 0.9});
 
     }
 
@@ -51,37 +60,56 @@ class Slideshow extends HiddenLayer {
         return div;
     }
 
-    updateContent() {
+    // make sure posts remain sorted
+    insertContent(content) {
+        for(const child of this.slideshow.childNodes) {
+            if(child.index > content.index) {
+                this.slideshow.insertBefore(content, child);
+                return;
+            }
+        }
+        this.slideshow.append(content);
+    }
 
-        // get rid of contents that are too far from the current post
-        for(const index in this.postContents) {
-            if(Math.abs(index - this.index) > PRELOAD_RANGE) {
-                this.postContents[index].remove();
-                delete this.postContents[index];
+    updateContent(index) {
+
+        console.log("reached: " + index);
+
+        // delete posts that are too far away from the current one
+        for(const i in this.renderedPosts) {
+            if(Math.abs(i - index) > PRELOAD_RANGE) {
+                this.renderedPosts[i].remove();
+                delete this.renderedPosts[i];
             }
         }
 
-        // preload
+        // preload posts
         for(let i = -PRELOAD_RANGE; i <= PRELOAD_RANGE; i++) {
-            const idx = this.index + i;
-            if(idx >= 0 && idx < this.posts.length && !this.postContents[idx]) {
+            const idx = index + i;
+            if(idx >= 0 && idx < this.posts.length && !this.renderedPosts[idx]) {
                 const content = this.createContent(this.posts[idx]);
-                this.slideshow.append(content);
-                this.postContents[idx] = content;
+                content.index = idx;
+                this.insertContent(content);
+                this.observer.observe(content);
+                this.renderedPosts[idx] = content;
             }
         }
 
     }
 
-    goto(nextIndex) {
+    goto(index) {
         
+        // show & focus
         super.show();
         this.slideshow.focus();
-        this.index = Math.min(this.posts.length - 1, Math.max(nextIndex, 0));
-        this.updateContent();
+
+        // make sure index is in bounds
+        // remember index for use w/ kb controls
+        this.index = Math.min(this.posts.length - 1, Math.max(index, 0));
+        this.updateContent(index);
 
         // update slideshow
-        const content = this.postContents[this.index];
+        const content = this.renderedPosts[this.index];
         content.scrollIntoView();
 
     }

@@ -305,6 +305,7 @@ input[type="text"] {
     flex-shrink: 0;
     width: 100vw;
     height: 100vh;
+    pointer-events: none;
 }
 
 .slideshow-item img, .slideshow-item video {

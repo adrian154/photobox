@@ -1,6 +1,7 @@
 {
     "name": "Photobox",
     "short_name": "Photobox",
+    "description": "A simple, self-hosted image gallery",
     "icons": [
         {
             "src": "/android-chrome-192x192.png",
