@@ -16,24 +16,26 @@ class Slideshow extends HiddenLayer {
         // keyboard controls
         this.slideshow.addEventListener("keydown", event => {
             if(event.key === "ArrowLeft") {
-                this.goto(this.index + 1);
+                this.left();
                 event.preventDefault();
             } else if(event.key === "ArrowRight") {
-                this.goto(this.index - 1);
+                this.right();
                 event.preventDefault();
             }
         });
 
+        // scrollwheel nav (desktop)
         this.slideshow.addEventListener("wheel", event => {
-            if(event.deltaY > 0) {
-                this.goto(this.index + Math.sign(event.deltaY));
+            if(event.deltaY != 0) {
+                if(event.deltaY < 0) left();
+                else right();
+                event.preventDefault();
             }
         });
 
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
                 if(entry.isIntersecting) {
-                    console.log(entry.target.index);
                     this.updateContent(entry.target.index);
                 }
             }
@@ -92,7 +94,14 @@ class Slideshow extends HiddenLayer {
 
     }
 
-    goto(index) {
+    show(post) {
+        super.show();
+        this.slideshow.focus();
+        this.updateContent(post.index);
+        this.posts[];
+    }
+
+    goto(post) {
         
         // show & focus
         super.show();
@@ -100,7 +109,6 @@ class Slideshow extends HiddenLayer {
 
         // make sure index is in bounds
         // remember index for use w/ kb controls
-        this.index = Math.min(this.posts.length - 1, Math.max(index, 0));
         this.updateContent(index);
 
         // update slideshow
