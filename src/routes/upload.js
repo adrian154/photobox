@@ -64,12 +64,12 @@ module.exports = async (req, res) => {
 
         // fields validation
         const tagSet = new Set(JSON.parse(fields.tags));
-        const timestamp = Number(fields.timestamp);
-        if(!timestamp) throw new Error("Invalid timestamp");
+        const timestamp = Number(fields.timestamp) || Date.now();
+        const originalName = String(fields.originalName) || "";
 
         // process and send to the storage engine
         try {
-            const versions = await processUpload(tempFile.path, tagSet);
+            const versions = await processUpload(tempFile.path, originalName, tagSet);
             const urls = await storageEngine.save(tempFile.id, versions);
             Posts.add({
                 postid: tempFile.id,

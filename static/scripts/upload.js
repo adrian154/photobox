@@ -138,6 +138,7 @@ class Uploader extends HiddenLayer {
         for(const file of files) {
             const formData = new FormData();
             formData.append("tags", JSON.stringify(tags));
+            formData.append("originalName", file.name);
             formData.append("file", file);
             formData.append("timestamp", Date.now());
             const upload = {formData, request: this.openRequest(formData)};

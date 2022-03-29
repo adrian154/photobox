@@ -5,6 +5,10 @@ Photobox is a self-hosted image gallery I made for personal use. Check out the [
 **This project is not completed yet, come back later.**
 
 # TODO
+* Finish new pipeline
+* Make storage engines simply store/delete by filename, they don't need access to the whole versions object
+    * That logic should be handled in the upload route
+
 * Photography-specific features
     * Read EXIF/IPTC metadata
     * Support RAW upload

@@ -43,15 +43,19 @@ class Slideshow extends HiddenLayer {
 
     }
 
-    addPost(post) {
+    addPost(post, addToStart) {
         const frame = document.createElement("div");
         frame.classList.add("slideshow-frame");
         post.frame = frame;
-        this.slideshow.prepend(frame);
+        if(addToStart) {
+            this.slideshow.prepend(frame);
+            post.index = this.posts[0].index - 1;
+        } else {
+            this.slideshow.append(frame);
+            post.index = this.posts[this.posts.length - 1] + 1;
+        }
         this.observer.observe(frame);
         this.posts.push(post);
-        post.index = this.posts.length - 1;
-        frame.index = post.index;
     }
 
     populateFrame(post) {
@@ -98,22 +102,7 @@ class Slideshow extends HiddenLayer {
         super.show();
         this.slideshow.focus();
         this.updateContent(post.index);
-        this.posts[];
-    }
-
-    goto(post) {
-        
-        // show & focus
-        super.show();
-        this.slideshow.focus();
-
-        // make sure index is in bounds
-        // remember index for use w/ kb controls
-        this.updateContent(index);
-
-        // update slideshow
-        this.posts[this.index].frame.scrollIntoView();
-
+        post.frame.scrollIntoView();
     }
 
 }

@@ -7,7 +7,7 @@ class PhotoGrid {
         this.placeholder = document.getElementById("photogrid-placeholder");
     }
 
-    addPost(post) {
+    addPost(post, addToStart) {
 
         // create container
         const container = document.createElement("div");
@@ -15,9 +15,13 @@ class PhotoGrid {
         container.style.flexBasis = post.preview.width * SCALE + "px";
         container.style.flexGrow = post.preview.width;
 
-        this.grid.prepend(container);
+        if(addToStart) {
+            this.grid.prepend(container);
+        } else {
+            this.grid.insertBefore(container, this.placeholder);
+        }
 
-        // add image
+        // create image
         const img = document.createElement("img");
         img.classList.add("clickable");
         img.loading = "lazy";
@@ -34,8 +38,9 @@ class PhotoGrid {
             container.append(duration);
         }
 
-        slideshow.addPost(post);
-        img.addEventListener("click", () => slideshow.goto(post.index));
+        // slidesow logi
+        slideshow.addPost(post, addToStart);
+        img.addEventListener("click", () => slideshow.show(post));
 
     }
 
