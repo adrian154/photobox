@@ -15,25 +15,15 @@ const MAX_DISPLAY_SIZE = 1920;
 const MIN_DISPLAY_SIZE = 900;
 
 const generateImagePreview = async sharp => {
-    
-    // get image dimensions
-    const meta = await sharp.metadata();
-    const originalHeight = meta.pageHeight || meta.height;
-    
-    // figure out the actual size, taking EXIF orientation into account
-    let width, height;
-    if([5, 6, 7, 8].includes(meta.orientation)) {
-        width = originalHeight;
-        height = meta.width;
-    } else {
-        width = meta.width;
-        height = originalHeight;
-    }
-    
-    // calculate output width
-    const outputWidth = Math.round(meta.width * PREVIEW_HEIGHT / height);
-    return {width: outputWidth, height: PREVIEW_HEIGHT, stream: sharp.rotate().resize({outputWidth, height: PREVIEW_HEIGHT, fit: "cover"}).webp(), contentType: "image/webp"};
-    
+    const transform = sharp.rotate().resize({height: PREVIEW_HEIGHT}).webp();
+    await new Promise(resolve => {
+        transform.on("info", data => resolve({
+            stream: transform,
+            width: data.width,
+            height: data.height,
+            contentType: "image/webp"
+        }));
+    });
 };
 
 const processAsImage = async (filepath, tags) => {
@@ -44,7 +34,8 @@ const processAsImage = async (filepath, tags) => {
     const meta = await image.metadata();
 
     // pass the original through sharp to strip metadata
-    const versions = {type: "image", preview: await generateImagePreview(image.clone())};
+    const versions = {type: "image"};
+    versions.preview = await generateImagePreview(image.clone());
 
     if(meta.pages > 1) {
         

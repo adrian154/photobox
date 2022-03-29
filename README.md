@@ -5,7 +5,15 @@ Photobox is a self-hosted image gallery I made for personal use. Check out the [
 **This project is not completed yet, come back later.**
 
 # TODO
-* Post selection
-    * Implement
-* Post editor, add deletion to storage engines
-* Scrolling slideshow on mobile
+* Photography-specific features
+    * Read EXIF/IPTC metadata
+    * Support RAW upload
+    * Show image meta somewhere on the webpage
+    * Calendar view (like Flickr camera roll)
+* Implement photo search
+* Add deletion to storage engines
+* Authentication scheme
+    * OIDC
+    * LDAP
+* Albums, maybe? (between collections)
+* Documentation for the API
