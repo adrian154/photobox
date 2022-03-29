@@ -8,15 +8,19 @@ sharp.cache(false);
 
 // generate an output 'version' from a sharp object
 // include the dimensions and content type
-const withSize = (sharp, contentType) => {
-    const result = {stream: sharp, contentType};
-    transform.on("info", data => {
+const withSize = (image, contentType) => {
+    const result = {stream: image, contentType};
+    image.on("info", data => {
+        console.log(data);
         result.width = data.width;
         result.height = data.height;
     });
     return result;
 };
 
+// we include dimensions on everything, even though currently these fields aren't really used
+// this is mainly because A) I feel bad for not reusing withSize() and B) it can't possibly hurt
+// it could very well be useful in the future
 module.exports = async (filepath, tags) => {
 
     // read image data
@@ -27,7 +31,7 @@ module.exports = async (filepath, tags) => {
     const versions = {type: "image"};
 
     // always generate a preview
-    versions.preview = withSize(sharp.clone().resize({height: processing.previewHeight}).webp(), "image/webp");
+    versions.preview = withSize(image.clone().resize({height: processing.previewHeight}).webp(), "image/webp");
 
     if(meta.pages > 1) {
         

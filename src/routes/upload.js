@@ -5,9 +5,9 @@
  *     - tags: (JSON) array of tags to apply to all uploaded files
  * Response: nothing
  */
+const processUpload = require("../processing/process-upload.js");
 const storeToTempFile = require("../temporary-storage.js");
 const {Collections, Posts} = require("../data-layer.js");
-const processUpload = require("../process-upload.js");
 const busboy = require("busboy");
 const fs = require("fs");
 
@@ -67,10 +67,15 @@ module.exports = async (req, res) => {
         const timestamp = Number(fields.timestamp) || Date.now();
         const originalName = String(fields.originalName) || "";
 
-        // process and send to the storage engine
         try {
+            
+            // process upload
             const versions = await processUpload(tempFile.path, originalName, tagSet);
+
+            // save versions
             const urls = await storageEngine.save(tempFile.id, versions);
+            
+            // insert into database
             Posts.add({
                 postid: tempFile.id,
                 collection: collection.name,
@@ -84,7 +89,10 @@ module.exports = async (req, res) => {
                 timestamp,
                 duration: versions.duration
             });
+            
+            // resolve request with the newly added post
             res.status(200).json(Posts.get(tempFile.id));
+
         } catch(error) {
             console.error(error);
             throw new Error("Internal processing error");

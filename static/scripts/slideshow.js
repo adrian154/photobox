@@ -27,8 +27,10 @@ class Slideshow extends HiddenLayer {
         // scrollwheel nav (desktop)
         this.slideshow.addEventListener("wheel", event => {
             if(event.deltaY != 0) {
-                if(event.deltaY < 0) left();
-                else right();
+                if(event.deltaY < 0)
+                    this.left();
+                else
+                    this.right();
                 event.preventDefault();
             }
         });
@@ -43,19 +45,32 @@ class Slideshow extends HiddenLayer {
 
     }
 
+    left() {
+        this.show(this.curPost.frame.previousSibling?.post);
+    }
+
+    right() {
+        this.show(this.curPost.frame.nextSibling?.post);
+    }
+
     addPost(post, addToStart) {
+
         const frame = document.createElement("div");
         frame.classList.add("slideshow-frame");
         post.frame = frame;
+        frame.post = post;
+
         if(addToStart) {
             this.slideshow.prepend(frame);
-            post.index = this.posts[0].index - 1;
+            post.index = (this.posts[0]?.index - 1) || 0;
         } else {
             this.slideshow.append(frame);
-            post.index = this.posts[this.posts.length - 1] + 1;
+            post.index = (this.posts[this.posts.length - 1]?.index + 1) || 0;
         }
+        
         this.observer.observe(frame);
         this.posts.push(post);
+    
     }
 
     populateFrame(post) {
@@ -99,10 +114,18 @@ class Slideshow extends HiddenLayer {
     }
 
     show(post) {
+
+        // gracefully return if post is nullish 
+        if(!post) return;
+
         super.show();
         this.slideshow.focus();
         this.updateContent(post.index);
         post.frame.scrollIntoView();
+        
+        // remember which post we're at for desktop incremental controls
+        this.curPost = post;
+
     }
 
 }

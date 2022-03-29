@@ -24,17 +24,21 @@ const PostTags = new Table(db, "postTags", [
     "FOREIGN KEY (tag) REFERENCES tags(tag)"
 ]);
 
+// the meaning of `displaySrc` depends on `type`, it's not necessarily a URL!
+// `originalURL` doesn't necessarily lead to the same resource, it could be a permalink to the source
 const Posts = new Table(db, "posts", [
     "postid STRING PRIMARY KEY NOT NULL",
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
     "displaySrc STRING NOT NULL",
+    "displayWidth INTEGER",
+    "displayHeight INTEGER",
     "duration REAL",
     "originalURL STRING NOT NULL",
     "previewURL STRING NOT NULL",
-    "previewWidth STRING NOT NULL",
-    "previewHeight STRING NOT NULL",
+    "previewWidth INTEGER NOT NULL",
+    "previewHeight INTEGER NOT NULL",
     "FOREIGN KEY(collection) REFERENCES collections(name)"
 ]);
 
