@@ -342,7 +342,7 @@ input[type="text"] {
     height: 15em;
     border-radius: 10px;
     object-fit: cover;
-    object-position: top;
+    object-position: 50% 20%;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 

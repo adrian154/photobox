@@ -16,11 +16,17 @@ class Slideshow extends HiddenLayer {
         // keyboard controls
         this.slideshow.addEventListener("keydown", event => {
             if(event.key === "ArrowLeft") {
-                this.goto(this.index - 1);
-                event.preventDefault();
-            } else if(event.key === "ArrowRight") {
                 this.goto(this.index + 1);
                 event.preventDefault();
+            } else if(event.key === "ArrowRight") {
+                this.goto(this.index - 1);
+                event.preventDefault();
+            }
+        });
+
+        this.slideshow.addEventListener("wheel", event => {
+            if(event.deltaY > 0) {
+                this.goto(this.index + Math.sign(event.deltaY));
             }
         });
 
@@ -39,7 +45,7 @@ class Slideshow extends HiddenLayer {
         const frame = document.createElement("div");
         frame.classList.add("slideshow-frame");
         post.frame = frame;
-        this.slideshow.append(frame);
+        this.slideshow.prepend(frame);
         this.observer.observe(frame);
         this.posts.push(post);
         post.index = this.posts.length - 1;

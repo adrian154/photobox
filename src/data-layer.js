@@ -93,7 +93,7 @@ Collections.get = Collections.select("*").where("name = ?").fn();
 Collections.getNames = Collections.select("name").fn({all: true, pluck: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});
 
-const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").fn({all: true});
+const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp ASC").fn({all: true});
 const getPreviewPost = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").limit(1).fn();
 Collections.getPosts = collection => getPosts(collection).map(rowToPost);
 Collections.getPreviewPost = collection => rowToPost(getPreviewPost(collection));
