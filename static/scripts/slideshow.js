@@ -38,10 +38,11 @@ class Slideshow extends HiddenLayer {
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
                 if(entry.isIntersecting) {
+                    console.log(entry.target.index);
                     this.updateContent(entry.target.index);
                 }
             }
-        }, {root: this.slideshow});
+        }, {root: this.slideshow, threshold: 0.5});
 
     }
 
@@ -68,6 +69,7 @@ class Slideshow extends HiddenLayer {
             post.index = (this.posts[this.posts.length - 1]?.index + 1) || 0;
         }
         
+        frame.index = post.index;
         this.observer.observe(frame);
         this.posts.push(post);
     
@@ -86,6 +88,7 @@ class Slideshow extends HiddenLayer {
             video.controls = true;
             video.loop = true;
             video.src = post.displaySrc;
+            video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
         } else {
             alert("Unsupported post type");

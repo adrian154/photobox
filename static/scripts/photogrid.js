@@ -1,4 +1,4 @@
-const SCALE = 0.5;
+//const SCALE = window.innerHeight / 5 / 500;
 
 class PhotoGrid {
 
@@ -9,10 +9,10 @@ class PhotoGrid {
 
     addPost(post, addToStart) {
 
-        // create container
+        // create container, distribute width proportionally
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
-        container.style.flexBasis = post.preview.width * SCALE + "px";
+        container.style.flexBasis = post.preview.width / post.preview.height * 15 + "vh";
         container.style.flexGrow = post.preview.width;
 
         if(addToStart) {
@@ -21,7 +21,7 @@ class PhotoGrid {
             this.grid.insertBefore(container, this.placeholder);
         }
 
-        // create image
+        // create image and set intrinsic size
         const img = document.createElement("img");
         img.classList.add("clickable");
         img.loading = "lazy";

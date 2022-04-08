@@ -9,7 +9,6 @@ const processUpload = require("../processing/process-upload.js");
 const storeToTempFile = require("../temporary-storage.js");
 const {Collections, Posts} = require("../data-layer.js");
 const busboy = require("busboy");
-const fs = require("fs");
 
 // returns saved file and fields
 const readRequest = req => new Promise((resolve, reject) => {

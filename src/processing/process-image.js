@@ -11,7 +11,6 @@ sharp.cache(false);
 const withSize = (image, contentType) => {
     const result = {stream: image, contentType};
     image.on("info", data => {
-        console.log(data);
         result.width = data.width;
         result.height = data.height;
     });

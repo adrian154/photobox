@@ -55,7 +55,13 @@ class Collections {
 
             const a = document.createElement("a");
             a.href = `/?collection=${encodeURIComponent(collection.name)}`;
-            const img = document.createElement("img"); img.src = collection.preview;
+            const img = document.createElement("img");
+            if(collection.preview) {
+                img.src = collection.preview;
+                img.style.objectPosition = "50% 10%";
+            } else {
+                img.src = "/images/default-post.png";
+            }
             a.append(img);
             element.append(a);
 

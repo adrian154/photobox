@@ -31,7 +31,7 @@ const Posts = new Table(db, "posts", [
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
-    "displaySrc STRING NOT NULL",
+    "displaySrc STRING",
     "displayWidth INTEGER",
     "displayHeight INTEGER",
     "duration REAL",

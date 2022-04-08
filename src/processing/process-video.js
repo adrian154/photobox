@@ -39,10 +39,42 @@ const mimeTypes = {
 	"webm" : "video/webm"
 };
 
-const generateVideoPreview = (filepath, time, originalWidth, originalHeight) => {
+const generatePreview = (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
-    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-f", "webp", "-"]);
+    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-"]);
     return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: processing.previewHeight};
+};
+
+const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
+    
+    const flags = ["-i", filepath];
+    let needsTranscode;
+
+    if(videoStream.codec_name !== "h264") {
+        needsTranscode = true;
+        flags.push("-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22");
+    } else {
+        flags.push("-c:v", "copy");
+    }
+
+    if(audioStream.codec_name !== "aac") {
+        needsTranscode = true;
+        flags.push("-c:a", "aac");
+    } else {
+        flags.push("-c:a", "copy");
+    }
+
+    if(videoStream.height > 720) {
+        needsTranscode = true;
+
+    }
+
+    flags.push("-f", "mp4", "-");
+    if(needsTranscode) {
+        const ffmpeg = spawn(ffmpegPath, flags);
+        return {stream: ffmpeg.stdout, contentType: "video/mp4"};
+    }
+
 };
 
 module.exports = async (filepath, tags) => {
@@ -62,7 +94,8 @@ module.exports = async (filepath, tags) => {
 
     // tags
     tags.add(metaTags.VIDEO); // (duh)
-    if(data.streams.find(stream => stream.codec_type === "audio")) {
+    const audioStream = data.streams.find(stream => stream.codec_type === "audio");
+    if(audioStream) {
         tags.add(metaTags.SOUND);
     }
 
@@ -71,11 +104,13 @@ module.exports = async (filepath, tags) => {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 
-    return {
-        type: "video",
-        duration: videoStream.duration,
-        preview: generateVideoPreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height),
-        original: {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
-    };  
+    const versions = {type: "video", duration: videoStream.duration};
+    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height);
+    versions.original = {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
+
+    // possibly generate a compatibility version
+    //versions.display = generateDisplayVersion(filepath, data, videoStream, audioStream);
+
+    return versions;
 
 };

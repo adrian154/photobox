@@ -8,6 +8,6 @@ const {Collections} = require("../data-layer.js");
 module.exports = (req, res) => {
     res.json(Collections.getNames().map(collection => {
         const post = Collections.getPreviewPost(collection);
-        return {name: collection, preview: post?.preview.url || "/images/default-post.png", numPosts: Collections.getNumPosts(collection)};
+        return {name: collection, preview: post?.preview.url, numPosts: Collections.getNumPosts(collection)};
     }));
 };
