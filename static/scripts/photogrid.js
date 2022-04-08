@@ -12,7 +12,7 @@ class PhotoGrid {
         // create container, distribute width proportionally
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
-        container.style.flexBasis = post.preview.width / post.preview.height * 15 + "vh";
+        container.style.flexBasis = post.preview.width / post.preview.height * 20 + "vh";
         container.style.flexGrow = post.preview.width;
 
         if(addToStart) {

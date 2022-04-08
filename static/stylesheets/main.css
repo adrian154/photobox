@@ -38,7 +38,6 @@ input[type="text"] {
 /* ----- layout ----- */
 #center-column {
     max-width: 80em;
-    padding: 1.0em;
     margin: auto;
 }
 
@@ -291,7 +290,6 @@ input[type="text"] {
 
     /* hide scrollbar on firefox */
     scrollbar-width: none;
-    pointer-events: none;
 
 }
 

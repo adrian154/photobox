@@ -7,6 +7,12 @@ class Slideshow extends HiddenLayer {
         
         super("slideshow");
         this.slideshow = document.getElementById("slideshow-content");
+        this.slideshow.addEventListener("click", event => {
+            if(event.target == this.slideshow) {
+                this.hide();
+            }
+        });
+
         this.posts = [];
         this.renderedPosts = new Set();
 
