@@ -13,9 +13,6 @@ const Collections = new Table(db, "collections", [
     "storageEngine STRING NOT NULL"
 ]);
 
-// FIXME
-db.exec("INSERT OR IGNORE INTO collections (name, storageEngine) VALUES ('test', 'local')");
-
 const PostTags = new Table(db, "postTags", [
     "postid STRING NOT NULL",
     "tag STRING NOT NULL",
@@ -45,6 +42,10 @@ const Posts = new Table(db, "posts", [
 const Tags = new Table(db, "tags", [
     "tag STRING PRIMARY KEY NOT NULL"
 ]);
+
+// FIXME
+db.exec("INSERT OR IGNORE INTO collections (name, storageEngine) VALUES ('test', 'local')");
+db.exec("INSERT OR IGNORE INTO tags VALUES ('hi')");
 
 db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
 

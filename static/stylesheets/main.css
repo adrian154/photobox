@@ -66,7 +66,7 @@ input[type="text"] {
     color: #ffffff;
     font-size: 11pt;
     font-family: inherit;
-    font-weight: 500;
+    font-weight: 600;
     margin: 0 1.0em;
 }
 
@@ -148,7 +148,7 @@ input[type="text"] {
     position: absolute;
     bottom: 0.3em;
     right: 0.3em;
-    font-weight: 500;
+    font-weight: 600;
     border-radius: 5px;
 }
 
@@ -322,7 +322,9 @@ input[type="text"] {
     color: #ffffff;
     padding: 0.5em 1.0em;
     border-radius: 5px;
-    font-weight: bold;
+    font-weight: 600;
+    font-family: inherit;
+    font-size: 1.0em;
 }
 
 /* ----- homepage ----- */
@@ -348,7 +350,7 @@ input[type="text"] {
 
 .collection-title {
     font-size: 1.5em;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .post-count {
@@ -363,8 +365,81 @@ input[type="text"] {
     color: #ffffff;
     border-radius: 5px;
     padding: 0.5em 0.75em;
-    font-weight: 500;
+    font-weight: 600;
     position: fixed;
     bottom: 1.5em;
     right: 1.5em;
+}
+
+/* ----- post editor ----- */
+#post-editor {
+    position: absolute;
+    width: 17em;
+    height: 100%;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    top: 0;
+    left: -17em;
+    padding: 1.5em;
+    transition: 0.3s;
+}
+
+#post-editor.shown {
+    left: 0;
+}
+
+/* hide one of the icons depending on whether the post editor is going left or right */
+#post-editor .button-hide { display: none; }
+#post-editor.shown .button-show { display: none; }
+#post-editor.shown .button-hide { display: initial; }
+
+#post-editor #handle {
+    position: absolute;
+    left: 100%;
+    top: 2.0em;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    padding: 0.5em 0;
+}
+
+#editor-preview {
+    height: 10.0em;
+    display: block;
+    margin: auto;
+}
+
+#post-editor h1 {
+    font-size: 1.5em;
+    margin-top: 0;
+}
+
+@media (max-width: 600px) {
+    
+    #post-editor .desktop, #post-editor.shown .desktop { display: none; }
+
+    #post-editor {
+        top: 100%;
+        width: 100%;
+        height: unset;
+        left: unset;
+    }
+
+    #post-editor.shown {
+        transform: translateY(-100%);
+    }
+
+    #post-editor #handle {
+        width: 4.0em;
+        left: calc(50% - 2.0em);
+        bottom: 100%;
+        top: unset;
+        border-radius: 5px 5px 0 0;
+        padding: 0 0.5em;
+    }
+
+}
+
+@media (min-width: 600px) {
+    #post-editor .mobile, #post-editor.shown .mobile { display: none; }
 }

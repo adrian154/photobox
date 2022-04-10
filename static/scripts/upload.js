@@ -74,7 +74,7 @@ class UploadTracker extends HiddenLayer {
                     window.onbeforeunload = null;
                     location.reload();
                 }
-                photoGrid.addPost(request.response, true);
+                photoGrid.addPost(request.response);
             }
         });
 

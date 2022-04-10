@@ -48,6 +48,18 @@
         <div class="background" id="slideshow" style="display: none">
             <button class="close-button" style="color: #ffffff">&times;</button>
             <div id="slideshow-content"></div>
+            <div id="post-editor">
+                <h1>Edit Post</h1>
+                <img id="editor-preview">
+                <p><a id="editor-original-link" target="_blank">View Original</a></p>
+                <button id="delete-button">Delete Post</button>
+                <button id="handle" onclick="document.getElementById('post-editor').classList.toggle('shown');">
+                    <span class="material-icons button-show desktop">chevron_right</span>
+                    <span class="material-icons button-hide desktop">chevron_left</span>
+                    <span class="material-icons button-show mobile">expand_less</span>
+                    <span class="material-icons button-hide mobile">expand_more</span>
+                </button>
+            </div>
         </div>
 
         <div class="background" id="uploader" style="display: none">

@@ -97,11 +97,11 @@ module.exports = async (req, res) => {
             throw new Error("Internal processing error");
         }
 
-        tempFile.delete();
-
     } catch(error) {
         console.error(error);
         res.status(400).json({error: error.message}); // FIXME: potential error message exposure!
     }
+
+    tempFile.delete();
 
 };
