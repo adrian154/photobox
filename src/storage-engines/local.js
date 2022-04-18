@@ -1,4 +1,5 @@
 // This storage engine should ONLY be used for testing purposes in its current state!
+// There's some *insanely* hacky code in here. It is NOT safe!
 
 const express = require("express");
 const path = require("path");
@@ -6,8 +7,6 @@ const fs = require("fs");
 
 const DIRECTORY = "data/objects";
 if(!fs.existsSync(DIRECTORY)) fs.mkdirSync(DIRECTORY);
-
-const resolveOnFinish = stream => new Promise(resolve => stream.on("close", resolve));
 
 module.exports = class {
 
@@ -17,42 +16,58 @@ module.exports = class {
         app.use("/local-objects", express.static(DIRECTORY));
     }
 
+    storeFile(name, stream) {
+        const outStream = fs.createWriteStream(path.join(DIRECTORY, name));
+        stream.pipe(outStream);
+        return new Promise(resolve => stream.on("close", resolve));
+    }
+
     async save(id, versions) {
 
         const urls = {};
-        const promises = [];
 
         // huge hack: parse the mimetype to get the file extension
         // it works *most* of the time and i'm tired
+
         const originalName = `${id}-original.${versions.original.contentType.split('/')[1]}`;
-        const original = fs.createWriteStream(path.join(DIRECTORY, originalName));
-        promises.push(resolveOnFinish(original));
-        versions.original.stream.pipe(original);
         urls.original = `/local-objects/${originalName}`;
+        await this.storeFile(originalName, versions.original.stream);
+
+        const previewName = `${id}-preview.${versions.preview.contentType.split('/')[1]}`;
+        urls.preview = `/local-objects/${previewName}`;
+        await this.storeFile(previewName, versions.preview.stream);
 
         if(versions.display) {
             const displayName = `${id}-display.${versions.display.contentType.split('/')[1]}`;
-            const display = fs.createWriteStream(path.join(DIRECTORY, displayName));
-            promises.push(resolveOnFinish(display));
-            versions.display.stream.pipe(display);
             urls.display = `/local-objects/${displayName}`;
-        } else {
-            urls.display = urls.original;
+            await this.storeFile(displayName, versions.display.stream);
         }
 
-        const previewName = `${id}-preview.${versions.preview.contentType.split('/')[1]}`;
-        const preview = fs.createWriteStream(path.join(DIRECTORY, previewName));
-        promises.push(resolveOnFinish(preview));
-        versions.preview.stream.pipe(preview);
-        urls.preview = `/local-objects/${previewName}`;
-
-        await Promise.all(promises);
         return urls;
 
     }
 
-    delete(id) {
-        throw new Error("Delete isn't supported for the local storage engine");
+    deleteFile(url) {
+        
+        if(!url) {
+            return;
+        }
+
+        const filePath = path.join(DIRECTORY, url.split('/').pop());
+        return new Promise((resolve, reject) => fs.unlink(filePath, (err) => {
+            if(err) {
+                console.error("failed to delete temporary file " + filePath);
+                console.error(err);
+            }
+            resolve();
+        }));
+
+    }
+
+    async delete(post) {
+        await this.deleteFile(post.originalURL);
+        await this.deleteFile(post.preview?.url);
+        await this.deleteFile(post.displaySrc);       
     }  
 
 };

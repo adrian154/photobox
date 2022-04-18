@@ -73,7 +73,7 @@ const rowToPost = row => {
 Posts.addTag = PostTags.insert({postid: "?", tag: "?"}).or("ignore").fn();
 Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck: true});
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
-Posts.removeAllTags = PostTags.delete("postid = ?");
+Posts.removeAllTags = PostTags.delete("postid = ?").fn();
 
 const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "displaySrc", "originalURL", "previewURL", "previewWidth", "previewHeight", "duration"]).fn();
 Posts.add = db.transaction(post => {
@@ -88,7 +88,7 @@ Posts.get = postid => rowToPost(getPost(postid));
 
 const deletePost = Posts.delete("postid = ?").fn();
 Posts.remove = postid => {
-    Tags.removeAll(postid);
+    Posts.removeAllTags(postid);
     deletePost(postid);
 };
 

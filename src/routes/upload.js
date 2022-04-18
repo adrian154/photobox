@@ -80,7 +80,7 @@ module.exports = async (req, res) => {
                 collection: collection.name,
                 type: versions.type,
                 originalURL: urls.original,
-                displaySrc: urls.display,
+                displaySrc: urls.display || urls.original,
                 previewURL: urls.preview,
                 previewWidth: versions.preview.width,
                 previewHeight: versions.preview.height,
@@ -94,14 +94,15 @@ module.exports = async (req, res) => {
 
         } catch(error) {
             console.error(error);
+            tempFile.delete();
             throw new Error("Internal processing error");
         }
+
+        tempFile.delete();
 
     } catch(error) {
         console.error(error);
         res.status(400).json({error: error.message}); // FIXME: potential error message exposure!
     }
-
-    tempFile.delete();
 
 };

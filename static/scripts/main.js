@@ -6,6 +6,7 @@ const photoGrid = new PhotoGrid();
 const uploader = new Uploader();
 const uploadTracker = new UploadTracker();
 const createCollectionDialog = new CreateCollectionDialog();
+const editor = new PostEditor();
 const slideshow = new Slideshow();
 
 if(collectionName) {

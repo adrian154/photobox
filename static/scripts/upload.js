@@ -114,7 +114,7 @@ class Uploader extends HiddenLayer {
     // open a new request
     openRequest() {
         const request = new XMLHttpRequest();
-        request.open("POST", `/api/collections/${collectionName}/upload`);
+        request.open("POST", `/api/collections/${collectionName}`);
         request.responseType = "json";        
         return request;
     }

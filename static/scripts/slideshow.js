@@ -1,6 +1,40 @@
 // how far ahead to preload content
 const PRELOAD_RANGE = 3;
 
+class PostEditor {
+
+    constructor() {
+        
+        this.element = document.getElementById("post-editor");
+        this.originalLink = document.getElementById("editor-original-link");
+        this.preview = document.getElementById("editor-preview");
+
+        // handle logic
+        document.getElementById("handle").addEventListener("click", () => document.getElementById('post-editor').classList.toggle('shown'));
+
+        // delete button logic
+        document.getElementById("delete-button").addEventListener("click", () => {
+            fetch(`/api/posts/${this.post.id}`, {
+                method: "DELETE"
+            }).then(resp => {
+                if(resp.ok) {
+                    slideshow.deletePost(this.post);
+                } else {
+                    alert("Failed to delete post: HTTP status " + resp.status);
+                }
+            });
+        });
+
+    }
+
+    update(post) {
+        this.post = post;
+        this.originalLink.href = post.originalURL;
+        this.preview.src = post.preview.url;
+    }
+
+}
+
 class Slideshow extends HiddenLayer {
 
     constructor() {
@@ -51,7 +85,7 @@ class Slideshow extends HiddenLayer {
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
                 if(entry.isIntersecting) {
-                    this.onPostVisible(entry.target.post);
+                    editor.update(entry.target.post);
                     this.populateFrames(entry.target.post.index);
                 }
             }
@@ -80,6 +114,22 @@ class Slideshow extends HiddenLayer {
         // add the frame to the observer so we receive visibility updates
         this.observer.observe(frame);
     
+    }
+
+    deletePost(post) {
+
+        const index = this.posts.indexOf(post);
+        console.log(post, index);
+
+        // decrement index of all subsequent posts
+        this.posts.slice(index + 1, this.posts.length).forEach(post => post.index--);
+
+        // remove the post from the array
+        this.posts.splice(index, 1);
+
+        // remove the frame
+        post.frame.remove();
+
     }
 
     populateFrame(post) {
@@ -121,11 +171,6 @@ class Slideshow extends HiddenLayer {
             }
         }
 
-    }
-
-    onPostVisible(post) {
-        document.getElementById("editor-original-link").href = post.originalURL;
-        document.getElementById("editor-preview").src = post.preview.url;
     }
 
     show(post) {

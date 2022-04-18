@@ -101,19 +101,15 @@ module.exports = class {
     }
 
     async save(id, versions) {
-        const preview = this.uploadFile(versions.preview.stream, `${id}-preview`, versions.preview.contentType),
-              original = this.uploadFile(versions.original.stream, `${id}-original`, versions.original.contentType), 
-              display = versions.display ? this.uploadFile(versions.display.stream, `${id}-display`, versions.display.contentType) : original;
-
         return {
-            preview: await preview,
-            original: await original,
-            display: await display
+            preview: await this.uploadFile(versions.preview.stream, `${id}-preview`, versions.preview.contentType),
+            original: await this.uploadFile(versions.original.stream, `${id}-original`, versions.original.contentType),
+            display: versions.display && await this.uploadFile(versions.display.stream, `${id}-display`, versions.display.contentType)
         };
     }
 
     delete(object) {
-
+        throw new Error("Deletion not implemented yet");
     }
 
 };
