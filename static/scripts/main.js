@@ -10,7 +10,7 @@ const editor = new PostEditor();
 const slideshow = new Slideshow();
 
 if(collectionName) {
-    fetch(`/api/collections/${collectionName}`).then(resp => resp.json()).then(collection => {
+    fetch(`/api/collections/${encodeURIComponent(collectionName)}`).then(resp => resp.json()).then(collection => {
         
         if(collection.error) {
             alert("No such collection"); // FIXME
@@ -28,3 +28,8 @@ if(collectionName) {
 } else {
     collections.render();
 }
+
+fetch("/api/tags").then(resp => resp.json()).then(tags => {
+    uploader.onTagsLoaded(tags);
+    editor.onTagsLoaded(tags);
+});

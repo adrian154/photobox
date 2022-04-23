@@ -13,7 +13,7 @@ class PhotoGrid {
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
         container.style.flexBasis = post.preview.width / post.preview.height * 20 + "vh";
-        container.style.flexGrow = post.preview.width / post.preview.height;
+        container.style.flexGrow = post.preview.width / post.preview.height * 10; // make sure flex-grow > 1 so things grow... the absolute value isn't important
         this.grid.insertBefore(container, this.placeholder);
 
         // create image and set intrinsic size
@@ -33,7 +33,11 @@ class PhotoGrid {
             container.append(duration);
         }
 
-        // slidesow logic
+        // associate the post with the container so it's easy to delete later on
+        // and because it's ✨responsive✨ the layout clears itself up automagically
+        post.photogridContainer = container;
+
+        // slideshow logic
         slideshow.addPost(post);
         img.addEventListener("click", () => slideshow.show(post));
 

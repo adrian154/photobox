@@ -88,10 +88,11 @@ class Uploader extends HiddenLayer {
         super("uploader");
         this.filePicker = document.getElementById("upload-files");
         document.getElementById("upload-button").addEventListener("click", () => this.upload());
-        fetch("/api/tags").then(resp => resp.json()).then(tags => {
-            this.tags = tags;
-            this.resetTagPicker();
-        });
+    }
+
+    onTagsLoaded(tags) {
+        this.tags = tags;
+        this.resetTagPicker();
     }
 
     resetTagPicker() {
@@ -114,7 +115,7 @@ class Uploader extends HiddenLayer {
     // open a new request
     openRequest() {
         const request = new XMLHttpRequest();
-        request.open("POST", `/api/collections/${collectionName}`);
+        request.open("POST", `/api/collections/${encodeURIComponent(collectionName)}`);
         request.responseType = "json";        
         return request;
     }

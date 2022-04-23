@@ -11,7 +11,7 @@ const {Collections} = require("../data-layer.js");
 module.exports = (req, res) => {
     
     const collection = Collections.get(String(req.params.collection));
-    if(!collection) return res.status(404).json({error: "No such collection"});
+    if(!collection) return res.sendStatus(404);
 
     res.json({
         name: collection.name,

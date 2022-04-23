@@ -14,23 +14,21 @@
     </head>
     <body>
 
-        <!-- body flow -->
-        <div id="header">
-            <div id="header-inner">
-                <a href="/" id="logo"><img src="images/logo-header.png"></a>
-                <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
-                <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
-                <button id="show-post-filter"><span class="vert-align"><span class="material-icons">dynamic_feed</span><span>&nbsp; Filter Posts</span></span></button>
-            </div>
-        </div>
-        <div id="center-column">
+        <header>
+            <a href="/" id="logo"><img src="images/logo-header.png"></a>
+            <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
+            <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
+            <button id="show-post-filter"><span class="vert-align"><span class="material-icons">dynamic_feed</span><span>&nbsp; Filter Posts</span></span></button>
+      </header>
+
+        <main>
             <p id="collection-name"></p>
             <p id="num-posts"></p>
             <div id="collections"></div>
             <div id="photogrid">
                 <div id="photogrid-placeholder" style="flex-grow: 10000"></div>
             </div>
-        </div>
+        </main>
 
         <!-- fixed pos stuff -->
 
@@ -47,12 +45,15 @@
 
         <div class="background" id="slideshow" style="display: none">
             <button class="close-button" style="color: #ffffff">&times;</button>
-            <div id="slideshow-content"></div>
+            <div id="slideshow-content" class="no-scrollbar"></div>
             <div id="post-editor">
                 <h1>Edit Post</h1>
+                <p><span id="editor-post-date"></span> &bull; <a id="editor-collection-link"></a></p>
                 <img id="editor-preview">
                 <p><a id="editor-original-link" target="_blank">View Original</a></p>
                 <button id="delete-button">Delete Post</button>
+                <p style="margin-bottom: 0"><b>Edit Tags</b></p>
+                <div id="editor-tags"></div>
                 <button id="handle">
                     <span class="material-icons button-show desktop">chevron_right</span>
                     <span class="material-icons button-hide desktop">chevron_left</span>
@@ -68,7 +69,7 @@
                     <h1>Upload Media</h1>
                     <p>Select images or videos to upload to <b id="upload-collection-name">[COLLECTION NAME]</b>. Meta tags will be automatically added per file.</p>
                     <input type="file" id="upload-files" multiple><br>
-                    <p><b>Tags</b></p>
+                    <p style="margin-bottom: 0"><b>Tags</b></p>
                     <div id="upload-tags"></div>
                     <button id="upload-button">Upload</button>
                 </div>

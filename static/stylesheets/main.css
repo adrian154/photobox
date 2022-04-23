@@ -36,13 +36,13 @@ input[type="text"] {
 }
 
 /* ----- layout ----- */
-#center-column {
-    max-width: 80em;
+main {
+    max-width: 75em;
     margin: auto;
 }
 
-#header {
-    display: block;
+header {
+    display: flex;
     position: sticky;
     top: 0;
     left: 0;
@@ -52,15 +52,10 @@ input[type="text"] {
     align-items: center;
     box-sizing: border-box;
     z-index: 1;
+    padding: 0 1.0em;
 }
 
-#header-inner {
-    max-width: 80em;
-    margin: auto;
-    display: flex;
-}
-
-#header-inner button {
+header button {
     border: none;
     background: none;
     color: #ffffff;
@@ -70,7 +65,7 @@ input[type="text"] {
     margin: 0 1.0em;
 }
 
-#header-inner button:hover {
+header button:hover {
     color: #cacaca;
 }
 
@@ -96,11 +91,11 @@ input[type="text"] {
         display: none;
     }
 
-    #header-inner button {
+    header button {
         margin: 0;
     }
     
-    #header-inner button:last-child {
+    header button:last-child {
         margin-right: 1.0em;
     }
         
@@ -193,38 +188,25 @@ input[type="text"] {
 
 /* ----- tags ----- */
 .tags {
-    display: inline-block;
-    margin-bottom: 1.0em;
-    line-height: 2.0em;
+    margin: 0.5em 0;
 }
 
 .tag {
-    background-color: #e3e3e3;
-    color: #000000;
-    padding: 2pt 4pt;
-    font-size: 11pt;
-    white-space: pre;
-}
-
-.tag-picker {
-    position: absolute;
-    top: 2.0em;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    width: 8em;
-    background-color: #ffffff;
+	padding: 4px 8px;
+    margin: 3px 0;
     border: 1px solid #aaaaaa;
-    border-radius: 5px;
+    color: #333;
+    border-radius: 16px;
+    font-size: 11pt;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
 }
 
-.tag-picker div {
-    padding: 0 0.5em;
-    border-bottom: 1px solid #aaaaaa;
-}
-
-.tag-option:hover {
-    background-color: #e9e9e9;
+.tag.selected {
+	border: 1px solid #1f92ff;
+    background-color: #1f92ff;
+    color: #ffffff;
 }
 
 /* ----- upload progress ----- */
@@ -271,6 +253,7 @@ input[type="text"] {
 /* ----- photo editor ----- */
 #slideshow {
     overflow: hidden;
+    background-color: #111;
 }
 
 #slideshow-content {
@@ -288,19 +271,20 @@ input[type="text"] {
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
 
-    /* hide scrollbar on firefox */
-    scrollbar-width: none;
-
 }
 
-#slideshow-content::-webkit-scrollbar {
+.no-scrollbar {
+    scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
     width: 0;
     height: 0;
 }
 
 .slideshow-frame {
     display: flex;
-    scroll-snap-align: start;
+    scroll-snap-align: center;
     flex-shrink: 0;
     width: 100vw;
     height: 100vh;
@@ -404,9 +388,10 @@ input[type="text"] {
 }
 
 #editor-preview {
-    height: 10.0em;
+    max-height: 13em;
+    max-width: 100%;
+    width: auto;
     display: block;
-    margin: auto;
 }
 
 #post-editor h1 {

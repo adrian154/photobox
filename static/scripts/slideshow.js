@@ -8,6 +8,11 @@ class PostEditor {
         this.element = document.getElementById("post-editor");
         this.originalLink = document.getElementById("editor-original-link");
         this.preview = document.getElementById("editor-preview");
+        this.tagContainer = document.getElementById("editor-tags");
+        this.postDate = document.getElementById("editor-post-date");
+        this.collectionLink = document.getElementById("editor-collection-link");
+        this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
+
 
         // handle logic
         document.getElementById("handle").addEventListener("click", () => document.getElementById('post-editor').classList.toggle('shown'));
@@ -27,10 +32,55 @@ class PostEditor {
 
     }
 
+    onTagsLoaded(tags) {
+        this.tags = tags;
+        this.resetTagPicker();
+    }
+
+    resetTagPicker() {
+        
+        if(this.tagPickerElement) {
+            this.tagPickerElement.remove();
+        }
+
+        if(this.post) {
+            const picker = new LiveTagPicker(this.tagContainer, this.post.id, this.tags, this.post.tags);
+            this.tagPickerElement = picker.element;
+        }
+
+    }
+
     update(post) {
         this.post = post;
         this.originalLink.href = post.originalURL;
         this.preview.src = post.preview.url;
+        this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
+        this.collectionLink.textContent = post.collection;
+        this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+        this.resetTagPicker();
+    }
+
+}
+
+class LiveTagPicker extends TagPicker {
+
+    constructor(element, postid, tagList, selectedTags) {
+        super(element, tagList, selectedTags);
+        this.postid = postid;
+    }
+
+    async onTagAdded(tag) {
+        const resp = await fetch(`/api/posts/${encodeURIComponent(this.postid)}/tags/${encodeURIComponent(tag)}`, {method: "PUT"}); 
+        if(!resp.ok) {
+            throw new Error("HTTP status " + resp.status);
+        }
+    }
+
+    async onTagRemoved(tag) {
+        const resp = await fetch(`/api/posts/${encodeURIComponent(this.postid)}/tags/${encodeURIComponent(tag)}`, {method: "DELETE"}); 
+        if(!resp.ok) {
+            throw new Error("HTTP status " + resp.status);
+        }   
     }
 
 }
@@ -57,17 +107,6 @@ class Slideshow extends HiddenLayer {
 
         // close button logic
         this.layer.querySelector(".close-button").addEventListener("click", () => this.hide());
-
-        // keyboard controls
-        this.slideshow.addEventListener("keydown", event => {
-            if(event.key === "ArrowLeft") {
-                this.left();
-                event.preventDefault();
-            } else if(event.key === "ArrowRight") {
-                this.right();
-                event.preventDefault();
-            }
-        });
 
         // scrollwheel nav (desktop)
         this.slideshow.addEventListener("wheel", event => {
@@ -119,7 +158,6 @@ class Slideshow extends HiddenLayer {
     deletePost(post) {
 
         const index = this.posts.indexOf(post);
-        console.log(post, index);
 
         // decrement index of all subsequent posts
         this.posts.slice(index + 1, this.posts.length).forEach(post => post.index--);
@@ -129,6 +167,10 @@ class Slideshow extends HiddenLayer {
 
         // remove the frame
         post.frame.remove();
+
+        // delete in photogrid, too
+        // TODO: this task should really be the responsibility of Photogrid, but since it's so simple we do it here
+        post.photogridContainer.remove();
 
     }
 
@@ -178,12 +220,18 @@ class Slideshow extends HiddenLayer {
         if(!post) return;
 
         super.show();
+        document.body.classList.add("no-scrollbar")
         this.populateFrames(post.index);
         post.frame.scrollIntoView();
         
         // remember which post we're at for desktop incremental controls
         this.index = post.index;
 
+    }
+
+    hide() {
+        document.body.classList.remove("no-scrollbar");
+        super.hide();
     }
 
 }

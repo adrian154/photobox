@@ -105,7 +105,7 @@ module.exports = async (filepath, tags) => {
     }
 
     const versions = {type: "video", duration: videoStream.duration};
-    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.05), videoStream.width, videoStream.height);
+    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.1), videoStream.width, videoStream.height);
     versions.original = {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
 
     // possibly generate a compatibility version

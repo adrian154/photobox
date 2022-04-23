@@ -45,8 +45,6 @@ const Tags = new Table(db, "tags", [
 
 // FIXME
 db.exec("INSERT OR IGNORE INTO collections (name, storageEngine) VALUES ('test', 'local')");
-db.exec("INSERT OR IGNORE INTO tags VALUES ('hi')");
-
 db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
 
 // --- posts

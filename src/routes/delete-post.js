@@ -8,7 +8,7 @@ module.exports = (req, res) => {
 
     const post = Posts.get(String(req.params.post));
     if(!post) {
-        return res.status(404);
+        return res.sendStatus(404);
     }
 
     const storageEngine = req.storageEngines[Collections.get(post.collection)?.storageEngine];
