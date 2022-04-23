@@ -41,7 +41,7 @@ const mimeTypes = {
 
 const generatePreview = (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
-    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-"]);
+    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-", "-progress", "pipe:2"]);
     return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: processing.previewHeight};
 };
 
@@ -80,7 +80,7 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
 module.exports = async (filepath, tags) => {
 
     const data = await probe(filepath);
-    
+
     // ignore unsupported types 
     if(!mimeTypes[data.format.format_name]) {
         throw new Error("Unsupported format");
@@ -104,8 +104,14 @@ module.exports = async (filepath, tags) => {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 
+    // fix duration
+    if(videoStream.tags.DURATION) {
+        const [hours, minutes, seconds] = videoStream.tags.DURATION.split(":");
+        videoStream.duration = Number(hours)*60*60 + Number(minutes)*60 + Number(seconds);
+    }
+
     const versions = {type: "video", duration: videoStream.duration};
-    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.1), videoStream.width, videoStream.height);
+    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height);
     versions.original = {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
 
     // possibly generate a compatibility version

@@ -12,8 +12,7 @@ class PostEditor {
         this.postDate = document.getElementById("editor-post-date");
         this.collectionLink = document.getElementById("editor-collection-link");
         this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
-
-
+        
         // handle logic
         document.getElementById("handle").addEventListener("click", () => document.getElementById('post-editor').classList.toggle('shown'));
 
