@@ -43,7 +43,7 @@ class PostEditor {
         }
 
         if(this.post) {
-            const picker = new LiveTagPicker(this.tagContainer, this.post.id, this.tags, this.post.tags);
+            const picker = new LiveTagPicker(this.tagContainer, this.post, this.tags, this.post.tags);
             this.tagPickerElement = picker.element;
         }
 
@@ -63,23 +63,25 @@ class PostEditor {
 
 class LiveTagPicker extends TagPicker {
 
-    constructor(element, postid, tagList, selectedTags) {
+    constructor(element, post, tagList, selectedTags) {
         super(element, tagList, selectedTags);
-        this.postid = postid;
+        this.post = post;
     }
 
     async onTagAdded(tag) {
-        const resp = await fetch(`/api/posts/${encodeURIComponent(this.postid)}/tags/${encodeURIComponent(tag)}`, {method: "PUT"}); 
+        const resp = await fetch(`/api/posts/${encodeURIComponent(this.post.id)}/tags/${encodeURIComponent(tag)}`, {method: "PUT"}); 
         if(!resp.ok) {
             throw new Error("HTTP status " + resp.status);
         }
+        this.post.tags.push(tag);
     }
 
     async onTagRemoved(tag) {
-        const resp = await fetch(`/api/posts/${encodeURIComponent(this.postid)}/tags/${encodeURIComponent(tag)}`, {method: "DELETE"}); 
+        const resp = await fetch(`/api/posts/${encodeURIComponent(this.post.id)}/tags/${encodeURIComponent(tag)}`, {method: "DELETE"}); 
         if(!resp.ok) {
             throw new Error("HTTP status " + resp.status);
         }   
+        this.post.tags.splice(this.post.tags.indexOf(tag), 1);
     }
 
 }
@@ -114,6 +116,16 @@ class Slideshow extends HiddenLayer {
                     this.left();
                 else
                     this.right();
+                event.preventDefault();
+            }
+        });
+
+        this.slideshow.addEventListener("keydown", event => {
+            if(event.key === "ArrowLeft") {
+                this.left();
+                event.preventDefault();
+            } else if(event.key === "ArrowRight") {
+                this.right();
                 event.preventDefault();
             }
         });
@@ -174,12 +186,14 @@ class Slideshow extends HiddenLayer {
     }
 
     populateFrame(post) {
+
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
             img.src = post.displaySrc;
             post.frame.append(img);
         } else if(post.type === "video") {
+            // create video
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
             video.poster = post.preview.url;
@@ -191,6 +205,7 @@ class Slideshow extends HiddenLayer {
         } else {
             alert("Unsupported post type");
         }
+
     }
 
     populateFrames(index) {
@@ -219,6 +234,7 @@ class Slideshow extends HiddenLayer {
         if(!post) return;
 
         super.show();
+        this.slideshow.focus();
         document.body.classList.add("no-scrollbar")
         this.populateFrames(post.index);
         post.frame.scrollIntoView();

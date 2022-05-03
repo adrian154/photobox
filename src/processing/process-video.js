@@ -79,6 +79,7 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
 
 module.exports = async (filepath, tags) => {
 
+    console.log("Probe");
     const data = await probe(filepath);
 
     // ignore unsupported types 

@@ -30,7 +30,7 @@ module.exports = async (filepath, tags) => {
     const versions = {type: "image"};
 
     // always generate a preview
-    versions.preview = withSize(image.clone().resize({height: processing.previewHeight}).webp(), "image/webp");
+    versions.preview = withSize(image.clone().resize({height: processing.previewHeight}).webp({quality: 50, effort: 6}), "image/webp");
 
     if(meta.pages > 1) {
         

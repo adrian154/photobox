@@ -12,6 +12,9 @@ const slideshow = new Slideshow();
 if(collectionName) {
     fetch(`/api/collections/${encodeURIComponent(collectionName)}`).then(resp => resp.json()).then(collection => {
         
+        // KLUDGE
+        
+
         if(collection.error) {
             alert("No such collection"); // FIXME
             return;

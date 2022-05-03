@@ -31,7 +31,7 @@ module.exports = class {
     shouldReauth(response) { return response.code === "bad_auth_token" || response.code === "expired_auth_token"; }
 
     // get the url for API requests
-    url(endpoint) { return new URL("/b2api/v2/" + endpoint,this.apiUrl).href; }
+    url(endpoint) { return new URL("/b2api/v2/" + endpoint, this.apiUrl).href; }
 
     async getUploadURL(secondTry) {
         
@@ -107,6 +107,21 @@ module.exports = class {
             display: versions.display && await this.uploadFile(versions.display.stream, `${id}-display`, versions.display.contentType)
         };
     }
+
+    /*
+    async deleteFile(url) {
+
+        const fileName = url.split('/').pop();
+
+        const resp = await fetch(this.url("b2_delete_file_version"), {
+            headers: {"Authorization": this.authToken, "Content-Type": "application/json"},
+            body: JSON.stringify({
+                fileName, 
+            })
+        })
+
+    }
+    */
 
     delete(object) {
         throw new Error("Deletion not implemented yet");
