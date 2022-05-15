@@ -37,7 +37,7 @@ input[type="text"] {
 
 /* ----- layout ----- */
 main {
-    max-width: 75em;
+    max-width: 95em;
     margin: auto;
 }
 
@@ -137,7 +137,6 @@ header button:hover {
 }
 
 .duration {
-    /*background-color: rgba(0, 0, 0, 50%);*/
     text-shadow: 1px 1px 3px #000;
     color: #ffffff;
     position: absolute;

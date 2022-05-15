@@ -13,7 +13,7 @@ class PhotoGrid {
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
         container.style.flexBasis = post.preview.width / post.preview.height * 20 + "vh";
-        container.style.flexGrow = post.preview.width / post.preview.height * 10; // make sure flex-grow > 1 so things grow... the absolute value isn't important
+        container.style.flexGrow = post.preview.width / post.preview.height * 10; // make sure flex-grow > 1 so things grow, the absolute value isn't important
         this.grid.insertBefore(container, this.placeholder);
 
         // create image and set intrinsic size

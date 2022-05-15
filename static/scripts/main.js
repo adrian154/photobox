@@ -9,25 +9,37 @@ const createCollectionDialog = new CreateCollectionDialog();
 const editor = new PostEditor();
 const slideshow = new Slideshow();
 
-if(collectionName) {
-    fetch(`/api/collections/${encodeURIComponent(collectionName)}`).then(resp => resp.json()).then(collection => {
-        
-        // KLUDGE
-        
+const loadPosts = (collectionName, after) => {
+    
+    const url = new URL("/api/test", window.location.origin);
+    if(after) url.searchParams.set("after", after);
+
+    fetch(url.href).then(resp => resp.json()).then(collection => {
 
         if(collection.error) {
             alert("No such collection"); // FIXME
             return;
         }
-        
+
         document.title = `${collection.name} - photobox`;
         document.getElementById("collection-name").textContent = collection.name;
         document.getElementById("num-posts").textContent = collection.posts.length + " posts";
 
-        uploader.onCollectionLoaded(collection);
+        if(!after) {
+            uploader.onCollectionLoaded(collection);
+        }
+
         photoGrid.onPostsLoaded(collection.posts);
+        if(collection.after) {
+            loadPosts(collectionName, collection.after);
+        }
 
     });
+
+};
+
+if(collectionName) {
+    loadPosts(collectionName);
 } else {
     collections.render();
 }

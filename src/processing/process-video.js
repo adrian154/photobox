@@ -4,6 +4,8 @@ const {spawn} = require("child_process");
 const metaTags = require("../tags.js");
 const fs = require("fs");
 
+const H264_ENCODE_SETTINGS = ["-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22"];
+
 // call ffprobe to get information about a video
 const probe = async filepath => {
 
@@ -41,8 +43,17 @@ const mimeTypes = {
 
 const generatePreview = (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
-    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-", "-progress", "pipe:2"]);
+    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-"]);
     return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: processing.previewHeight};
+};
+
+// generate a video version of the preview
+const generateVideoPreview = (filepath, length) => {
+
+    const filtergraph = [];
+
+    const flags = ["-i", filepath, "-filter_complex", filtergraph.join(' '), "-map", "[scaled]", H264_ENCODE_SETTINGS, ];
+
 };
 
 const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
@@ -52,7 +63,7 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
 
     if(videoStream.codec_name !== "h264") {
         needsTranscode = true;
-        flags.push("-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22");
+        flags.push(H264_ENCODE_SETTINGS);
     } else {
         flags.push("-c:v", "copy");
     }
@@ -64,9 +75,8 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
         flags.push("-c:a", "copy");
     }
 
-    if(videoStream.height > 720) {
+    if(videoStream.height > 480) {
         needsTranscode = true;
-
     }
 
     flags.push("-f", "mp4", "-");
