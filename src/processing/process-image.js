@@ -1,21 +1,26 @@
+const {generatePath} = require("../temp-storage.js");
 const {processing} = require("../../config.json");
 const metaTags = require("../tags.js");
 const sharp = require("sharp");
 
-// tell sharp not to hold onto files for extended periods of time
-// this fixes issues with failing to delete temp files on Windows
+// tell sharp not to hold onto files after they are done being processed
+// this is necessary because windows won't let us delete an in-use file
 sharp.cache(false);
 
-// generate an output 'version' from a sharp object
-// include the dimensions and content type
-const withSize = (image, contentType) => {
-    const result = {stream: image, contentType};
-    image.on("info", data => {
-        result.width = data.width;
-        result.height = data.height;
-    });
-    return result;
+// save a sharp stream, return an object including the 
+const save = async (stream, contentType) => {
+    const path = generatePath();
+    const info = await stream.toFile(path);
+    return {
+        path, 
+        contentType,
+        width: info.width,
+        height: info.height,
+    };
 };
+
+// FIXME: this technically works all the time but it feels incredibly wrong
+const MIME = format => "image/" + format;
 
 // we include dimensions on everything, even though currently these fields aren't really used
 // this is mainly because A) I feel bad for not reusing withSize() and B) it can't possibly hurt
@@ -27,10 +32,13 @@ module.exports = async (filepath, tags) => {
     // we set `pages` to 1 to retrieve the page count while not reading the full image
     const image = sharp(filepath, {sequentialRead: true, pages: 1}).rotate();
     const meta = await image.metadata();
+
+    // image scaling *can* be I/O-bound, so we begin all tasks without waiting for the other ones to complete
+    const promises = {};
     const versions = {type: "image"};
 
     // always generate a preview
-    versions.preview = withSize(image.clone().resize({height: processing.previewHeight}).webp({quality: 50, effort: 6}), "image/webp");
+    promises.preview = save(image.clone().resize({height: processing.previewHeight}).webp({quality: 50, effort: 6}), "image/webp");
 
     if(meta.pages > 1) {
         
@@ -39,25 +47,29 @@ module.exports = async (filepath, tags) => {
 
         // create a new Sharp object to read all frames of the animated image
         const fullImage = sharp(filepath, {sequentialRead: true, animated: true}).rotate(); 
-        versions.original = withSize(fullImage, "image/" + meta.format); // FIXME: MIME type hack
+        promises.original = save(fullImage, MIME(meta.format));
         versions.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000;
 
     } else {
 
         // if the image is too small, generate an upscaled display version
-        // we prefer to do this with sharp because it supports the Lanczos kernel, which is usually miles better than whatever shoddy garbage the user's browser uses 
-        // similarly, downscale large images to speed up loading 
+        // it's better to do this serverside with Sharp because it usually does a better job of upscaling than the user's browser
+        // similarly, very large images are downscaled
         if(Math.max(meta.width, meta.height) > processing.maxDisplaySize)
-            versions.display = withSize(image.clone().resize({width: processing.maxDisplaySize, height: processing.maxDisplaySize, fit: "inside"}).webp(), "image/webp");
+            promises.display = save(image.clone().resize({width: processing.maxDisplaySize, height: processing.maxDisplaySize, fit: "inside"}).webp(), "image/webp");
         else if(Math.max(meta.width, meta.height) < processing.minDisplaySize)
-            versions.display = withSize(image.clone().resize({width: processing.minDisplaySize, height: processing.minDisplaySize, fit: "inside"}).webp(), "image/webp");
+            promises.display = save(image.clone().resize({width: processing.minDisplaySize, height: processing.minDisplaySize, fit: "inside"}).webp(), "image/webp");
         else
-            versions.display = withSize(image.clone().webp(), "image/webp");
+            promises.display = save(image.clone().webp(), "image/webp");
         
-        versions.original = withSize(image, "image/" + meta.format);
+        promises.original = save(image, "image/" + meta.format);
     
     }
     
+    const [original, display, preview] = await Promise.all([promises.original, promises.display, promises.preview]);
+    versions.original = original;
+    versions.display = display;
+    versions.preview = preview;
     return versions;
 
 };

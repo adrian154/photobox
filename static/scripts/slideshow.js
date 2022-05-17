@@ -191,6 +191,7 @@ class Slideshow extends HiddenLayer {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
             img.src = post.displaySrc;
+            img.referrerPolicy = "no-referrer";
             post.frame.append(img);
         } else if(post.type === "video") {
             // create video

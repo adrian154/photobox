@@ -1,8 +1,8 @@
 const {ffmpegPath, ffprobePath} = require("ffmpeg-ffprobe-static");
+const {generatePath} = require("../temp-storage.js");
 const {processing} = require("../../config.json");
 const {spawn} = require("child_process");
 const metaTags = require("../tags.js");
-const fs = require("fs");
 
 const H264_ENCODE_SETTINGS = ["-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22"];
 
@@ -26,7 +26,7 @@ const probe = async filepath => {
 
 };
 
-// restrict the video types which we support to avoid false positives with images
+// restrict the video types which we support
 const mimeTypes = {
 	"avi" : "video/x-msvideo",
 	"m4v" : "video/x-m4v",
@@ -41,21 +41,47 @@ const mimeTypes = {
 	"webm" : "video/webm"
 };
 
-const generatePreview = (filepath, time, originalWidth, originalHeight) => {
-    const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
-    const ffmpeg = spawn(ffmpegPath, ["-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2pipe", "-"]);
-    return {stream: ffmpeg.stdout, contentType: "image/webp", width, height: processing.previewHeight};
+const runffmpeg = (...args) => {
+    const process = spawn(ffmpegPath, args);
+    return new Promise((resolve, reject) => {
+        process.on("error", reject);
+        process.on("exit", resolve);
+    });
 };
 
-// generate a video version of the preview
+// generate image preview
+const generatePreview = async (filepath, time, originalWidth, originalHeight) => {
+    const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
+    const path = generatePath();
+    await runffmpeg("-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", path);
+    return {
+        path, 
+        contentType: "image/webp",
+        width,
+        height: processing.previewHeight
+    };
+};
+
+// generate a video version of the preview, a la a certain website...
 const generateVideoPreview = (filepath, length) => {
 
     const filtergraph = [];
+    const step = length / processing.videoPreviewClips;
+    let concatFilterInputs = "";
 
-    const flags = ["-i", filepath, "-filter_complex", filtergraph.join(' '), "-map", "[scaled]", H264_ENCODE_SETTINGS, ];
+    for(let i = 0; i < processing.videoPreviewClips; i++) {
+        const t = 10 + step * i;
+        filtergraph.push(`[0:v]trim=${t}:${t + processing.videoPreviewClipLength},setpts=PTS-STARTPTS[v${i}]`);
+        concatFilterInputs += `[v${i}]`;
+    }
+
+    filtergraph.push(`${concatFilterInputs}concat=n=${processing.videoPreviewClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
+
+    const flags = ["-i", filepath, "-filter_complex", '"' + filtergraph.join('; ') + '"', "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "test.mp4"];
 
 };
 
+// generate scaled down display version
 const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
     
     const flags = ["-i", filepath];
@@ -63,7 +89,7 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
 
     if(videoStream.codec_name !== "h264") {
         needsTranscode = true;
-        flags.push(H264_ENCODE_SETTINGS);
+        flags.push(...H264_ENCODE_SETTINGS);
     } else {
         flags.push("-c:v", "copy");
     }
@@ -89,7 +115,6 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
 
 module.exports = async (filepath, tags) => {
 
-    console.log("Probe");
     const data = await probe(filepath);
 
     // ignore unsupported types 
@@ -103,7 +128,7 @@ module.exports = async (filepath, tags) => {
         throw new Error("No video stream");
     }
 
-    // tags
+    // add tags based on detected media properties
     tags.add(metaTags.VIDEO); // (duh)
     const audioStream = data.streams.find(stream => stream.codec_type === "audio");
     if(audioStream) {
@@ -115,17 +140,16 @@ module.exports = async (filepath, tags) => {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 
-    // fix duration
+    // duration may occur under any one of several properties
     if(videoStream.tags.DURATION) {
         const [hours, minutes, seconds] = videoStream.tags.DURATION.split(":");
         videoStream.duration = Number(hours)*60*60 + Number(minutes)*60 + Number(seconds);
     }
 
     const versions = {type: "video", duration: videoStream.duration};
-    versions.preview = generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height);
-    versions.original = {stream: fs.createReadStream(filepath), contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
+    versions.preview = await generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height);
+    versions.original = {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
 
-    // possibly generate a compatibility version
     //versions.display = generateDisplayVersion(filepath, data, videoStream, audioStream);
 
     return versions;

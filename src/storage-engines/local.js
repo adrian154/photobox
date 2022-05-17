@@ -24,6 +24,8 @@ module.exports = class {
 
     async save(id, versions) {
 
+        console.log(versions);
+        /*
         const urls = {};
 
         // huge hack: parse the mimetype to get the file extension
@@ -44,6 +46,9 @@ module.exports = class {
         }
 
         return urls;
+        */
+
+        throw new Error("not implemented");
 
     }
 

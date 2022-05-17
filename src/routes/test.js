@@ -1,20 +1,23 @@
 const fetch = require("node-fetch");
-const FEED_URL = "https://www.reddit.com/r/memes.json";
 
 const processPost = redditPost => {
+
+    // skip posts which don't have a preview 
     const preview = redditPost.preview?.images[0]?.resolutions.pop();
     if(!preview) return;
+
     return {
-        id: "dummy",
+        id: redditPost.name,
         collection: "dummy",
         timestamp: redditPost.created_utc * 1000,
         displaySrc: redditPost.url,
         duration: null,
-        originalURL: redditPost.url,
+        originalURL: new URL(redditPost.permalink, "https://reddit.com/").href,
         preview,
         type: "image",
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author]
     };
+
 };
 
 module.exports = async (req, res) => {

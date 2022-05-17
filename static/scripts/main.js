@@ -11,7 +11,7 @@ const slideshow = new Slideshow();
 
 const loadPosts = (collectionName, after) => {
     
-    const url = new URL("/api/test", window.location.origin);
+    const url = new URL(`/api/collections/${encodeURIComponent(collectionName)}`, window.location.origin);
     if(after) url.searchParams.set("after", after);
 
     fetch(url.href).then(resp => resp.json()).then(collection => {

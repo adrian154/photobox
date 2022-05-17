@@ -1,4 +1,4 @@
-const storeToTempFile = require("../temporary-storage.js");
+const storeToTempFile = require("../temp-storage.js");
 const fetch = require("node-fetch");
 const fs = require("fs");
 

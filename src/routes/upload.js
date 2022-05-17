@@ -6,8 +6,8 @@
  * Response: nothing
  */
 const processUpload = require("../processing/process-upload.js");
-const storeToTempFile = require("../temporary-storage.js");
 const {Collections, Posts} = require("../data-layer.js");
+const {storeTempFile} = require("../temp-storage.js");
 const busboy = require("busboy");
 
 // returns saved file and fields
@@ -24,7 +24,7 @@ const readRequest = req => new Promise((resolve, reject) => {
     let tempFilePromise;
     const onFile = (name, stream) => {
         if(name === "file" && !tempFilePromise) {
-            tempFilePromise = storeToTempFile(stream);
+            tempFilePromise = storeTempFile(stream);
         } else {
             stream.resume();
         }
@@ -69,24 +69,16 @@ module.exports = async (req, res) => {
         try {
             
             // process upload
-            const versions = await processUpload(tempFile.path, originalName, tagSet);
-
-            // save versions
-            const urls = await storageEngine.save(tempFile.id, versions);
+            const versions = await storageEngine.save(tempFile.id, await processUpload(tempFile.path, originalName, tagSet));
             
             // insert into database
             Posts.add({
                 postid: tempFile.id,
                 collection: collection.name,
                 type: versions.type,
-                originalURL: urls.original,
-                displaySrc: urls.display || urls.original,
-                previewURL: urls.preview,
-                previewWidth: versions.preview.width,
-                previewHeight: versions.preview.height,
+                versions: JSON.stringify(versions),
                 tags: Array.from(tagSet),
-                timestamp,
-                duration: versions.duration
+                timestamp
             });
             
             // resolve request with the newly added post

@@ -28,14 +28,7 @@ const Posts = new Table(db, "posts", [
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
-    "displaySrc STRING",
-    "displayWidth INTEGER",
-    "displayHeight INTEGER",
-    "duration REAL",
-    "originalURL STRING NOT NULL",
-    "previewURL STRING NOT NULL",
-    "previewWidth INTEGER NOT NULL",
-    "previewHeight INTEGER NOT NULL",
+    "versions STRING NOT NULL",
     "FOREIGN KEY(collection) REFERENCES collections(name)"
 ]);
 
@@ -55,14 +48,7 @@ const rowToPost = row => {
             collection: row.collection,
             timestamp: row.timestamp,
             type: row.type,
-            displaySrc: row.displaySrc,
-            duration: row.duration,
-            originalURL: row.originalURL,
-            preview: {
-                url: row.previewURL,
-                width: row.previewWidth,
-                height: row.previewHeight
-            },
+            versions: JSON.parse(row.versions),
             tags: Posts.getTags(row.postid)
         };
     }
@@ -73,7 +59,7 @@ Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck:
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
 Posts.removeAllTags = PostTags.delete("postid = ?").fn();
 
-const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "displaySrc", "originalURL", "previewURL", "previewWidth", "previewHeight", "duration"]).fn();
+const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "versions"]).fn();
 Posts.add = db.transaction(post => {
     addPost(post);
     for(const tag of post.tags) {
