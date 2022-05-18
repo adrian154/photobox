@@ -327,19 +327,43 @@ header button:hover {
     grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
 }
 
+/* two columns on mobile vertical */
+@media (max-width: 600px) {
+    #collections {
+        grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));  
+    }
+}
+
 .collection-preview {
     flex-basis: 15em;
     margin: 1.0em;
 }
 
-.collection-preview img {
+.collection-preview .img-outer {
+    position: relative;
     width: 100%;
     height: 12em;
-    border-radius: 10px;
+}
+
+.collection-preview .img-outer img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     object-fit: scale-down;
+    border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    background-size: cover;
-    background-position: center;
+    backdrop-filter: blur(4px);
+}
+
+.collection-preview .img-outer .preview-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .collection-preview img:before {

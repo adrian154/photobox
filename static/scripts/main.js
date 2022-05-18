@@ -14,16 +14,19 @@ const loadPosts = (collectionName, after) => {
     const url = new URL(`/api/collections/${encodeURIComponent(collectionName)}`, window.location.origin);
     if(after) url.searchParams.set("after", after);
 
+    let numPosts = 0;
     fetch(url.href).then(resp => resp.json()).then(collection => {
 
         if(collection.error) {
-            alert("No such collection"); // FIXME
+            alert("No such collection"); 
             return;
         }
 
         document.title = `${collection.name} - photobox`;
         document.getElementById("collection-name").textContent = collection.name;
-        document.getElementById("num-posts").textContent = collection.posts.length + " posts";
+
+        numPosts += collection.posts.length;
+        document.getElementById("num-posts").textContent = numPosts + " posts";
 
         if(!after) {
             uploader.onCollectionLoaded(collection);

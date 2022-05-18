@@ -4,7 +4,7 @@
  */
 const {Posts, Collections} = require("../data-layer.js");
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
 
     const post = Posts.get(String(req.params.post));
     if(!post) {
@@ -13,7 +13,7 @@ module.exports = (req, res) => {
 
     const storageEngine = req.storageEngines[Collections.get(post.collection)?.storageEngine];
     if(storageEngine) {
-        storageEngine.delete(post);
+        await storageEngine.delete(post);
     }
 
     Posts.remove(post.id);

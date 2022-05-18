@@ -87,7 +87,6 @@ module.exports = class {
 
             const {uploadUrl, authorizationToken} = await this.getUploadURL();
 
-            let response;
             try {
 
                 const resp = await fetch(uploadUrl, {
@@ -102,7 +101,7 @@ module.exports = class {
                     body: uploadStream
                 });
 
-                response = await resp.json();
+                const response = await resp.json();
                 if(!resp.ok) {
                     if(this.shouldReauth(response)) await this.refreshAuth();
                     continue;
@@ -110,8 +109,8 @@ module.exports = class {
 
                 return {
                     url: new URL(`/file/${this.config.bucket}/${response.fileName}`, this.downloadUrl).href,
-                    fileName: resp.fileName,
-                    fileId: resp.fileId
+                    fileName: response.fileName,
+                    fileId: response.fileId
                 }
 
             } catch(error) {
@@ -137,8 +136,22 @@ module.exports = class {
         return versions;
     }
 
-    delete(object) {
-        throw new Error("Deletion not implemented yet");
+    async delete(post) {
+        for(const versionName in post.versions) {   
+
+            const version = post.versions[versionName];
+            const resp = await fetch(this.url("b2_delete_file_version"), {
+                method: "POST",
+                headers: {"Authorization": this.authToken, "Content-Type": "application/json"},
+                body: JSON.stringify({fileId: version.fileId, fileName: version.fileName})
+            });
+
+            if(!resp.ok) {
+                console.log(await resp.json());
+                throw new Error("Deletion failed; post may be partially deleted");
+            }
+
+        } 
     }
 
 };
