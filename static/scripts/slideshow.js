@@ -51,8 +51,8 @@ class PostEditor {
 
     update(post) {
         this.post = post;
-        this.originalLink.href = post.originalURL;
-        this.preview.src = post.preview.url;
+        this.originalLink.href = post.versions.original.url;
+        this.preview.src = post.versions.preview.url;
         this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
         this.collectionLink.textContent = post.collection;
         this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
@@ -190,17 +190,19 @@ class Slideshow extends HiddenLayer {
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
-            img.src = post.displaySrc;
+            img.src = post.versions.display.url;
             img.referrerPolicy = "no-referrer";
             post.frame.append(img);
         } else if(post.type === "video") {
             // create video
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
-            video.poster = post.preview.url;
+            video.poster = post.versions.preview.url;
             video.controls = true;
             video.loop = true;
-            video.src = post.displaySrc;
+            video.width = post.versions.original.width;
+            video.height = post.versions.original.height;
+            video.src = post.versions.original.url || post.versions.display.url;
             video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
         } else {

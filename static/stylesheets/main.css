@@ -144,6 +144,17 @@ header button:hover {
     right: 0.3em;
     font-weight: 600;
     border-radius: 5px;
+    z-index: 1;
+    font-size: 14pt;
+}
+
+.video-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
 }
 
 /* background for modals/slideshow */
@@ -313,7 +324,7 @@ header button:hover {
 /* ----- homepage ----- */
 #collections {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(10em, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
 }
 
 .collection-preview {
@@ -323,10 +334,16 @@ header button:hover {
 
 .collection-preview img {
     width: 100%;
-    height: 11em;
+    height: 12em;
     border-radius: 10px;
-    object-fit: cover;
+    object-fit: scale-down;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    background-size: cover;
+    background-position: center;
+}
+
+.collection-preview img:before {
+    filter: blur(8px);
 }
 
 .collection-preview span { display: block; }
@@ -334,6 +351,7 @@ header button:hover {
 .collection-title {
     font-size: 1.5em;
     font-weight: 600;
+    overflow-wrap: break-word;
 }
 
 .post-count {

@@ -35,7 +35,6 @@ module.exports = async (filepath, tags) => {
 
     // image scaling *can* be I/O-bound, so we begin all tasks without waiting for the other ones to complete
     const promises = {};
-    const versions = {type: "image"};
 
     // always generate a preview
     promises.preview = save(image.clone().resize({height: processing.previewHeight}).webp({quality: 50, effort: 6}), "image/webp");
@@ -67,9 +66,9 @@ module.exports = async (filepath, tags) => {
     }
     
     const [original, display, preview] = await Promise.all([promises.original, promises.display, promises.preview]);
-    versions.original = original;
-    versions.display = display;
-    versions.preview = preview;
-    return versions;
+    return {
+        type: "image",
+        versions: {original, display, preview}
+    };
 
 };

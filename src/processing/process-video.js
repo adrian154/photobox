@@ -42,10 +42,10 @@ const mimeTypes = {
 };
 
 const runffmpeg = (...args) => {
-    const process = spawn(ffmpegPath, args);
+    const ffmpeg = spawn(ffmpegPath, args);
     return new Promise((resolve, reject) => {
-        process.on("error", reject);
-        process.on("exit", resolve);
+        ffmpeg.on("error", reject);
+        ffmpeg.on("exit", resolve);
     });
 };
 
@@ -53,7 +53,7 @@ const runffmpeg = (...args) => {
 const generatePreview = async (filepath, time, originalWidth, originalHeight) => {
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
     const path = generatePath();
-    await runffmpeg("-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", path);
+    await runffmpeg("-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2", path);
     return {
         path, 
         contentType: "image/webp",
@@ -63,21 +63,38 @@ const generatePreview = async (filepath, time, originalWidth, originalHeight) =>
 };
 
 // generate a video version of the preview, a la a certain website...
-const generateVideoPreview = (filepath, length) => {
+const generateVideoPreview = async (filepath, length, originalWidth, originalHeight) => {
 
-    const filtergraph = [];
-    const step = length / processing.videoPreviewClips;
-    let concatFilterInputs = "";
+    // we use a bit of a bitwise 'hack' to round the width to a multiple of 2 (required for H.264 encoding)
+    const path = generatePath();
+    const width = Math.round(originalWidth * processing.videoPreviewHeight / originalHeight) & 65534;
 
-    for(let i = 0; i < processing.videoPreviewClips; i++) {
-        const t = 10 + step * i;
-        filtergraph.push(`[0:v]trim=${t}:${t + processing.videoPreviewClipLength},setpts=PTS-STARTPTS[v${i}]`);
-        concatFilterInputs += `[v${i}]`;
+    // if the video is very short, don't generate clips, just downscale
+    if(length < processing.videoPreviewClips * processing.videoPreviewClipLength) {
+        await runffmpeg("-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, path);
+    } else {
+
+        const filtergraph = [];
+        const step = (length - 10) / (processing.videoPreviewClips - 1);
+        let concatFilterInputs = "";
+
+        for(let i = 0; i < processing.videoPreviewClips; i++) {
+            const t = Math.floor(5 + step * i);
+            filtergraph.push(`[0:v]trim=${t}:${t + processing.videoPreviewClipLength},setpts=PTS-STARTPTS[v${i}]`);
+            concatFilterInputs += `[v${i}]`;
+        }
+
+        filtergraph.push(`${concatFilterInputs}concat=n=${processing.videoPreviewClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
+        await runffmpeg("-i", filepath, "-filter_complex", filtergraph.join('; '), "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
+
     }
 
-    filtergraph.push(`${concatFilterInputs}concat=n=${processing.videoPreviewClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
-
-    const flags = ["-i", filepath, "-filter_complex", '"' + filtergraph.join('; ') + '"', "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "test.mp4"];
+    return {
+        path,
+        contentType: "video/mp4",
+        width,
+        height: processing.videoPreviewHeight
+    }
 
 };
 
@@ -146,12 +163,14 @@ module.exports = async (filepath, tags) => {
         videoStream.duration = Number(hours)*60*60 + Number(minutes)*60 + Number(seconds);
     }
 
-    const versions = {type: "video", duration: videoStream.duration};
-    versions.preview = await generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height);
-    versions.original = {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height};
-
-    //versions.display = generateDisplayVersion(filepath, data, videoStream, audioStream);
-
-    return versions;
+    return {
+        type: "video",
+        duration: videoStream.duration,
+        versions: {
+            preview: await generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height),
+            videoPreview: await generateVideoPreview(filepath, videoStream.duration, videoStream.width, videoStream.height),
+            original: {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
+        }
+    };
 
 };

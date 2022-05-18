@@ -20,36 +20,17 @@ const generateID = () => crypto.randomBytes(12).toString("base64").replaceAll('+
 
 module.exports = {
     generatePath: () => path.join(TEMP_DIR, generateID()),
-    storeTempFile: (srcStream, calculateHash) => {
-
+    storeTempFile: stream => {
         const id = generateID();
         const filePath = path.join(TEMP_DIR, id);
         const writeStream = fs.createWriteStream(filePath);
-        srcStream.pipe(writeStream);
-        
-        let hash;
-        if(calculateHash) {
-            hash = crypto.createHash("sha1");
-            srcStream.pipe(hash);
-        }
-
+        stream.pipe(writeStream);
         return new Promise((resolve, reject) => {
-            writeStream.on("error", error => {
-                fs.unlink(filePath, unlinkErr => console.error("Failed to delete temporary file", unlinkErr));
-                reject(error);
-            });
+            writeStream.on("error", reject);
             writeStream.on("close", () => resolve({
                 id,
-                path: filePath,
-                bytesWritten: writeStream.bytesWritten,
-                hash: hash?.read(),
-                delete: () => fs.unlink(filePath, (err) => {
-                    if(err) {
-                        console.log("failed to delete temporary file " + filePath);
-                    }
-                })
+                path: filePath
             }));
         });
-
     }
 };

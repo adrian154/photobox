@@ -69,13 +69,15 @@ module.exports = async (req, res) => {
         try {
             
             // process upload
-            const versions = await storageEngine.save(tempFile.id, await processUpload(tempFile.path, originalName, tagSet));
-            
+            const result = await processUpload(tempFile.path, originalName, tagSet);
+            const versions = await storageEngine.save(tempFile.id, result.versions);
+
             // insert into database
             Posts.add({
                 postid: tempFile.id,
                 collection: collection.name,
-                type: versions.type,
+                type: result.type,
+                duration: result.duration,
                 versions: JSON.stringify(versions),
                 tags: Array.from(tagSet),
                 timestamp
@@ -86,11 +88,8 @@ module.exports = async (req, res) => {
 
         } catch(error) {
             console.error(error);
-            tempFile.delete();
             throw new Error("Internal processing error");
         }
-
-        tempFile.delete();
 
     } catch(error) {
         console.error(error);

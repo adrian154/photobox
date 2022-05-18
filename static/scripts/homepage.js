@@ -49,18 +49,21 @@ class Collections {
     consume(collections) {
         for(const collection of collections) {
             
+            // create outer element
             const element = document.createElement("div");
             element.classList.add("collection-preview");
             this.element.append(element);
 
             const a = document.createElement("a");
             a.href = `/?collection=${encodeURIComponent(collection.name)}`;
+
             const img = document.createElement("img");
             if(collection.preview) {
                 img.src = collection.preview;
-                img.style.objectPosition = "50% 10%";
+                img.style.backgroundImage = `url(${img.src})`;
             } else {
                 img.src = "/images/default-post.png";
+                img.style.objectFit = "cover";
             }
             a.append(img);
             element.append(a);

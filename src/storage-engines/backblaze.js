@@ -1,9 +1,31 @@
-const storeToTempFile = require("../temp-storage.js");
+const fsPromises = require("fs/promises");
+const {PassThrough} = require("stream");
 const fetch = require("node-fetch");
+const crypto = require("crypto");
 const fs = require("fs");
 
 // backblaze recommends 5 upload attempts
 const UPLOAD_ATTEMPTS = 5;
+
+// a custom stream that calculates SHA-1 hash
+class UploadStream extends PassThrough {
+
+    constructor(options) {
+        super(options);
+        this.hash = crypto.createHash("sha1");
+    }
+    
+    _transform(chunk, encoding, callback) {
+        this.hash.update(chunk);
+        super._transform(chunk, encoding, callback);
+    }
+
+    _flush(callback) {
+        this.push(this.hash.digest("hex"));
+        callback();
+    }
+
+}
 
 module.exports = class {
 
@@ -55,11 +77,11 @@ module.exports = class {
     }
 
     // TODO: exponential backoff
-    async uploadFile(stream, name, contentType) {
+    async uploadFile(path, name, contentType) {
         
-        // Backblaze's API demands to know the length of the file being uploaded beforehand
-        // Therefore, we need to save the stream to yet another temporary file
-        const {path, bytesWritten, hash, delete: deleteTemp} = await storeToTempFile(stream, true);
+        const readStream = fs.createReadStream(path);
+        const uploadStream = new UploadStream();
+        readStream.pipe(uploadStream);
 
         for(let i = 0; i < UPLOAD_ATTEMPTS; i++) {
 
@@ -74,10 +96,10 @@ module.exports = class {
                         "Authorization": authorizationToken,
                         "X-Bz-File-Name": encodeURIComponent(name),
                         "Content-Type": contentType,
-                        "Content-Length": bytesWritten,
-                        "X-Bz-Content-Sha1": hash.toString("hex")
+                        "Content-Length": fs.statSync(path).size + 40,
+                        "X-Bz-Content-Sha1": "hex_digits_at_end"
                     },
-                    body: fs.createReadStream(path)
+                    body: uploadStream
                 });
 
                 response = await resp.json();
@@ -86,42 +108,34 @@ module.exports = class {
                     continue;
                 }
 
+                return {
+                    url: new URL(`/file/${this.config.bucket}/${response.fileName}`, this.downloadUrl).href,
+                    fileName: resp.fileName,
+                    fileId: resp.fileId
+                }
+
             } catch(error) {
                 continue;
             }
 
-            deleteTemp();
-            return new URL(`/file/${this.config.bucket}/${response.fileName}`, this.downloadUrl).href;
-
         }
 
-        deleteTemp();
         throw new Error("Failed to upload file after retrying");
 
     }
 
     async save(id, versions) {
-        return {
-            preview: await this.uploadFile(versions.preview.stream, `${id}-preview`, versions.preview.contentType),
-            original: await this.uploadFile(versions.original.stream, `${id}-original`, versions.original.contentType),
-            display: versions.display && await this.uploadFile(versions.display.stream, `${id}-display`, versions.display.contentType)
-        };
+        for(const versionName in versions) {
+            const version = versions[versionName];
+            const {url, fileName, fileId} = await this.uploadFile(version.path, `${id}-${versionName}`, version.contentType);
+            version.url = url;
+            version.fileName = fileName;
+            version.fileId = fileId;
+            await fsPromises.unlink(version.path);
+            delete version.path;
+        }
+        return versions;
     }
-
-    /*
-    async deleteFile(url) {
-
-        const fileName = url.split('/').pop();
-
-        const resp = await fetch(this.url("b2_delete_file_version"), {
-            headers: {"Authorization": this.authToken, "Content-Type": "application/json"},
-            body: JSON.stringify({
-                fileName, 
-            })
-        })
-
-    }
-    */
 
     delete(object) {
         throw new Error("Deletion not implemented yet");

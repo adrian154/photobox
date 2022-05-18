@@ -28,6 +28,7 @@ const Posts = new Table(db, "posts", [
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
+    "duration REAL",
     "versions STRING NOT NULL",
     "FOREIGN KEY(collection) REFERENCES collections(name)"
 ]);
@@ -48,6 +49,7 @@ const rowToPost = row => {
             collection: row.collection,
             timestamp: row.timestamp,
             type: row.type,
+            duration: row.duration,
             versions: JSON.parse(row.versions),
             tags: Posts.getTags(row.postid)
         };
@@ -59,7 +61,7 @@ Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck:
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
 Posts.removeAllTags = PostTags.delete("postid = ?").fn();
 
-const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "versions"]).fn();
+const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "duration", "versions"]).fn();
 Posts.add = db.transaction(post => {
     addPost(post);
     for(const tag of post.tags) {
