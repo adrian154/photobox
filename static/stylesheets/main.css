@@ -38,7 +38,7 @@ input[type="text"] {
 /* ----- layout ----- */
 main {
     max-width: 95em;
-    margin: auto;
+    margin: 3.0em auto;
 }
 
 header {

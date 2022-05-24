@@ -44,7 +44,7 @@ const processPost = redditPost => {
                 url: redditPost.url
             }
         },
-        permalink: new URL(redditPost.permalink, "https://reddit.com/").href,
+        srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
         type: "image",
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author]
     };

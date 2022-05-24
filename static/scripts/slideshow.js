@@ -11,6 +11,7 @@ class PostEditor {
         this.tagContainer = document.getElementById("editor-tags");
         this.postDate = document.getElementById("editor-post-date");
         this.collectionLink = document.getElementById("editor-collection-link");
+        this.sourceLink = document.getElementById("editor-source-link");
         this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
         
         // handle logic
@@ -50,13 +51,29 @@ class PostEditor {
     }
 
     update(post) {
+
         this.post = post;
         this.originalLink.href = post.versions.original.url;
         this.preview.src = post.versions.preview.url;
         this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
-        this.collectionLink.textContent = post.collection;
-        this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+
+        if(post.collection) {
+            this.collectionLink.textContent = post.collection;
+            this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+        } else {
+            this.collectionLink.textContent = "(unknown)";
+            this.collectionLink.href = "#";
+        }
+
+        if(post.srcLink) {
+            this.sourceLink.style.display = "";
+            this.sourceLink.href = post.srcLink;
+        } else {
+            this.sourceLink.style.display = "none";
+        }
+
         this.resetTagPicker();
+
     }
 
 }
