@@ -14,7 +14,7 @@ class PhotoGrid {
         // create container, distribute width proportionally
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
-        container.style.flexBasis = preview.width / preview.height * 20 + "vh";
+        container.style.flexBasis = preview.width / preview.height * 20 + "em";
         container.style.flexGrow = preview.width / preview.height * 10; // make sure flex-grow > 1 so things grow, the absolute value isn't important
         this.grid.insertBefore(container, this.placeholder);
 
@@ -69,8 +69,8 @@ class PhotoGrid {
         post.photogridContainer = container;
 
         // slideshow logic
-        slideshow.addPost(post);
-        img.addEventListener("click", () => slideshow.show(post));
+        app.slideshow.addPost(post);
+        img.addEventListener("click", () => app.slideshow.show(post));
 
     }
 

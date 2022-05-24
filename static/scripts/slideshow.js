@@ -22,7 +22,7 @@ class PostEditor {
                 method: "DELETE"
             }).then(resp => {
                 if(resp.ok) {
-                    slideshow.deletePost(this.post);
+                    app.slideshow.deletePost(this.post);
                 } else {
                     alert("Failed to delete post: HTTP status " + resp.status);
                 }
@@ -86,6 +86,14 @@ class LiveTagPicker extends TagPicker {
 
 }
 
+// create <source> elements for videos
+const createSource = version => {
+    const source = document.createElement("source");
+    source.src = version.url;
+    source.type = version.contentType;
+    return source;
+};
+
 class Slideshow extends HiddenLayer {
 
     constructor() {
@@ -135,7 +143,7 @@ class Slideshow extends HiddenLayer {
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
                 if(entry.isIntersecting) {
-                    editor.update(entry.target.post);
+                    app.editor.update(entry.target.post);
                     this.populateFrames(entry.target.post.index);
                 }
             }
@@ -194,17 +202,22 @@ class Slideshow extends HiddenLayer {
             img.referrerPolicy = "no-referrer";
             post.frame.append(img);
         } else if(post.type === "video") {
+            
             // create video
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
             video.poster = post.versions.preview.url;
-            video.controls = true;
-            video.loop = true;
             video.width = post.versions.original.width;
             video.height = post.versions.original.height;
-            video.src = post.versions.original.url || post.versions.display.url;
+            video.controls = true;
+            video.loop = true;
             video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
+
+            // add sources
+            //video.append(post.versions.display && createSource(post.versions.display), createSource(post.versions.original));
+            video.append(createSource(post.versions.original), post.versions.display && createSource(post.versions.display));
+
         } else {
             alert("Unsupported post type");
         }

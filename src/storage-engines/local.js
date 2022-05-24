@@ -20,6 +20,7 @@ module.exports = class {
     async save(id, versions) {
         for(const versionName in versions) {
             const version = versions[versionName];
+            if(!version) continue;
             const filename = `${id}-${versionName}.${extension(version.contentType)}`;
             await fsPromises.rename(version.path, path.join(DIRECTORY, filename));
             version.url = "/local-objects/" + filename;

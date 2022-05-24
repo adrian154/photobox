@@ -4,7 +4,7 @@ const {processing} = require("../../config.json");
 const {spawn} = require("child_process");
 const metaTags = require("../tags.js");
 
-const H264_ENCODE_SETTINGS = ["-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22"];
+const H264_ENCODE_SETTINGS = ["-pix_fmt", "yuv420p", "-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22"];
 
 // call ffprobe to get information about a video
 const probe = async filepath => {
@@ -70,8 +70,8 @@ const generateVideoPreview = async (filepath, length, originalWidth, originalHei
     const width = Math.round(originalWidth * processing.videoPreviewHeight / originalHeight) & 65534;
 
     // if the video is very short, don't generate clips, just downscale
-    if(length < processing.videoPreviewClips * processing.videoPreviewClipLength) {
-        await runffmpeg("-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, path);
+    if(length < 1.5 * processing.videoPreviewClips * processing.videoPreviewClipLength) {
+        await runffmpeg("-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
     } else {
 
         const filtergraph = [];
@@ -98,13 +98,23 @@ const generateVideoPreview = async (filepath, length, originalWidth, originalHei
 
 };
 
-// generate scaled down display version
-const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
+// generate a display version
+// codecs are selected to maximize compatibility and video is reduced to 480p (or whatever's configured) for mobile vieweing
+const generateDisplayVersion = async (filepath, meta, videoStream, audioStream) => {
     
     const flags = ["-i", filepath];
-    let needsTranscode;
+    let needsTranscode, width;
 
-    if(videoStream.codec_name !== "h264") {
+    if(videoStream.height > processing.videoDisplayHeight) {
+        needsTranscode = true;
+        width = Math.floor(videoStream.width * processing.videoDisplayHeight / videoStream.height) & 65534;
+        flags.push("-filter:v", `scale=${width}:${processing.videoDisplayHeight}`);
+    } else {
+        width = videoStream.width;
+    }
+
+    // we put this block after any filters are added since if the video is modified, we'll need to reencode anyways 
+    if(needsTranscode || videoStream.codec_name !== "h264") {
         needsTranscode = true;
         flags.push(...H264_ENCODE_SETTINGS);
     } else {
@@ -118,14 +128,24 @@ const generateDisplayVersion = (filepath, meta, videoStream, audioStream) => {
         flags.push("-c:a", "copy");
     }
 
-    if(videoStream.height > 480) {
-        needsTranscode = true;
+    // detect container
+    // i guess this makes the "needsTranscode" variable a bit of a misnomer since there are situations where we just copy the streams into a new container but whatever
+    // we need to check the major_brand since quicktime MOVs and MP4 are reported as the same format name by ffprobe
+    if(meta.format.format_name != "mov,mp4,m4a,3gp,3g2,mj2" || meta.format.tags.major_brand != "isom") {
+        needsTranscode = true;        
     }
 
-    flags.push("-f", "mp4", "-");
+    flags.push("-f", "mp4");
+
     if(needsTranscode) {
-        const ffmpeg = spawn(ffmpegPath, flags);
-        return {stream: ffmpeg.stdout, contentType: "video/mp4"};
+        const path = generatePath();
+        await runffmpeg(...flags, path);
+        return {
+            path,
+            contentType: "video/mp4",
+            width, 
+            height: processing.videoDisplayHeight 
+        };
     }
 
 };
@@ -169,6 +189,7 @@ module.exports = async (filepath, tags) => {
         versions: {
             preview: await generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height),
             videoPreview: await generateVideoPreview(filepath, videoStream.duration, videoStream.width, videoStream.height),
+            display: await generateDisplayVersion(filepath, data, videoStream, audioStream),
             original: {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
         }
     };

@@ -55,7 +55,7 @@ class UploadTracker extends HiddenLayer {
             retryButton.addEventListener("click", () => {
                 tracker.remove();
                 this.numTracked--;
-                const request = uploader.openRequest();
+                const request = app.uploader.openRequest();
                 this.add(formData, request);   
                 request.send(formData);
             });
@@ -74,7 +74,7 @@ class UploadTracker extends HiddenLayer {
                     window.onbeforeunload = null;
                     location.reload();
                 }
-                photoGrid.addPost(request.response);
+                app.photoGrid.addPost(request.response);
             }
         });
 
@@ -106,7 +106,8 @@ class Uploader extends HiddenLayer {
     }
 
     onCollectionLoaded(collection) {
-        document.getElementById("upload-collection-name").textContent = collection.name;
+        this.collectionName = collection.name;
+        document.getElementById("upload-collection-name").textContent = this.collectionName;
         const button = document.getElementById("show-upload");
         button.style.display = "";
         button.addEventListener("click", () => this.show());
@@ -115,7 +116,7 @@ class Uploader extends HiddenLayer {
     // open a new request
     openRequest() {
         const request = new XMLHttpRequest();
-        request.open("POST", `/api/collections/${encodeURIComponent(collectionName)}`);
+        request.open("POST", `/api/collections/${encodeURIComponent(this.collectionName)}`);
         request.responseType = "json";        
         return request;
     }
@@ -132,7 +133,7 @@ class Uploader extends HiddenLayer {
         for(let i = 0; i < this.filePicker.files.length; i++) files.push(this.filePicker.files[i]); // can't just copy the value of filePicker.files since it gets erased by .reset()
         this.reset();
         this.hide();
-        uploadTracker.show();
+        app.uploadTracker.show();
 
         // open requests
         const uploads = [];
@@ -144,7 +145,7 @@ class Uploader extends HiddenLayer {
             formData.append("timestamp", Date.now());
             const upload = {formData, request: this.openRequest(formData)};
             uploads.push(upload);
-            uploadTracker.add(upload.formData, upload.request);
+            app.uploadTracker.add(upload.formData, upload.request);
         }
 
         // start uploading

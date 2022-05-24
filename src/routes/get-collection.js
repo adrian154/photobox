@@ -15,6 +15,7 @@ module.exports = (req, res) => {
 
     res.json({
         name: collection.name,
+        managed: true,
         posts: Collections.getPosts(collection.name)
     });
 
