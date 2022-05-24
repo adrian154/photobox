@@ -107,7 +107,7 @@ class LiveTagPicker extends TagPicker {
 const createSource = version => {
     const source = document.createElement("source");
     source.src = version.url;
-    source.type = version.contentType;
+    if(source.type) source.type = version.contentType;
     return source;
 };
 
@@ -224,12 +224,15 @@ class Slideshow extends HiddenLayer {
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
             video.poster = post.versions.preview.url;
-            video.width = post.versions.original.width;
-            video.height = post.versions.original.height;
             video.controls = true;
             video.loop = true;
             video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
+
+            if(video.original?.width) {
+                video.width = post.versions.original.width;
+                video.height = post.versions.original.height;
+            }
 
             // add sources
             //video.append(post.versions.display && createSource(post.versions.display), createSource(post.versions.original));

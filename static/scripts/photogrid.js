@@ -28,10 +28,15 @@ class PhotoGrid {
         container.append(img);
 
         // if its a video, add the duration
-        if(post.duration) {
+        if(post.type === "video" || post.duration || true) {
             const duration = document.createElement("span");
             duration.classList.add("duration");
-            duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
+            if(post.duration) {
+                duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
+            } else {
+                //duration.textContent = "Video"; // we might not know the duration
+                duration.textContent = post.hint;
+            }
             container.append(duration);
         }
 

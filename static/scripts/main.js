@@ -120,7 +120,7 @@ class App {
             this.statusText.textContent = "";
 
             // KLUDGE: if there are more posts and no scrollbar has appeared, always load more posts so that infinite scroll can be engaged
-            if(document.body.scrollHeight < 2 * window.innerHeight && collection.after) {
+            if(collection.after && document.body.scrollHeight < 2 * window.innerHeight) {
                 this.load();
             }
 
