@@ -101,11 +101,14 @@ class App {
 
             }
 
+            // flatten posts; collection.posts may contain arrays (galleries)
+            collection.posts = collection.posts.flat();
+
             // update # of posts as they arrive
             this.numPostsLoaded += collection.posts.length;
             document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
 
-            // pass posts to photogrid
+            // consume posts
             this.photoGrid.onPostsLoaded(collection.posts);
 
             // update url

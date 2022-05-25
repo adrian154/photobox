@@ -1,11 +1,13 @@
 const fetch = require("node-fetch");
 const tags = require("../tags.js");
 
-// the user may want to configure some "private" feeds (e.g. saved/upvoted, multireddits)
-// unfortunately, this means we can't support hidden multireddits
+// Users are able to generate secret URLs for accessing private feeds (e.g. saved/upvoted) in their Reddit preferences
+// We allow users to configure some of these feeds in config.json; this method of access is great since we don't need to bother with auth.
+// LIMITATION: No such mechanism exists for private multireddits yet.
 const feeds = require("../../config.json").redditFeedURLs;
 
-// get the reddit url to fetch posts from
+// Convert user-supplied parameters to the appropriate Reddit endpoint to fetch posts from
+// FIXME: The user could potentially supply invalid values to cause some bad shenanigans.
 const getFeedURL = params => {
 
     let url;
@@ -17,7 +19,7 @@ const getFeedURL = params => {
         }
     } else if(params.feed) {
         url = new URL(feeds[params.feed]);
-    }
+    } // TODO: user support
 
     if(url) {
         url.searchParams.set("limit", 25);
@@ -29,66 +31,91 @@ const getFeedURL = params => {
 
 };
 
+// The following logic is a little convoluted because the Reddit API can be less than intuitive; I've done my best to justify everything.
 const processPost = async (redditPost) => {
 
-    // ignore self posts
+    // Ignore self posts, we know for sure that we have no interest in displaying them
     if(redditPost.post_hint === "self") {
         return;
     }
 
-    // skip posts which don't have a preview 
-    const preview = redditPost.preview?.images[0]?.resolutions.pop();
-    if(!preview) return;
+    // There are some displayable posts that don't have a preview, which *really* complicates things.
+    // If previews are available, we use the 3rd resolution, which is reasonably sized. 
+    const redditPreview = redditPost.preview?.images[0]?.resolutions[2];
 
-    // pretend the post is an image initially
+    // Construct a "base post"
     const post = {
-        id: redditPost.name,
+        id: redditPost.name, // this isn't the post title, it's the post ID
         timestamp: redditPost.created_utc * 1000,
-        versions: {
-            preview,
-            display: {url: redditPost.url_overridden_by_dest},
-            original: {
-                url: redditPost.url_overridden_by_dest
-            }
-        },
         srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
-        type: "image",
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author],
-        hint: redditPost.post_hint
+        versions: {},
+        hint: redditPost.post_hint // REMOVEME
     };
 
-    // problem: reddit doesn't recognize .GIFVs as videos, handle this case manually
-    if(redditPost.url_overridden_by_dest?.includes(".gifv")) {
-        post.type = "video";
-        // TODO: retrieve the video from Imgur
-        //post.versions.original = {url: redditPost.url_overridden_by_dest};
-    }
-
-    // handle redgifs
-    const redgifsID = redditPost.url_overridden_by_dest.match(/watch\/(\w+)/)?.[1];
+    // Handle redgifs
+    const redgifsID = redditPost.url_overridden_by_dest.match(/redgifs.com\/watch\/(\w+)/)?.[1];
     if(redgifsID) {
+
         const resp = await fetch(`https://api.redgifs.com/v2/gifs/${redgifsID}`);
         const result = await resp.json();
+        
+        // if `gif` field is missing, gif was deleted/nonexistent
+        if(!result.gif) {
+            return;
+        }
+
+        // if no reddit preview available, use the one provided by redgifs
+        // this has the caveat that its true size is not available, but we can use the video size as it'll have the same aspect ratio
+        // this horrible practice might come back to bite me in the future when I try to use the preview dimensions in a meaningful way in the client beyond calculating aspect ratio, but whatever
         post.type = "video";
+        post.versions.preview = redditPreview || {url: result.gif.urls.thumbnail, width: result.gif.width, height: result.gif.height}; 
         post.versions.videoPreview = {url: result.gif.urls.vthumbnail};
         post.versions.display = {url: result.gif.urls.sd};
         post.versions.original = {url: result.gif.urls.hd, width: result.gif.width, height: result.gif.height};
+
+        // include redgifs tags; also, add audio tag if necessary
         post.tags.push(tags.VIDEO, ...result.gif.tags);
         if(result.gif.hasAudio) {
             post.tags.push(tags.SOUND);
         }
+
+        return post;
+
     }
 
-    // TODO: expand imgur albums
+    // TODO: imgur
 
-    return post;
+    // handle galleries similarly to regular images
+    if(redditPost.gallery_data) {
+        // util fn to rename fields in gallery images
+        const convert = img => ({url: img.u, width: img.x, height: img.y});
+        return redditPost.gallery_data.items.map(item => redditPost.media_metadata[item.media_id]).map(item => {
+            const clone = Object.assign({}, post);
+            clone.type = "image";
+            clone.versions = {
+                preview: convert(item.p[2]),
+                display: convert(item.p.pop()), // these names are *horrible*, and i have no idea what they mean.
+                original: convert(item.o[0])
+            };
+            return clone;
+        });
+    }
+
+    // if there's a preview available, treat it as an image and pray it works
+    if(redditPreview) {
+        post.type = "image";
+        post.versions.preview = redditPreview;
+        post.versions.display = redditPost.preview.images[0].resolutions.pop(); // use highest resolution preview as image
+        post.versions.original = {url: redditPost.url_overridden_by_dest};
+        return post;
+    }
 
 };
 
 module.exports = async (req, res) => {
 
     const url = getFeedURL(req.query);
-    console.log(url.href);
 
     if(req.query.after) {
         url.searchParams.set("after", req.query.after);

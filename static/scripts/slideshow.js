@@ -217,6 +217,7 @@ class Slideshow extends HiddenLayer {
             img.classList.add("slideshow-centered");
             img.src = post.versions.display.url;
             img.referrerPolicy = "no-referrer";
+            img.loading = "eager"; // we're handling the lazy-loading in JS, so we want the images we've selected to immediately load
             post.frame.append(img);
         } else if(post.type === "video") {
             
@@ -229,13 +230,12 @@ class Slideshow extends HiddenLayer {
             video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
 
-            if(video.original?.width) {
+            if(post.versions.original?.width) {
                 video.width = post.versions.original.width;
                 video.height = post.versions.original.height;
             }
 
             // add sources
-            //video.append(post.versions.display && createSource(post.versions.display), createSource(post.versions.original));
             video.append(createSource(post.versions.original), post.versions.display && createSource(post.versions.display));
 
         } else {
