@@ -1,5 +1,6 @@
 const fetch = require("node-fetch");
 const tags = require("../tags.js");
+const {imgurClientID} = require("../../config.json");
 
 // Users are able to generate secret URLs for accessing private feeds (e.g. saved/upvoted) in their Reddit preferences
 // We allow users to configure some of these feeds in config.json; this method of access is great since we don't need to bother with auth.
@@ -54,7 +55,7 @@ const processPost = async (redditPost) => {
     };
 
     // Handle redgifs
-    const redgifsID = redditPost.url_overridden_by_dest.match(/redgifs.com\/watch\/(\w+)/)?.[1];
+    const redgifsID = redditPost.url_overridden_by_dest?.match(/redgifs.com\/watch\/(\w+)/)?.[1];
     if(redgifsID) {
 
         const resp = await fetch(`https://api.redgifs.com/v2/gifs/${redgifsID}`);
@@ -84,20 +85,35 @@ const processPost = async (redditPost) => {
 
     }
 
-    // TODO: imgur
+    // handle imgur videos
+    // the imgur API doesn't provide a preview, so if a reddit preview isn't available we can't display the item
+    const imgurID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)\.gifv/)?.[1];
+    if(imgurID && redditPreview) {
+
+        const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
+        const result = await resp.json();
+
+        post.type = "video";
+        post.versions.preview = redditPreview;
+        post.versions.videoPreview = post.versions.display = post.versions.original = {url: result.data.mp4, width: result.data.width, height: result.data.height};
+        return post;
+
+    }
+
+    // TODO: imgur galleries
+
+    // TODO: reddit hosted video
 
     // handle galleries similarly to regular images
     if(redditPost.gallery_data) {
         // util fn to rename fields in gallery images
-        const convert = img => ({url: img.u, width: img.x, height: img.y});
+        const convert = img => ({url: img.u || img.gif, width: img.x, height: img.y});
         return redditPost.gallery_data.items.map(item => redditPost.media_metadata[item.media_id]).map(item => {
             const clone = Object.assign({}, post);
             clone.type = "image";
-            clone.versions = {
-                preview: convert(item.p[2]),
-                display: convert(item.p.pop()), // these names are *horrible*, and i have no idea what they mean.
-                original: convert(item.o[0])
-            };
+            clone.versions = {};
+            clone.versions.preview = convert(item.p[2]);
+            clone.versions.display = clone.versions.original = convert(item.s);
             return clone;
         });
     }
@@ -106,8 +122,7 @@ const processPost = async (redditPost) => {
     if(redditPreview) {
         post.type = "image";
         post.versions.preview = redditPreview;
-        post.versions.display = redditPost.preview.images[0].resolutions.pop(); // use highest resolution preview as image
-        post.versions.original = {url: redditPost.url_overridden_by_dest};
+        post.versions.display = post.versions.original = {url: redditPost.url_overridden_by_dest};
         return post;
     }
 
