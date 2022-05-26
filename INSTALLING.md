@@ -28,39 +28,13 @@ photobox:
 
 These configurations will bind to port 3006 on 127.0.0.1, so no remote connections will be able to access the site. This is because Photobox is intended to be used with a reverse proxy.
 
-You don't necessarily have to create a bind mount for `/app/tmp`, but I strongly recommend doing so or else all uploads will be buffered in memory, potentially causing very high memory usage.
+The bind mount for `/app/tmp` is not strictly necessary; you do not need it if you're okay with all temporary files being stored in memory.
 
-Photobox can be installed standalone through the following steps:
-
-* Install [NodeJS](https://nodejs.org/en/download/).
-* Clone the GitHub repo.
-* Run `npm install` in the project root.
-* Set up your configuration file (`config.json`) in the project root.
-* The app can now be started with `node index.js`.
+Photobox can also be installed standalone; simply install [NodeJS](https://nodejs.org/en/download/), clone this Git repo, run `npm install` in the project root, and start the app with `node index.js` when ready.
 
 # Configuration
 
-Photobox requires a configuration file, which looks like this:
-
-```json
-{
-    "port": 80,
-    "processingConcurrency": 1,
-    "storageEngines": {
-        "local": {
-            "type": "local",
-            "path": "data/objects"
-        },
-        "b2": {
-            "type": "backblaze",            
-            "bucket": "my-bucket",
-            "bucketID": "REDACTED",
-            "keyID": "REDACTED",
-            "key": "REDACTED"
-        }
-    }
-}
-```
+Photobox relies on a configuration file called `config.json`.
 
 * `port`: the port which Photobox will listen on. 
 * `processingConcurrency`: how many uploads Photobox will attempt to process at once. Depending on how many resources are available, you may want to increase this value to process uploads faster.

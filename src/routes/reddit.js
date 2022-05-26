@@ -52,7 +52,7 @@ const processImgurItem = (basePost, redditPreview, item) => {
         clone.versions.original = clone.versions.display = {url: item.link, width: item.width, height: item.height};
         // adding 'm' after the hash yields the medium size thumbnail; we can use the original image's dimensions as the preview's dimensions because aspect ratio is all that matters for now
         const parts = item.link.split('.');
-        parts[parts.length - 2] += 'm';
+        parts[parts.length - 2] += 'l';
         clone.versions.preview = {url: parts.join('.'), width: item.width, height: item.height}; 
     }
 
@@ -136,7 +136,6 @@ const processPost = async (redditPost) => {
         const result = await resp.json();
         return result.data.images.map(item => processImgurItem(post, redditPreview, item));
     }
-
 
     // TODO: reddit hosted video
     // reddit uses hls so this may not be possible to handle without extensive processing.
