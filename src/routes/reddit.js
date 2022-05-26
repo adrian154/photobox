@@ -23,12 +23,40 @@ const getFeedURL = params => {
     } // TODO: user support
 
     if(url) {
-        url.searchParams.set("limit", 25);
+        url.searchParams.set("limit", 50);
         url.searchParams.set("raw_json", 1);
         if(params.period) url.searchParams.set("t", params.period);
     }
     
     return url;
+
+};
+
+// reuse imgur item handling code for individual posts and galleries
+const processImgurItem = (basePost, redditPreview, item) => {
+
+    // clone base post
+    const clone = Object.assign({}, basePost);
+    clone.versions = {preview: redditPreview};
+    clone.tags = [...basePost.tags, item.tags];
+
+    if(item.mp4) {
+        clone.type = "video";
+        clone.versions.videoPreview = clone.versions.display = clone.versions.original = {url: item.mp4, width: item.width, height: item.height};
+        clone.tags.push(tags.VIDEO);
+        if(item.has_sound) {
+            clone.tags.push(tags.SOUND);
+        }
+    } else {
+        clone.type = "image";
+        clone.versions.original = clone.versions.display = {url: item.link, width: item.width, height: item.height};
+        // adding 'm' after the hash yields the medium size thumbnail; we can use the original image's dimensions as the preview's dimensions because aspect ratio is all that matters for now
+        const parts = item.link.split('.');
+        parts[parts.length - 2] += 'm';
+        clone.versions.preview = {url: parts.join('.'), width: item.width, height: item.height}; 
+    }
+
+    return clone;
 
 };
 
@@ -50,9 +78,16 @@ const processPost = async (redditPost) => {
         timestamp: redditPost.created_utc * 1000,
         srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author],
-        versions: {},
-        hint: redditPost.post_hint // REMOVEME
+        versions: {}
     };
+
+    // handle images
+    if(redditPost.post_hint === "image") {
+        post.type = "image";
+        post.versions.preview = redditPreview;
+        post.versions.display = post.versions.original = {url: redditPost.url_overridden_by_dest};
+        return post;
+    }
 
     // Handle redgifs
     const redgifsID = redditPost.url_overridden_by_dest?.match(/redgifs.com\/watch\/(\w+)/)?.[1];
@@ -88,21 +123,23 @@ const processPost = async (redditPost) => {
     // handle imgur videos
     // the imgur API doesn't provide a preview, so if a reddit preview isn't available we can't display the item
     const imgurID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)\.gifv/)?.[1];
-    if(imgurID && redditPreview) {
-
+    if(imgurID && redditPreview && imgurClientID) {
         const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
         const result = await resp.json();
-
-        post.type = "video";
-        post.versions.preview = redditPreview;
-        post.versions.videoPreview = post.versions.display = post.versions.original = {url: result.data.mp4, width: result.data.width, height: result.data.height};
-        return post;
-
+        return processImgurItem(post, redditPreview, result);
     }
 
-    // TODO: imgur galleries
+    // split imgur galleries into multiple posts
+    const imgurGalleryID = redditPost.url_overridden_by_dest?.match(/imgur.com\/a\/(\w+)/)?.[1];
+    if(imgurGalleryID && redditPreview && imgurClientID) {
+        const resp = await fetch(`https://api.imgur.com/3/album/${imgurGalleryID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
+        const result = await resp.json();
+        return result.data.images.map(item => processImgurItem(post, redditPreview, item));
+    }
+
 
     // TODO: reddit hosted video
+    // reddit uses hls so this may not be possible to handle without extensive processing.
 
     // handle galleries similarly to regular images
     if(redditPost.gallery_data) {
@@ -112,18 +149,10 @@ const processPost = async (redditPost) => {
             const clone = Object.assign({}, post);
             clone.type = "image";
             clone.versions = {};
-            clone.versions.preview = convert(item.p[2]);
+            clone.versions.preview = convert(item.p[2] || item.p[1] || item.p[0]); // `p` contains array of previews; prefer resolution #3, fall back to lower resolutions if not available
             clone.versions.display = clone.versions.original = convert(item.s);
             return clone;
         });
-    }
-
-    // if there's a preview available, treat it as an image and pray it works
-    if(redditPreview) {
-        post.type = "image";
-        post.versions.preview = redditPreview;
-        post.versions.display = post.versions.original = {url: redditPost.url_overridden_by_dest};
-        return post;
     }
 
 };
