@@ -82,7 +82,9 @@ class Collections {
             
             const postCount = document.createElement("span");
             postCount.classList.add("post-count");
-            postCount.textContent = `${collection.numPosts} posts`;
+            if("numPosts" in collection) {
+                postCount.textContent = `${collection.numPosts} ${collection.numPosts == 1 ? "post" : "posts"}`;
+            }
             element.append(postCount);
             
         }

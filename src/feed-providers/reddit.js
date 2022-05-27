@@ -126,12 +126,12 @@ const processPost = async (redditPost) => {
     if(imgurID && redditPreview && imgurClientID) {
         const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
         const result = await resp.json();
-        return processImgurItem(post, redditPreview, result);
+        return processImgurItem(post, redditPreview, result.data);
     }
 
     // split imgur galleries into multiple posts
     const imgurGalleryID = redditPost.url_overridden_by_dest?.match(/imgur.com\/a\/(\w+)/)?.[1];
-    if(imgurGalleryID && redditPreview && imgurClientID) {
+    if(redditPost.post_hint === "link" && imgurGalleryID && imgurClientID) {
         const resp = await fetch(`https://api.imgur.com/3/album/${imgurGalleryID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
         const result = await resp.json();
         return result.data.images.map(item => processImgurItem(post, redditPreview, item));
@@ -156,7 +156,7 @@ const processPost = async (redditPost) => {
 
 };
 
-module.exports = async (req, res) => {
+/*module.exports = async (req, res) => {
 
     const url = getFeedURL(req.query);
 
@@ -174,4 +174,41 @@ module.exports = async (req, res) => {
         after: data.data.after 
     });
 
+};*/
+
+// cache previews 
+const previews = {};
+
+module.exports = {
+    getPreviews: name => previews[name],
+    getPosts: async (name, after) => {
+
+        const feed = RedditFeeds.get(name);
+        if(!feed) {
+            return;
+        }
+
+        const url = new URL(feed.feedUrl);
+        url.searchParams.set("limit", 50);
+        url.searchParams.set("raw_json", 1);
+        if(after) {
+            url.searchParams.set("after", after);
+        }
+
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const posts = (await Promise.all(data.data.children.map(child => child.data).map(processPost))).filter(Boolean);
+
+        // cache preview
+        if(!after) {
+
+            // account for post clusters
+            const previewPost = Array.isArray(posts[0]) ? posts[0][0] : posts[0];
+            previews[name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
+            
+        }
+
+        return {posts, after: data.data.after};
+
+    }
 };

@@ -10,7 +10,9 @@ db.pragma("foreign_keys = ON");
 // tables
 const Collections = new Table(db, "collections", [
     "name STRING PRIMARY KEY NOT NULL",
-    "storageEngine STRING NOT NULL"
+    "type STRING NOT NULL",
+    "storageEngine STRING",
+    "feedURL STRING"
 ]);
 
 const PostTags = new Table(db, "postTags", [
@@ -33,13 +35,14 @@ const Posts = new Table(db, "posts", [
     "FOREIGN KEY(collection) REFERENCES collections(name)"
 ]);
 
+db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
+
 const Tags = new Table(db, "tags", [
     "tag STRING PRIMARY KEY NOT NULL"
 ]);
 
 // FIXME
-db.exec("INSERT OR IGNORE INTO collections (name, storageEngine) VALUES ('test', 'local')");
-db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
+db.exec("INSERT OR IGNORE INTO collections (name, storageEngine, type) VALUES ('test', 'local', 'photobox')");
 
 // --- posts
 const rowToPost = row => {
@@ -79,9 +82,9 @@ Posts.remove = postid => {
 };
 
 // --- collections
-Collections.add = Collections.insert(["name", "storageEngine"]).fn();
+Collections.add = Collections.insert(["name", "type", "storageEngine", "feedURL"]).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
-Collections.getNames = Collections.select("name").fn({all: true, pluck: true});
+Collections.getAll = Collections.select("*").fn({all: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});
 
 const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").fn({all: true});

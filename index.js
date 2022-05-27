@@ -50,7 +50,6 @@ app.put("/api/tags/:tag", require("./src/routes/create-tag.js"));
 app.get("/api/homepage", require("./src/routes/get-homepage.js"));
 app.get("/api/storage-engines", require("./src/routes/get-storage-engines.js"));
 
-app.get("/api/collections", require("./src/routes/get-collections.js"));
 app.post("/api/collections/create", require("./src/routes/create-collection.js"));
 app.post("/api/collections/:collection", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));
@@ -61,8 +60,6 @@ app.delete("/api/posts/:post/tags", require("./src/routes/delete-tag-from-post.j
 app.delete("/api/posts/:post", require("./src/routes/delete-post.js"));
 app.put("/api/posts/:post/tags/:tag", require("./src/routes/add-tag-to-post.js"));
 app.delete("/api/posts/:post/tags/:tag", require("./src/routes/delete-tag-from-post.js"));
-
-app.get("/api/feeds/reddit", require("./src/routes/reddit.js"));
 
 // 500 handler
 app.use((err, req, res, next) => {

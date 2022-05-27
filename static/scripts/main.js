@@ -50,6 +50,7 @@ class App {
         const params = new URL(window.location).searchParams;
         if(params.has("collection")) {
             this.url = new URL(`/api/collections/${encodeURIComponent(params.get("collection"))}`, window.origin);
+            this.url.searchParams.set("type", "reddit");
         } else if(params.has("type")) {
             const type = params.get("type");
             if(type === "reddit") {
@@ -95,7 +96,7 @@ class App {
                 document.title = `${collection.name} - photobox`;
                 document.getElementById("collection-name").textContent = collection.name;
     
-                if(collection.managed) {
+                if(collection.type === "photobox") {
                     this.uploader.onCollectionLoaded(collection);
                 }
 
