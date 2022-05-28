@@ -12,16 +12,19 @@ const getFeedURL = params => {
         } else {
             url = new URL(`https://reddit.com/r/${params.subreddit}.json`);
         }
-    } else if(params.feed) {
-        url = new URL(feeds[params.feed]);
-    } // TODO: user support
+    } else if(params.user) {
+        url = new URL(`https://reddit.com/user/${params.user}/submitted.json`);
+        if(params.sort) {
+            url.searchParams.set("sort", params.sort);
+        }
+    }
 
     if(url) {
         url.searchParams.set("limit", 50);
         url.searchParams.set("raw_json", 1);
         if(params.period) url.searchParams.set("t", params.period);
     }
-    
+
     return url;
 
 };
@@ -38,7 +41,7 @@ module.exports = async (req, res) => {
     const posts = (await Promise.all(data.data.children.map(child => child.data).map(processPost))).filter(Boolean);
 
     res.json({
-        name: "Live Reddit Feed",
+        name: "Reddit Preview",
         posts,
         after: data.data.after
     });

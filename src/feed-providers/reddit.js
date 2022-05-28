@@ -48,6 +48,7 @@ const processPost = async (redditPost) => {
         timestamp: redditPost.created_utc * 1000,
         srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author],
+        url: redditPost.url_overridden_by_dest, // include url so that posts submitted to multiple places can be filtered
         versions: {}
     };
 

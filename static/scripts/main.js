@@ -24,6 +24,7 @@ class App {
         // prepare for loading
         this.loading = false;
         this.url = null;
+        this.receivedUrls = new Set();
         this.numPostsLoaded = 0;
         this.parseURL();
 
@@ -56,10 +57,10 @@ class App {
             this.url = new URL("/api/reddit", window.location.origin);
 
             // feed source
-            if(params.has("subreddit")) {
-                this.url.searchParams.set("subreddit", params.get("subreddit"));
-            } else if(params.has("user")) {
-                // TODO: user feeds (submitted)
+            if(params.has("r")) {
+                this.url.searchParams.set("subreddit", params.get("r"));
+            } else if(params.has("u")) {
+                this.url.searchParams.set("user", params.get("u"));
             }
 
             // sort
@@ -98,14 +99,25 @@ class App {
             }
 
             // flatten posts; collection.posts may contain arrays (galleries)
-            collection.posts = collection.posts.flat();
+            const posts = collection.posts.filter(posts => {
+                const post = Array.isArray(posts) ? posts[0] : posts;
+                if(!post.url) {
+                    return true;
+                }
+                if(this.receivedUrls.has(post.url)) {
+                    console.log("filtering...");
+                    return false; 
+                }
+                this.receivedUrls.add(post.url);
+                return true;
+            }).flat();
 
             // update # of posts as they arrive
-            this.numPostsLoaded += collection.posts.length;
+            this.numPostsLoaded += posts.length;
             document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
 
             // consume posts
-            this.photoGrid.onPostsLoaded(collection.posts);
+            this.photoGrid.onPostsLoaded(posts);
 
             // update url
             if(collection.after) {
