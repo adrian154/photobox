@@ -57,22 +57,9 @@ class Collections {
             const a = document.createElement("a");
             a.href = `/?collection=${encodeURIComponent(collection.name)}`;
 
-            const imgOuter = document.createElement("div");
-            imgOuter.classList.add("img-outer");
-
-            const bgImg = document.createElement("img");
-            bgImg.classList.add("preview-bg");
             const img = document.createElement("img");
-            imgOuter.append(bgImg, img);
-            
-            if(collection.preview) {
-                img.src = bgImg.src = collection.preview;   
-            } else {
-                img.src = "/images/default-post.png";
-                img.style.objectFit = "cover";
-            }
-
-            a.append(imgOuter);
+            img.src = collection.preview || "/images/default-post.png";
+            a.append(img);
             element.append(a);
 
             const title = document.createElement("span");

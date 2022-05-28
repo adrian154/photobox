@@ -129,12 +129,14 @@ header button:hover {
     position: relative;
     margin: 2px;
     min-width: 0;
+    background-color: #cacaca;
 }
 
 .photogrid-item img {
     width: 100%;
     height: auto;
     display: block;
+    transition: 0.3s;
 }
 
 .duration {
@@ -331,14 +333,7 @@ header button:hover {
 /* ----- homepage ----- */
 #collections {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
-}
-
-/* two columns on mobile vertical */
-@media (max-width: 600px) {
-    #collections {
-        grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));  
-    }
+    grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
 }
 
 .collection-preview {
@@ -346,43 +341,19 @@ header button:hover {
     margin: 1.0em;
 }
 
-.collection-preview .img-outer {
+.collection-preview img {
     position: relative;
     width: 100%;
-    height: 12em;
-}
-
-.collection-preview .img-outer img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: scale-down;
+    aspect-ratio: 1;
+    object-fit: cover;
     border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-.collection-preview .img-outer .preview-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.collection-preview img:before {
-    filter: blur(8px);
 }
 
 .collection-preview span { display: block; }
 
 .collection-title {
-    font-size: 1.5em;
-    padding-top: 0.3em;
+    font-size: 1.3em;
     font-weight: 600;
     overflow-wrap: break-word;
 }

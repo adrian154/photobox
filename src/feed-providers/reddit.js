@@ -127,26 +127,6 @@ const processPost = async (redditPost) => {
 
 };
 
-/*module.exports = async (req, res) => {
-
-    const url = getFeedURL(req.query);
-
-    if(req.query.after) {
-        url.searchParams.set("after", req.query.after);
-    }
-
-    const resp = await fetch(url);
-    const data = await resp.json();
-    const posts = (await Promise.all(data.data.children.map(child => child.data).map(processPost))).filter(Boolean);
-
-    res.json({
-        name: "reddit test", // TODO: better name
-        posts,
-        after: data.data.after 
-    });
-
-};*/
-
 // cache previews 
 const previews = {};
 
@@ -163,7 +143,7 @@ module.exports = {
 
         const resp = await fetch(url);
         const data = await resp.json();
-        const posts = (await Promise.all(data.data.children.map(child => child.data).map(processPost))).filter(Boolean);
+        const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
 
         // cache preview
         if(!after) {
@@ -175,7 +155,7 @@ module.exports = {
         }
 
         return {posts, after: data.data.after};
-
+        
     },
     processPost
 };
