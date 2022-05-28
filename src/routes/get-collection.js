@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
     if(!collection) return res.sendStatus(404);
 
     const feed = feeds[collection.type];
-    const {posts, after} = await feed.getPosts(collection.name, req.query.after);
+    const {posts, after} = await feed.getPosts(collection, req.query.after);
     
     res.json({
         name: collection.name,

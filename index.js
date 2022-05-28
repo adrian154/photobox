@@ -61,6 +61,8 @@ app.delete("/api/posts/:post", require("./src/routes/delete-post.js"));
 app.put("/api/posts/:post/tags/:tag", require("./src/routes/add-tag-to-post.js"));
 app.delete("/api/posts/:post/tags/:tag", require("./src/routes/delete-tag-from-post.js"));
 
+app.get("/api/reddit", require("./src/routes/reddit.js"));
+
 // 500 handler
 app.use((err, req, res, next) => {
     console.error(err);

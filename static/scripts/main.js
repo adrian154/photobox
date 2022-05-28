@@ -51,26 +51,21 @@ class App {
         if(params.has("collection")) {
             this.url = new URL(`/api/collections/${encodeURIComponent(params.get("collection"))}`, window.origin);
             this.url.searchParams.set("type", "reddit");
-        } else if(params.has("type")) {
-            const type = params.get("type");
-            if(type === "reddit") {
+        } else if(params.get("reddit")) {
 
-                this.url = new URL("/api/feeds/reddit", window.location.origin);
+            this.url = new URL("/api/reddit", window.location.origin);
 
-                // feed source
-                if(params.has("subreddit")) {
-                    this.url.searchParams.set("subreddit", params.get("subreddit"));
-                } else if(params.has("feed")) {
-                    this.url.searchParams.set("feed", params.get("feed"));
-                } else if(params.has("user")) {
-                    // TODO: user feeds (submitted)
-                }
-
-                // sort
-                if(params.has("sort")) this.url.searchParams.set("sort", params.get("sort"));
-                if(params.has("period")) this.url.searchParams.set("period", params.get("period"));
-
+            // feed source
+            if(params.has("subreddit")) {
+                this.url.searchParams.set("subreddit", params.get("subreddit"));
+            } else if(params.has("user")) {
+                // TODO: user feeds (submitted)
             }
+
+            // sort
+            if(params.has("sort")) this.url.searchParams.set("sort", params.get("sort"));
+            if(params.has("period")) this.url.searchParams.set("period", params.get("period"));
+
         }
 
     }

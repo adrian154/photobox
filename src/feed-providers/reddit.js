@@ -2,36 +2,6 @@ const fetch = require("node-fetch");
 const tags = require("../tags.js");
 const {imgurClientID} = require("../../config.json");
 
-// Users are able to generate secret URLs for accessing private feeds (e.g. saved/upvoted) in their Reddit preferences
-// We allow users to configure some of these feeds in config.json; this method of access is great since we don't need to bother with auth.
-// LIMITATION: No such mechanism exists for private multireddits yet.
-const feeds = require("../../config.json").redditFeedURLs;
-
-// Convert user-supplied parameters to the appropriate Reddit endpoint to fetch posts from
-// FIXME: The user could potentially supply invalid values to cause some bad shenanigans.
-const getFeedURL = params => {
-
-    let url;
-    if(params.subreddit) {
-        if(params.sort) {
-            url = new URL(`https://reddit.com/r/${params.subreddit}/${params.sort}.json`);
-        } else {
-            url = new URL(`https://reddit.com/r/${params.subreddit}.json`);
-        }
-    } else if(params.feed) {
-        url = new URL(feeds[params.feed]);
-    } // TODO: user support
-
-    if(url) {
-        url.searchParams.set("limit", 50);
-        url.searchParams.set("raw_json", 1);
-        if(params.period) url.searchParams.set("t", params.period);
-    }
-    
-    return url;
-
-};
-
 // reuse imgur item handling code for individual posts and galleries
 const processImgurItem = (basePost, redditPreview, item) => {
 
@@ -70,7 +40,7 @@ const processPost = async (redditPost) => {
 
     // There are some displayable posts that don't have a preview, which *really* complicates things.
     // If previews are available, we use the 3rd resolution, which is reasonably sized. 
-    const redditPreview = redditPost.preview?.images[0]?.resolutions[2];
+    const redditPreview = redditPost.preview?.images[0]?.resolutions[2] || redditPost.preview?.images[0].resolutions[1] || redditPost.preview?.images[0].resolutions[0];
 
     // Construct a "base post"
     const post = {
@@ -180,15 +150,10 @@ const processPost = async (redditPost) => {
 const previews = {};
 
 module.exports = {
-    getPreviews: name => previews[name],
-    getPosts: async (name, after) => {
+    getPreview: name => ({name, preview: previews[name]}),
+    getPosts: async (collection, after) => {
 
-        const feed = RedditFeeds.get(name);
-        if(!feed) {
-            return;
-        }
-
-        const url = new URL(feed.feedUrl);
+        const url = new URL(collection.feedURL);
         url.searchParams.set("limit", 50);
         url.searchParams.set("raw_json", 1);
         if(after) {
@@ -204,11 +169,12 @@ module.exports = {
 
             // account for post clusters
             const previewPost = Array.isArray(posts[0]) ? posts[0][0] : posts[0];
-            previews[name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
+            previews[collection.name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
             
         }
 
         return {posts, after: data.data.after};
 
-    }
+    },
+    processPost
 };
