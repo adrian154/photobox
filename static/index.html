@@ -18,7 +18,6 @@
             <a href="/" id="logo"><img src="images/logo-header.png"></a>
             <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
             <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
-            <button id="show-post-filter"><span class="vert-align"><span class="material-icons">sort</span><span>&nbsp; Sort Posts</span></span></button>
             <button id="browse-reddit"><span class="vert-align"><img src="/images/reddit-logo.png" style="width: 2.0rem"><span>&nbsp; Browse Reddit</span></span></button>
         </header>
 
@@ -50,7 +49,7 @@
                 <div class="dialog">
                     <form>
                         <h1>Browse Reddit</h1>
-                        <input type="text" class="rounded" id="reddit-feed-name" placeholder="Subreddit or username..." required><br> 
+                        <input type="text" class="rounded" id="reddit-feed-name" placeholder="Subreddit or username..." name="reddit-feed-name" required><br> 
                         <input type="radio" name="reddit-feed-type" id="reddit-type-subreddit" required><label for="reddit-type-subreddit">subreddit</label>
                         <input type="radio" name="reddit-feed-type" id="reddit-type-user" required><label for="reddit-type-user">user</label>
                         <p><b>Sort</b></p>
@@ -83,9 +82,9 @@
                 <img id="editor-preview">
                 <p><a id="editor-original-link" target="_blank">View Original</a></p>
                 <p><a id="editor-source-link" target="_blank">View Source</a></p>
-                <button id="delete-button">Delete Post</button>
                 <p style="margin-bottom: 0"><b>Edit Tags</b></p>
                 <div id="editor-tags"></div>
+                <button id="delete-button">Delete Post</button>
                 <button id="handle">
                     <span class="material-icons button-show desktop">chevron_right</span>
                     <span class="material-icons button-hide desktop">chevron_left</span>

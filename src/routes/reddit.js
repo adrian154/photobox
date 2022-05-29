@@ -38,7 +38,7 @@ module.exports = async (req, res) => {
 
     const resp = await fetch(url);
     const data = await resp.json();
-    const posts = (await Promise.all(data.data.children.map(child => child.data).map(processPost))).filter(Boolean);
+    const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
 
     res.json({
         name: "Reddit Preview",

@@ -4,7 +4,7 @@
 const Database = require("better-sqlite3");
 const Table = require("./crud.js");
 
-const db = new Database("data/test.db");
+const db = new Database("data/site.db");
 db.pragma("foreign_keys = ON");
 
 // tables
@@ -82,7 +82,8 @@ Posts.remove = postid => {
 };
 
 // --- collections
-Collections.add = Collections.insert(["name", "type", "storageEngine", "feedURL"]).fn();
+Collections.addPhotobox = Collections.insert({name: "?", type: "'photobox'", storageEngine: "?"}).fn();
+Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", storageEngine: "?"}).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
 Collections.getAll = Collections.select("*").fn({all: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});

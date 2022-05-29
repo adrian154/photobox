@@ -51,7 +51,7 @@ header {
     color: #ffffff;
     align-items: center;
     box-sizing: border-box;
-    z-index: 1;
+    z-index: 2;
     padding: 0 1.0em;
 }
 
@@ -84,7 +84,7 @@ header button:hover {
     align-items: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
 
     /* hide button text, just show an icon */
     .vert-align span:last-child {
@@ -93,10 +93,6 @@ header button:hover {
 
     header button {
         margin: 0;
-    }
-    
-    header button:last-child {
-        margin-right: 1.0em;
     }
         
 }
@@ -145,7 +141,6 @@ header button:hover {
     bottom: 0.3em;
     right: 0.3em;
     font-weight: 600;
-    border-radius: 5px;
     z-index: 1;
     font-size: 14pt;
 }
@@ -272,6 +267,7 @@ header button:hover {
 #slideshow {
     overflow: hidden;
     background-color: #111;
+    z-index: 3;
 }
 
 #slideshow-content {
