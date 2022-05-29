@@ -37,7 +37,7 @@ input[type="text"] {
 
 /* ----- layout ----- */
 main {
-    max-width: 95em;
+    max-width: 80em;
     margin: 3.0em auto;
 }
 
@@ -329,11 +329,12 @@ header button:hover {
 #collections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    padding: 1.0em;
 }
 
 .collection-preview {
     flex-basis: 15em;
-    margin: 1.0em;
+    margin: 0.5em;
 }
 
 .collection-preview img {
@@ -348,13 +349,13 @@ header button:hover {
 .collection-preview span { display: block; }
 
 .collection-title {
-    font-size: 1.3em;
+    font-size: 15pt;
     font-weight: 600;
     overflow-wrap: break-word;
 }
 
 .post-count {
-    font-size: 1.1em;
+    font-size: 12pt;
     font-weight: normal;
     opacity: 60%;
 }

@@ -50,7 +50,6 @@ Here is the full documentation of all fields in the configuration file.
         * `bucketID`: the bucket's ID
         * `keyID`: the application key's ID
         * `key`: the application key
-* `redditFeedURLs`: OPTIONAL. An object where the keys are feed names, and the values are feed URLs. See the section about Reddit for more info.
 * `imgurClientID`: OPTIONAL. The client ID of your Imgur application. Used to process Imgur posts when using Photobox as a Reddit viewer.
 
 You don't need to provide configuration for any storage engines, but the field must exist and contain a valid object.
@@ -65,7 +64,3 @@ proxy_request_buffering off;
 ```
 
 This lets Photobox manage upload size limits, but more importantly, it prevents the file from being buffered in memory or saved to a temporary file before being passed to Photobox.
-
-# Reddit
-
-Ultimately, I created Photobox for personal use, so it's also capable of 
