@@ -129,14 +129,13 @@ header button:hover {
     position: relative;
     margin: 2px;
     min-width: 0;
-    background-color: #cacaca;
+    transition: 0.3s;
 }
 
 .photogrid-item img {
     width: 100%;
     height: auto;
     display: block;
-    transition: 0.3s;
 }
 
 .duration {
@@ -195,7 +194,7 @@ header button:hover {
 }
 
 /* ----- upload ----- */
-#upload-button, #create-button {
+#upload-button, #create-button, #open-button {
     width: 100%;
     color: #ffffff;
     background-color: #2bc266;
@@ -333,7 +332,7 @@ header button:hover {
 /* ----- homepage ----- */
 #collections {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .collection-preview {

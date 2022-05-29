@@ -25,11 +25,11 @@ class PhotoGrid {
         img.width = preview.width;
         img.height = preview.height;
         img.src = preview.url;
-        img.style.opacity = "0%";
+        container.style.opacity = "0%";
         container.append(img);
 
         img.addEventListener("load", () => {
-            img.style.opacity = "100%";
+            container.style.opacity = "100%";
         });
 
         // if its a video, add the duration

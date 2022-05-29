@@ -11,7 +11,8 @@ class App {
         this.createCollectionDialog = new CreateCollectionDialog();
         this.editor = new PostEditor();
         this.slideshow = new Slideshow();
-        
+        this.redditBrowser = new RedditBrowser();
+
         // load tags; when we do this isn't really important, to be fair
         fetch("/api/tags").then(resp => resp.json()).then(tags => {
             this.uploader.onTagsLoaded(tags);
@@ -105,7 +106,6 @@ class App {
                     return true;
                 }
                 if(this.receivedUrls.has(post.url)) {
-                    console.log("filtering...");
                     return false; 
                 }
                 this.receivedUrls.add(post.url);

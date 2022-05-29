@@ -124,3 +124,43 @@ class SetTagPicker extends TagPicker {
     }
 
 }
+
+class RedditBrowser extends HiddenLayer {
+
+    constructor() {
+        super("reddit-browser");
+        document.getElementById("browse-reddit").addEventListener("click", () => this.show());
+        this.name = document.getElementById("reddit-feed-name");
+        this.subredditButton = document.getElementById("reddit-type-subreddit");
+        this.sort = document.getElementById("reddit-sort");
+        this.period = document.getElementById("time-period");
+        this.onSortChanged();
+        this.sort.addEventListener("input", () => this.onSortChanged());
+        this.layer.querySelector("form").addEventListener("submit", event => {
+            this.go();
+            event.preventDefault();
+        });
+    }
+
+    onSortChanged() {
+        if(this.sort.value === "top" || this.sort.value === "controversial") {
+            this.period.style.display = "";
+        } else {
+            this.period.style.display = "none";
+        }
+    }
+
+    go() {
+        const destUrl = new URL("/", window.location.origin);
+        destUrl.searchParams.set("reddit", 1);
+        if(this.subredditButton.checked) {
+            destUrl.searchParams.set("r", this.name.value);
+        } else {
+            destUrl.searchParams.set("u", this.name.value);
+        }
+        destUrl.searchParams.set("sort", this.sort.value);
+        destUrl.searchParams.set("period", this.period.value);
+        window.location.href = destUrl;
+    }
+
+}

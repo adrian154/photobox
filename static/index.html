@@ -19,6 +19,7 @@
             <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
             <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
             <button id="show-post-filter"><span class="vert-align"><span class="material-icons">sort</span><span>&nbsp; Sort Posts</span></span></button>
+            <button id="browse-reddit"><span class="vert-align"><img src="/images/reddit-logo.png" style="width: 2.0rem"><span>&nbsp; Browse Reddit</span></span></button>
         </header>
 
         <main>
@@ -40,6 +41,35 @@
                 <div class="dialog">
                     <h1>Upload Progress</h1>
                     <div id="progress"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="background" id="reddit-browser" style="display: none">
+            <div class="dialog-outer">
+                <div class="dialog">
+                    <form>
+                        <h1>Browse Reddit</h1>
+                        <input type="text" class="rounded" id="reddit-feed-name" placeholder="Subreddit or username..." required><br> 
+                        <input type="radio" name="reddit-feed-type" id="reddit-type-subreddit" required><label for="reddit-type-subreddit">subreddit</label>
+                        <input type="radio" name="reddit-feed-type" id="reddit-type-user" required><label for="reddit-type-user">user</label>
+                        <p><b>Sort</b></p>
+                        <select id="reddit-sort" class="rounded">
+                            <option>hot</option>
+                            <option>new</option>
+                            <option>top</option>
+                            <option>controversial</option>
+                        </select>
+                        <select id="time-period" class="rounded">
+                            <option>hour</option>
+                            <option>day</option>
+                            <option>week</option>
+                            <option>month</option>
+                            <option>year</option>
+                            <option>all</option>
+                        </select>
+                        <button type="submit" id="open-button">Open</button>
+                    </form>
                 </div>
             </div>
         </div>
