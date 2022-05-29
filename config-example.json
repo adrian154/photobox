@@ -1,0 +1,19 @@
+{
+    "port": 80,
+    "processing": {
+        "concurrency": 3,
+        "previewHeight": 480,
+        "videoPreviewHeight": 180,
+        "videoPreviewClips": 10,
+        "videoPreviewClipLength": 1,
+        "videoDisplayHeight": 480,
+        "minDisplaySize": 900,
+        "maxDisplaySize": 1920
+    },
+    "storageEngines": {
+        "local": {
+            "type": "local",
+            "path": "data/objects"
+        }
+    }
+}

@@ -4,10 +4,11 @@
  * Response: (JSON) list of collection names
  */
 const {Collections} = require("../data-layer.js");
+const feeds = require("../feed-providers/feeds.js");
 
 module.exports = (req, res) => {
-    res.json(Collections.getNames().map(collection => {
-        const post = Collections.getPreviewPost(collection);
-        return {name: collection, preview: post?.versions.preview.url, numPosts: Collections.getNumPosts(collection)};
+    res.json(Collections.getAll().map(collection => {
+        const feedProvider = feeds[collection.type];
+        return feedProvider.getPreview(collection.name);
     }));
 };

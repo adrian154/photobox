@@ -14,7 +14,7 @@ class PhotoGrid {
         // create container, distribute width proportionally
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
-        container.style.flexBasis = preview.width / preview.height * 20 + "vh";
+        container.style.flexBasis = preview.width / preview.height * 20 + "em";
         container.style.flexGrow = preview.width / preview.height * 10; // make sure flex-grow > 1 so things grow, the absolute value isn't important
         this.grid.insertBefore(container, this.placeholder);
 
@@ -25,16 +25,25 @@ class PhotoGrid {
         img.width = preview.width;
         img.height = preview.height;
         img.src = preview.url;
+        container.style.opacity = "0%";
         container.append(img);
 
+        img.addEventListener("load", () => {
+            container.style.opacity = "100%";
+        });
+
         // if its a video, add the duration
-        if(post.duration) {
+        if(post.type === "video" || post.duration) {
             const duration = document.createElement("span");
             duration.classList.add("duration");
-            duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
+            if(post.duration) {
+                duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
+            } else {
+                duration.textContent = "Video"; // we might not know the duration
+            }
             container.append(duration);
         }
-
+    
         // video hover preview
         if(post.versions.videoPreview) {
             
@@ -69,8 +78,8 @@ class PhotoGrid {
         post.photogridContainer = container;
 
         // slideshow logic
-        slideshow.addPost(post);
-        img.addEventListener("click", () => slideshow.show(post));
+        app.slideshow.addPost(post);
+        img.addEventListener("click", () => app.slideshow.show(post));
 
     }
 

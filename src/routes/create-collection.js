@@ -17,7 +17,7 @@ module.exports = (req, res) => {
     if(Collections.get(name)) return res.status(400).json({error: "A collection with that name already exists"});
     if(!req.storageEngines[storageEngine]) return res.status(400).json({error: "No such storage engine"});
 
-    Collections.add({name, storageEngine});
+    Collections.addPhotobox(name, storageEngine);
     res.json({});
 
 };

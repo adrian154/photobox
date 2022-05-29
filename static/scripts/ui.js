@@ -124,3 +124,67 @@ class SetTagPicker extends TagPicker {
     }
 
 }
+
+class RedditBrowser extends HiddenLayer {
+
+    constructor() {
+        
+        super("reddit-browser");
+        document.getElementById("browse-reddit").addEventListener("click", () => this.show());
+        
+        // get elements
+        this.name = document.getElementById("reddit-feed-name");
+        this.subredditButton = document.getElementById("reddit-type-subreddit");
+        this.sort = document.getElementById("reddit-sort");
+        this.period = document.getElementById("time-period");
+        this.sort.addEventListener("input", () => this.onSortChanged());
+        
+        // button logic
+        this.layer.querySelector("form").addEventListener("submit", event => {
+            this.go();
+            event.preventDefault();
+        });
+
+        // restore values based on url
+        this.restoreValues();
+
+    }
+
+    restoreValues() {
+        const params = new URL(window.location).searchParams;
+        if(params.has("reddit")) {
+            if(params.has("r")) {
+                this.name.value = params.get("r");
+                this.subredditButton.checked = true;
+            } else if(params.has("u")) {
+                this.name.value = params.get("u");
+                document.getElementById("reddit-type-user").checked = true;
+            }
+            this.sort.value = params.get("sort");
+            this.period.value = params.get("period");            
+        }
+        this.onSortChanged();
+    }
+
+    onSortChanged() {
+        if(this.sort.value === "top" || this.sort.value === "controversial") {
+            this.period.style.display = "";
+        } else {
+            this.period.style.display = "none";
+        }
+    }
+
+    go() {
+        const destUrl = new URL("/", window.location.origin);
+        destUrl.searchParams.set("reddit", 1);
+        if(this.subredditButton.checked) {
+            destUrl.searchParams.set("r", this.name.value);
+        } else {
+            destUrl.searchParams.set("u", this.name.value);
+        }
+        destUrl.searchParams.set("sort", this.sort.value);
+        destUrl.searchParams.set("period", this.period.value);
+        window.location.href = destUrl;
+    }
+
+}

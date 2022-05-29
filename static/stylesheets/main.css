@@ -38,7 +38,7 @@ input[type="text"] {
 /* ----- layout ----- */
 main {
     max-width: 95em;
-    margin: auto;
+    margin: 3.0em auto;
 }
 
 header {
@@ -51,7 +51,7 @@ header {
     color: #ffffff;
     align-items: center;
     box-sizing: border-box;
-    z-index: 1;
+    z-index: 2;
     padding: 0 1.0em;
 }
 
@@ -84,7 +84,7 @@ header button:hover {
     align-items: center;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 720px) {
 
     /* hide button text, just show an icon */
     .vert-align span:last-child {
@@ -93,10 +93,6 @@ header button:hover {
 
     header button {
         margin: 0;
-    }
-    
-    header button:last-child {
-        margin-right: 1.0em;
     }
         
 }
@@ -122,12 +118,14 @@ header button:hover {
     display: flex;
     flex-wrap: wrap;
     margin-top: 2.0em;
+    font-size: 10px;
 }
 
 .photogrid-item {
     position: relative;
     margin: 2px;
     min-width: 0;
+    transition: 0.3s;
 }
 
 .photogrid-item img {
@@ -143,7 +141,6 @@ header button:hover {
     bottom: 0.3em;
     right: 0.3em;
     font-weight: 600;
-    border-radius: 5px;
     z-index: 1;
     font-size: 14pt;
 }
@@ -170,6 +167,12 @@ header button:hover {
     z-index: 1;
 }
 
+#status-text {
+    text-align: center;
+    opacity: 75%;
+    font-size: 16pt;
+}
+
 /* ----- dialogs ----- */
 .dialog-outer {
     max-width: 29em;
@@ -186,7 +189,7 @@ header button:hover {
 }
 
 /* ----- upload ----- */
-#upload-button, #create-button {
+#upload-button, #create-button, #open-button {
     width: 100%;
     color: #ffffff;
     background-color: #2bc266;
@@ -264,6 +267,7 @@ header button:hover {
 #slideshow {
     overflow: hidden;
     background-color: #111;
+    z-index: 3;
 }
 
 #slideshow-content {
@@ -324,14 +328,7 @@ header button:hover {
 /* ----- homepage ----- */
 #collections {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14em, 1fr));
-}
-
-/* two columns on mobile vertical */
-@media (max-width: 600px) {
-    #collections {
-        grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));  
-    }
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
 .collection-preview {
@@ -339,41 +336,19 @@ header button:hover {
     margin: 1.0em;
 }
 
-.collection-preview .img-outer {
+.collection-preview img {
     position: relative;
     width: 100%;
-    height: 12em;
-}
-
-.collection-preview .img-outer img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: scale-down;
+    aspect-ratio: 1;
+    object-fit: cover;
     border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-    backdrop-filter: blur(4px);
-}
-
-.collection-preview .img-outer .preview-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.collection-preview img:before {
-    filter: blur(8px);
 }
 
 .collection-preview span { display: block; }
 
 .collection-title {
-    font-size: 1.5em;
+    font-size: 1.3em;
     font-weight: 600;
     overflow-wrap: break-word;
 }

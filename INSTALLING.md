@@ -28,53 +28,32 @@ photobox:
 
 These configurations will bind to port 3006 on 127.0.0.1, so no remote connections will be able to access the site. This is because Photobox is intended to be used with a reverse proxy.
 
-You don't necessarily have to create a bind mount for `/app/tmp`, but I strongly recommend doing so or else all uploads will be buffered in memory, potentially causing very high memory usage.
+The bind mount for `/app/tmp` is not strictly necessary; you do not need it if you're okay with all temporary files being stored in memory.
 
-Photobox can be installed standalone through the following steps:
-
-* Install [NodeJS](https://nodejs.org/en/download/).
-* Clone the GitHub repo.
-* Run `npm install` in the project root.
-* Set up your configuration file (`config.json`) in the project root.
-* The app can now be started with `node index.js`.
+Photobox can also be installed standalone; simply install [NodeJS](https://nodejs.org/en/download/), clone this Git repo, run `npm install` in the project root, and start the app with `node index.js` when ready.
 
 # Configuration
 
-Photobox requires a configuration file, which looks like this:
+Photobox requires a configuration file called `config.json` to be present. A ready-to-use example is available at [config-example.json](https://github.com/adrian154/photobox/blob/master/config-example.json).
 
-```json
-{
-    "port": 80,
-    "processingConcurrency": 1,
-    "storageEngines": {
-        "local": {
-            "type": "local",
-            "path": "data/objects"
-        },
-        "b2": {
-            "type": "backblaze",            
-            "bucket": "my-bucket",
-            "bucketID": "REDACTED",
-            "keyID": "REDACTED",
-            "key": "REDACTED"
-        }
-    }
-}
-```
+Here is the full documentation of all fields in the configuration file.
 
 * `port`: the port which Photobox will listen on. 
-* `processingConcurrency`: how many uploads Photobox will attempt to process at once. Depending on how many resources are available, you may want to increase this value to process uploads faster.
-* `storageEngines`: configuration for each individual storage backend. The object keys are the names of the storage engines.
-    * There are two supported storage engines: `local`, which saves files to a directory, and `b2`.
-    * `local`:
+* `processingConcurrency`: how many uploads Photobox will attempt to process at once. If enough resources are available, you could increase this value to speed up processing.
+* `storageEngines`: configuration for each individual storage backend. The object keys are the names of the storage engines, and the values are the configurations for each storage engines.
+    * **Local Storage Engine**
+        * `type`: `local`
         * `path`: the path where objects are stored
-    * `b2`:
+    * **Backblaze Storage Engine**
+        * `type`: `backblaze`
         * `bucket`: the name of the bucket which objects will be uploaded to
         * `bucketID`: the bucket's ID
         * `keyID`: the application key's ID
         * `key`: the application key
+* `redditFeedURLs`: OPTIONAL. An object where the keys are feed names, and the values are feed URLs. See the section about Reddit for more info.
+* `imgurClientID`: OPTIONAL. The client ID of your Imgur application. Used to process Imgur posts when using Photobox as a Reddit viewer.
 
-Any amount of storage engines can be configured; here, the two supported types are shown for completeness.
+You don't need to provide configuration for any storage engines, but the field must exist and contain a valid object.
 
 # HTTPS
 
@@ -86,3 +65,7 @@ proxy_request_buffering off;
 ```
 
 This lets Photobox manage upload size limits, but more importantly, it prevents the file from being buffered in memory or saved to a temporary file before being passed to Photobox.
+
+# Reddit
+
+Ultimately, I created Photobox for personal use, so it's also capable of 

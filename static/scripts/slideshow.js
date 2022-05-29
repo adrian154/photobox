@@ -11,6 +11,7 @@ class PostEditor {
         this.tagContainer = document.getElementById("editor-tags");
         this.postDate = document.getElementById("editor-post-date");
         this.collectionLink = document.getElementById("editor-collection-link");
+        this.sourceLink = document.getElementById("editor-source-link");
         this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
         
         // handle logic
@@ -22,7 +23,7 @@ class PostEditor {
                 method: "DELETE"
             }).then(resp => {
                 if(resp.ok) {
-                    slideshow.deletePost(this.post);
+                    app.slideshow.deletePost(this.post);
                 } else {
                     alert("Failed to delete post: HTTP status " + resp.status);
                 }
@@ -50,13 +51,29 @@ class PostEditor {
     }
 
     update(post) {
+
         this.post = post;
         this.originalLink.href = post.versions.original.url;
         this.preview.src = post.versions.preview.url;
         this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
-        this.collectionLink.textContent = post.collection;
-        this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+
+        if(post.collection) {
+            this.collectionLink.textContent = post.collection;
+            this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+        } else {
+            this.collectionLink.textContent = "(unknown)";
+            this.collectionLink.href = "#";
+        }
+
+        if(post.srcLink) {
+            this.sourceLink.style.display = "";
+            this.sourceLink.href = post.srcLink;
+        } else {
+            this.sourceLink.style.display = "none";
+        }
+
         this.resetTagPicker();
+
     }
 
 }
@@ -85,6 +102,14 @@ class LiveTagPicker extends TagPicker {
     }
 
 }
+
+// create <source> elements for videos
+const createSource = version => {
+    const source = document.createElement("source");
+    source.src = version.url;
+    if(source.type) source.type = version.contentType;
+    return source;
+};
 
 class Slideshow extends HiddenLayer {
 
@@ -135,7 +160,7 @@ class Slideshow extends HiddenLayer {
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
                 if(entry.isIntersecting) {
-                    editor.update(entry.target.post);
+                    app.editor.update(entry.target.post);
                     this.populateFrames(entry.target.post.index);
                 }
             }
@@ -192,19 +217,27 @@ class Slideshow extends HiddenLayer {
             img.classList.add("slideshow-centered");
             img.src = post.versions.display.url;
             img.referrerPolicy = "no-referrer";
+            img.loading = "eager"; // we're handling the lazy-loading in JS, so we want the images we've selected to immediately load
             post.frame.append(img);
         } else if(post.type === "video") {
+            
             // create video
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
             video.poster = post.versions.preview.url;
             video.controls = true;
             video.loop = true;
-            video.width = post.versions.original.width;
-            video.height = post.versions.original.height;
-            video.src = post.versions.original.url || post.versions.display.url;
             video.textContent = "This video can't be played on your browser :(";
             post.frame.append(video);
+
+            if(post.versions.original?.width) {
+                video.width = post.versions.original.width;
+                video.height = post.versions.original.height;
+            }
+
+            // add sources
+            video.append(createSource(post.versions.original), post.versions.display && createSource(post.versions.display));
+
         } else {
             alert("Unsupported post type");
         }

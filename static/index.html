@@ -18,7 +18,7 @@
             <a href="/" id="logo"><img src="images/logo-header.png"></a>
             <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
             <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
-            <button id="show-post-filter"><span class="vert-align"><span class="material-icons">dynamic_feed</span><span>&nbsp; Filter Posts</span></span></button>
+            <button id="browse-reddit"><span class="vert-align"><img src="/images/reddit-logo.png" style="width: 2.0rem"><span>&nbsp; Browse Reddit</span></span></button>
         </header>
 
         <main>
@@ -28,6 +28,7 @@
             <div id="photogrid">
                 <div id="photogrid-placeholder" style="flex-grow: 10000"></div>
             </div>
+            <p id="status-text"></p>
         </main>
 
         <!-- fixed pos stuff -->
@@ -43,6 +44,35 @@
             </div>
         </div>
 
+        <div class="background" id="reddit-browser" style="display: none">
+            <div class="dialog-outer">
+                <div class="dialog">
+                    <form>
+                        <h1>Browse Reddit</h1>
+                        <input type="text" class="rounded" id="reddit-feed-name" placeholder="Subreddit or username..." name="reddit-feed-name" required><br> 
+                        <input type="radio" name="reddit-feed-type" id="reddit-type-subreddit" required><label for="reddit-type-subreddit">subreddit</label>
+                        <input type="radio" name="reddit-feed-type" id="reddit-type-user" required><label for="reddit-type-user">user</label>
+                        <p><b>Sort</b></p>
+                        <select id="reddit-sort" class="rounded">
+                            <option>hot</option>
+                            <option>new</option>
+                            <option>top</option>
+                            <option>controversial</option>
+                        </select>
+                        <select id="time-period" class="rounded">
+                            <option>hour</option>
+                            <option>day</option>
+                            <option>week</option>
+                            <option>month</option>
+                            <option>year</option>
+                            <option>all</option>
+                        </select>
+                        <button type="submit" id="open-button">Open</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div class="background" id="slideshow" style="display: none">
             <button class="close-button" style="color: #ffffff">&times;</button>
             <div id="slideshow-content" class="no-scrollbar" tabindex="0"></div>
@@ -51,9 +81,10 @@
                 <p><span id="editor-post-date"></span> &bull; <a id="editor-collection-link"></a></p>
                 <img id="editor-preview">
                 <p><a id="editor-original-link" target="_blank">View Original</a></p>
-                <button id="delete-button">Delete Post</button>
+                <p><a id="editor-source-link" target="_blank">View Source</a></p>
                 <p style="margin-bottom: 0"><b>Edit Tags</b></p>
                 <div id="editor-tags"></div>
+                <button id="delete-button">Delete Post</button>
                 <button id="handle">
                     <span class="material-icons button-show desktop">chevron_right</span>
                     <span class="material-icons button-hide desktop">chevron_left</span>

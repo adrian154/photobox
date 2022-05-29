@@ -126,6 +126,7 @@ module.exports = class {
     async save(id, versions) {
         for(const versionName in versions) {
             const version = versions[versionName];
+            if(!version) continue;
             const {url, fileName, fileId} = await this.uploadFile(version.path, `${id}-${versionName}`, version.contentType);
             version.url = url;
             version.fileName = fileName;
