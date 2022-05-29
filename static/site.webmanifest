@@ -2,7 +2,8 @@
     "name": "Photobox",
     "short_name": "Photobox",
     "lang": "en-US",
-    "start_url": ".",
+    "start_url": "/",
+    "scope": ".",
     "description": "A simple, self-hosted image gallery",
     "icons": [
         {
