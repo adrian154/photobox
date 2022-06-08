@@ -133,8 +133,10 @@ class App {
     }
 
     onCollectionLoaded(collection) {
+        const collectionName = document.getElementById("collection-name");
         document.title = `${collection.name} - photobox`;
-        document.getElementById("collection-name").textContent = collection.name;
+        collectionName.style.display = "";
+        collectionName.textContent = collection.name;
         if(collection.type === "photobox") {
             this.uploader.onCollectionLoaded(collection);
         }

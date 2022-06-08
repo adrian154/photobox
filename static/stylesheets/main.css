@@ -42,7 +42,7 @@ input[type="text"] {
 /* ----- layout ----- */
 main {
     max-width: 85em;
-    margin: 3.0em auto;
+    margin: auto;
 }
 
 nav {
@@ -348,6 +348,12 @@ nav button:hover {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     padding: 1.0em;
+}
+
+@media (max-width: 700px) {
+    #collections {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    }
 }
 
 .collection-preview {
