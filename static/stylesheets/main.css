@@ -325,11 +325,21 @@ nav button:hover {
     pointer-events: none;
 }
 
-.slideshow-frame img, .slideshow-frame video {
+.slideshow-frame img {
     margin: auto;
     max-width: 100%;
     max-height: 100%;
     pointer-events: initial;
+}
+
+.slideshow-frame .video-player {
+    pointer-events: initial;
+}
+
+.video-player video {
+    margin: auto;
+    max-width: 100%;
+    max-height: 100%;
 }
 
 #delete-button {
@@ -469,3 +479,4 @@ nav button:hover {
 @media (min-width: 600px) {
     #post-editor .mobile, #post-editor.shown .mobile { display: none; }
 }
+

@@ -173,7 +173,7 @@ module.exports = async (filepath, tags) => {
     }
 
     // swap video stream dimensions based on rotation
-    if(videoStream.tags.rotate == "90" || videoStream.tags.rotate == "-90") {
+    if(videoStream.tags.rotate == "90" || videoStream.tags.rotate == "270" || videoStream.tags.rotate == "-90") {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 

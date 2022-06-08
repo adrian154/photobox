@@ -221,6 +221,11 @@ class Slideshow extends HiddenLayer {
             post.frame.append(img);
         } else if(post.type === "video") {
             
+            // parent
+            const container = document.createElement("div");
+            container.classList.add("video-player");
+            post.frame.append(container);
+
             // create video
             const video = document.createElement("video");
             video.classList.add("slideshow-centered");
@@ -228,15 +233,33 @@ class Slideshow extends HiddenLayer {
             video.controls = true;
             video.loop = true;
             video.textContent = "This video can't be played on your browser :(";
-            post.frame.append(video);
+            container.append(video);
 
             if(post.versions.original?.width) {
                 video.width = post.versions.original.width;
                 video.height = post.versions.original.height;
             }
 
-            // add sources
-            video.append(createSource(post.versions.original), post.versions.display && createSource(post.versions.display));
+            const original = createSource(post.versions.original),
+                  display = post.versions.display && createSource(post.versions.display);
+
+            video.append(original, display);
+
+            // add resolution picker
+            if(original && display) {
+                const picker = document.createElement("button");
+                picker.style = "position: absolute; top: 0; left: 0;";
+                picker.textContent = "Toggle";
+                container.append(picker);
+                picker.addEventListener("click", () => {
+                    const time = video.currentTime;
+                    video.prepend(display);
+                    video.load();
+                    video.currentTime = time;
+                    video.play();
+                });
+            }
+
 
         } else {
             alert("Unsupported post type");
