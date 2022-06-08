@@ -1,6 +1,6 @@
 # Installing Photobox
 
-The easiest way to install Photobox is through Docker. An image is available on Docker Hub as [adrian154/photobox]([Docker Hub](https://hub.docker.com/r/adrian154/photobox)). Here are some examples of how you might run Photobox using Docker:
+The easiest way to install Photobox is through Docker. An image is available on Docker Hub as [adrian154/photobox](https://hub.docker.com/r/adrian154/photobox). Here are some examples of how you might run Photobox using Docker:
 
 ## Docker Command
 
