@@ -87,7 +87,10 @@ class Uploader extends HiddenLayer {
     constructor() {
         super("uploader");
         this.filePicker = document.getElementById("upload-files");
-        document.getElementById("upload-button").addEventListener("click", () => this.upload());
+        this.layer.querySelector("form").addEventListener("submit", event => {
+            this.upload();
+            event.preventDefault();
+        });
     }
 
     onTagsLoaded(tags) {
@@ -122,11 +125,6 @@ class Uploader extends HiddenLayer {
     }
 
     async upload() {
-
-        if(this.filePicker.files.length == 0) {
-            alert("You didn't select any files to upload.");
-            return;
-        }
 
         const tags = this.tagPicker.value();
         const files = [];

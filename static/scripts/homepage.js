@@ -15,7 +15,7 @@ class CreateCollectionDialog extends HiddenLayer {
 
         // logic
         const name = document.getElementById("new-collection-name");
-        document.getElementById("create-button").addEventListener("click", () => {
+        this.layer.querySelector("form").addEventListener("submit", event => {
             fetch("/api/collections/create", {
                 method: "POST",
                 headers: {"content-type": "application/json"},
@@ -30,6 +30,7 @@ class CreateCollectionDialog extends HiddenLayer {
                     window.location.href = `/?collection=${encodeURIComponent(name.value)}`;
                 }
             });
+            event.preventDefault();
         });
 
     }
