@@ -141,21 +141,25 @@ module.exports = {
             url.searchParams.set("after", after);
         }
 
-        const resp = await fetch(url);
-        const data = await resp.json();
-        const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
+        try {
+            const resp = await fetch(url);
+            const data = await resp.json();
+            const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
 
-        // cache preview
-        if(!after) {
+            // cache preview
+            if(!after) {
 
-            // account for post clusters
-            const previewPost = Array.isArray(posts[0]) ? posts[0][0] : posts[0];
-            previews[collection.name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
-            
+                // account for post clusters
+                const previewPost = Array.isArray(posts[0]) ? posts[0][0] : posts[0];
+                previews[collection.name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
+                
+            }
+
+            return {posts, after: data.data.after};
+        } catch(err) {
+            return {name: "Invalid", posts: []};
         }
 
-        return {posts, after: data.data.after};
-        
     },
     processPost
 };

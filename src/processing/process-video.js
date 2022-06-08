@@ -121,7 +121,7 @@ const generateDisplayVersion = async (filepath, meta, videoStream, audioStream) 
         flags.push("-c:v", "copy");
     }
 
-    if(audioStream.codec_name !== "aac") {
+    if(audioStream?.codec_name !== "aac") {
         needsTranscode = true;
         flags.push("-c:a", "aac");
     } else {

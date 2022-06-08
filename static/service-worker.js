@@ -1,4 +1,2 @@
 // quick hack to make the pwa installable, TODO: actually do stuff here
-self.addEventListener("fetch", () => {
-    console.log("fetch");
-});
+self.addEventListener("fetch", () => {});

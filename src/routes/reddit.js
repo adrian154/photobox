@@ -36,14 +36,18 @@ module.exports = async (req, res) => {
         url.searchParams.set("after", req.query.after);
     }
 
-    const resp = await fetch(url);
-    const data = await resp.json();
-    const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
+    try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
 
-    res.json({
-        name: "Reddit Preview",
-        posts,
-        after: data.data.after
-    });
+        res.json({
+            name: "Reddit Preview",
+            posts,
+            after: data.data.after
+        });
+    } catch(err) {
+        return {name: "Invalid", posts: []};
+    }
 
 };

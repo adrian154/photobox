@@ -91,14 +91,7 @@ class App {
 
             // if there is no `after` paramter, this is the initial collection load
             if(!this.url.searchParams.has("after")) {
-
-                document.title = `${collection.name} - photobox`;
-                document.getElementById("collection-name").textContent = collection.name;
-    
-                if(collection.type === "photobox") {
-                    this.uploader.onCollectionLoaded(collection);
-                }
-
+                this.onCollectionLoaded(collection);
             }
 
             // flatten posts; collection.posts may contain arrays (galleries)
@@ -114,12 +107,7 @@ class App {
                 return true;
             }).flat();
 
-            // update # of posts as they arrive
-            this.numPostsLoaded += posts.length;
-            document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
-
-            // consume posts
-            this.photoGrid.onPostsLoaded(posts);
+            this.consumePosts(posts);
 
             // update url
             if(collection.after) {
@@ -142,6 +130,20 @@ class App {
             this.statusText.textContent = err.message
         });
 
+    }
+
+    onCollectionLoaded(collection) {
+        document.title = `${collection.name} - photobox`;
+        document.getElementById("collection-name").textContent = collection.name;
+        if(collection.type === "photobox") {
+            this.uploader.onCollectionLoaded(collection);
+        }
+    }
+
+    consumePosts(posts) {
+        this.numPostsLoaded += posts.length;
+            document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
+        this.photoGrid.onPostsLoaded(posts);
     }
 
 }

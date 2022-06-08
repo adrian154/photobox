@@ -1,7 +1,7 @@
 {
     "port": 80,
     "processing": {
-        "concurrency": 3,
+        "concurrency": 1,
         "previewHeight": 480,
         "videoPreviewHeight": 180,
         "videoPreviewClips": 10,

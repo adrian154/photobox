@@ -59,7 +59,7 @@ class PhotoGrid {
                         video.loop = true;
                         container.append(video);
                         video.play();
-                    }, 300);
+                    }, 200);
                 }
             });
 

@@ -41,6 +41,18 @@ const Tags = new Table(db, "tags", [
     "tag STRING PRIMARY KEY NOT NULL"
 ]);
 
+const Users = new Table(db, "users", [
+    "username STRING NOT NULL PRIMARY KEY",
+    "passwordHash STRING NOT NULL",
+    "salt STRING NOT NULL"
+]);
+
+const Sessions = new Table(db, "sessions", [
+    "token STRING NOT NULL",
+    "username STRING NOT NULL",
+    "FOREIGN KEY(username) REFERENCES users(username)"
+]);
+
 // FIXME
 db.exec("INSERT OR IGNORE INTO collections (name, storageEngine, type) VALUES ('test', 'local', 'photobox')");
 
@@ -76,14 +88,14 @@ const getPost = Posts.select("*").where("postid = ?").fn();
 Posts.get = postid => rowToPost(getPost(postid));
 
 const deletePost = Posts.delete("postid = ?").fn();
-Posts.remove = postid => {
+Posts.remove = db.transaction(postid => {
     Posts.removeAllTags(postid);
     deletePost(postid);
-};
+});
 
 // --- collections
 Collections.addPhotobox = Collections.insert({name: "?", type: "'photobox'", storageEngine: "?"}).fn();
-Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", storageEngine: "?"}).fn();
+Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", feedURL: "?"}).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
 Collections.getAll = Collections.select("*").fn({all: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});
@@ -97,4 +109,20 @@ Collections.getPreviewPost = collection => rowToPost(getPreviewPost(collection))
 Tags.getAll = Tags.select("tag").fn({all: true, pluck: true});
 Tags.add = Tags.insert({tag: "?"}).or("ignore").fn();
 
-module.exports = {Collections, Posts, Tags};
+// --- users
+Users.get = Users.select("*").where("username = ?").fn();
+Users.add = Users.insert(["username", "passwordHash", "salt"]).fn();
+
+const removeUser =  Users.delete("username = ?").fn();
+Users.remove = db.transaction(username => {
+    Sessions.deleteAll(username);
+    removeUser(username);
+});
+
+// --- sessions
+Sessions.get = Sessions.select("*").where("token = ?").fn();
+Sessions.add = Sessions.insert(["token", "username"]).fn();
+Sessions.remove = Sessions.delete("token = ?").fn();
+Sessions.removeAll = Sessions.delete("username = ?").fn();
+
+module.exports = {Collections, Posts, Tags, Users, Sessions};

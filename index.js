@@ -1,3 +1,4 @@
+const cookieParser = require('cookie-parser');
 const {Tags} = require("./src/data-layer.js");
 const metaTags = require("./src/tags.js");
 const config = require("./config.json");
@@ -32,9 +33,15 @@ for(const tag of Object.values(metaTags)) {
     Tags.add(tag);
 }
 
+app.use(cookieParser());
+
+// authentication middleware
+app.use(require("./src/auth.js"));
+
 // serve static files
 app.use(express.static("static"));
 
+app.get("signout", (req, res) => res.sendStatus(401));
 // --- API stuff
 app.use(express.json());
 
