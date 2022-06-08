@@ -1,4 +1,17 @@
-// Base UI classes
+// Base UI classes and other misc ui code
+
+
+// hide nav on scroll
+let lastScrollTop = 0;
+const nav = document.querySelector("nav");
+window.addEventListener("scroll", event => {
+    if(window.scrollY > lastScrollTop) {
+        nav.style.top = "-60px";
+    } else {
+        nav.style.top = 0;
+    }
+    lastScrollTop = window.scrollY;
+}, {passive: true});
 
 class HiddenLayer {
 

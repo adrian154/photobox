@@ -212,6 +212,12 @@ class Slideshow extends HiddenLayer {
 
     populateFrame(post) {
 
+        // TEST: fancy bg
+        const bg = document.createElement("img");
+        bg.classList.add("slideshow-bg");
+        bg.src = post.versions.preview.url;
+        post.frame.append(bg);
+
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
@@ -235,34 +241,56 @@ class Slideshow extends HiddenLayer {
             video.textContent = "This video can't be played on your browser :(";
             container.append(video);
 
-            if(post.versions.original?.width) {
-                video.width = post.versions.original.width;
+            if(post.versions.original?.height) {
                 video.height = post.versions.original.height;
             }
 
             const original = createSource(post.versions.original),
                   display = post.versions.display && createSource(post.versions.display);
-
             video.append(original, display);
 
             // add resolution picker
             if(original && display) {
-                const picker = document.createElement("button");
-                picker.style = "position: absolute; top: 0; left: 0;";
-                picker.textContent = "Toggle";
-                container.append(picker);
-                picker.addEventListener("click", () => {
+
+                const playVersion = version => {
                     const time = video.currentTime;
-                    video.prepend(display);
+                    video.prepend(version);
                     video.load();
                     video.currentTime = time;
                     video.play();
-                });
-            }
+                };
 
+                const picker = document.createElement("div");
+                picker.classList.add("video-picker");
+                container.append(picker);
+
+                const playOriginal = document.createElement("button"), 
+                      playDisplay = document.createElement("button");
+                picker.append(playOriginal, playDisplay);
+
+                playOriginal.textContent = "HD";
+                playDisplay.textContent = "SD";
+
+                playOriginal.addEventListener("click", () => {
+                    playVersion(original);
+                    playOriginal.style.display = "none";
+                    playDisplay.style.display = "";
+                });
+
+                playDisplay.addEventListener("click", () => {
+                    playVersion(display);
+                    picker.classList.toggle("hd");
+                    playOriginal.style.display = "";
+                    playDisplay.style.display = "none";
+                });
+
+                playOriginal.style.display = "none";
+
+            }
 
         } else {
             alert("Unsupported post type");
+            return;
         }
 
     }

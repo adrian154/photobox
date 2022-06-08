@@ -53,9 +53,6 @@ const Sessions = new Table(db, "sessions", [
     "FOREIGN KEY(username) REFERENCES users(username)"
 ]);
 
-// FIXME
-db.exec("INSERT OR IGNORE INTO collections (name, storageEngine, type) VALUES ('test', 'local', 'photobox')");
-
 // --- posts
 const rowToPost = row => {
     if(row) {
