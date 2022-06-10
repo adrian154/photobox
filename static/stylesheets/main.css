@@ -67,6 +67,16 @@ nav button:hover {
     color: #cacaca;
 }
 
+.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+}
+
+#nav-more:hover .dropdown {
+    display: inline-block;
+}
+
 #logo {
     padding: 0.5em;
     margin-right: auto;
@@ -86,7 +96,7 @@ nav button:hover {
 @media (max-width: 720px) {
 
     /* hide button text, just show an icon */
-    .vert-align span:last-child {
+    .vert-align span:nth-child(2) {
         display: none;
     }
 
