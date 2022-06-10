@@ -202,3 +202,73 @@ class RedditBrowser extends HiddenLayer {
     }
 
 }
+
+class Filter extends HiddenLayer {
+
+    constructor() {
+
+        super("filter");
+        this.tagList = document.getElementById("filter-tag-list");
+        this.tags = {};
+        this.enabledTags = new Set();
+
+        this.dropdownButton = document.getElementById("filter-link");
+        this.dropdownButton.addEventListener("click", () => this.show());
+
+    }
+
+    applyFilter() {
+        for(const post of app.slideshow.posts) {
+            for(const tag of post.tags) {
+                if(this.enabledTags.has(tag) || this.enabledTags.size == 0) {
+                    post.photogridContainer.style.display = "";
+                    break;
+                } else {
+                    post.photogridContainer.style.display = "none";
+                }
+            }
+        }
+    }
+
+    onPostsLoaded(posts) {
+
+        this.dropdownButton.style.display = "";
+
+        for(const post of posts) {
+            for(const tag of post.tags) {
+                const entry = this.tags[tag];
+                if(entry) {
+                    entry.count++;
+                    entry.counter.textContent = entry.count;
+                } else {
+                    const li = document.createElement("li");
+                    const button = document.createElement("span");
+                    button.classList.add("tag");
+                    button.textContent = tag;
+                    button.addEventListener("click", () => {
+                        if(button.classList.toggle("selected")) {
+                            this.enabledTags.add(tag);
+                        } else {
+                            this.enabledTags.delete(tag);
+                        }
+                        this.applyFilter();
+                    });
+                    const count = document.createElement("span");
+                    count.classList.add("tag-count");
+                    count.textContent = 1;
+                    li.append(button, " ", count);
+                    this.tags[tag] = {count: 1, element: li, counter: count};
+                }
+            }
+        }
+
+        // sort
+        Object.values(this.tags).sort((a, b) => a.count - b.count).forEach(entry => {
+            if(entry.count > 1) {
+                this.tagList.prepend(entry.element)
+            }
+        });
+
+    }
+
+}

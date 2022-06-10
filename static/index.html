@@ -26,6 +26,7 @@
                     <a id="signin-link" href="/signin.html"><li>Sign In</li></a>
                     <a id="signout-link" href="/signout"><li>Sign Out</li></a>
                     <a id="shuffle-link" style="display: none"><li>Shuffle</li></a>
+                    <a id="filter-link" style="display: none"><li>Filter</li></a>
                     <a href="https://github.com/adrian154/photobox"><li>GitHub</li></a>
                 </ul>
             </button>
@@ -45,6 +46,17 @@
         <!-- fixed pos stuff -->
 
         <div id="upload-indicator" class="clickable" style="display: none">There are uploads in progress.</div>
+
+        <div class="background" id="filter" style="display: none">
+            <div class="dialog-outer">
+                <div class="dialog">
+                    <h1>Filter</h1>
+                    <div id="filter-container">
+                        <ul id="filter-tag-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="background" id="upload-progress" style="display: none">
             <div class="dialog-outer">

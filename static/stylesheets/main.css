@@ -544,3 +544,13 @@ nav button:hover {
 @media (min-width: 600px) {
     #post-editor .mobile, #post-editor.shown .mobile { display: none; }
 }
+
+/* ----- filter ----- */
+#filter-container {
+    max-height: 80vh;
+    overflow: auto;
+}
+
+.tag-count {
+    opacity: 50%;
+}

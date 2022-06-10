@@ -17,6 +17,7 @@ class App {
         this.editor = new PostEditor();
         this.slideshow = new Slideshow();
         this.redditBrowser = new RedditBrowser();
+        this.filter = new Filter();
 
         // load tags; when we do this isn't really important, to be fair
         fetch("/api/info").then(resp => resp.json()).then(info => {
@@ -70,7 +71,6 @@ class App {
         const params = new URL(window.location).searchParams;
         if(params.has("collection")) {
             this.url = new URL(`/api/collections/${encodeURIComponent(params.get("collection"))}`, window.origin);
-            this.url.searchParams.set("type", "reddit");
         } else if(params.has("reddit")) {
 
             this.url = new URL("/api/reddit", window.location.origin);
@@ -185,8 +185,9 @@ class App {
 
     consumePosts(posts) {
         this.numPostsLoaded += posts.length;
-            document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
+        document.getElementById("num-posts").textContent = this.numPostsLoaded + " posts";    
         this.photoGrid.onPostsLoaded(posts);
+        this.filter.onPostsLoaded(posts);
     }
 
 }
