@@ -220,11 +220,10 @@ class Filter extends HiddenLayer {
     applyFilter() {
         for(const post of app.slideshow.posts) {
             for(const tag of post.tags) {
+                post.photogridContainer.style.display = "none";
                 if(this.enabledTags.has(tag) || this.enabledTags.size == 0) {
                     post.photogridContainer.style.display = "";
                     break;
-                } else {
-                    post.photogridContainer.style.display = "none";
                 }
             }
         }
