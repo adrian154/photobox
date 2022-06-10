@@ -11,6 +11,7 @@ class PostEditor {
         this.tagContainer = document.getElementById("editor-tags");
         this.postDate = document.getElementById("editor-post-date");
         this.collectionLink = document.getElementById("editor-collection-link");
+        this.userLink = document.getElementById("editor-user-link");
         this.sourceLink = document.getElementById("editor-source-link");
         this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
         
@@ -60,9 +61,22 @@ class PostEditor {
         if(post.collection) {
             this.collectionLink.textContent = post.collection;
             this.collectionLink.href = `/?collection=${encodeURIComponent(post.collection)}`;
+        } else if(post.r) {
+            const link = new URL("/", window.location.origin);
+            link.searchParams.set("reddit", 1);
+            link.searchParams.set("r", post.r);
+            this.collectionLink.textContent = `r/${post.r}`;
+            this.collectionLink.href = link;
+        }
+
+        if(post.u) {
+            const link = new URL("/", window.location.origin);
+            link.searchParams.set("reddit", 1);
+            link.searchParams.set("u", post.u);
+            this.userLink.textContent = `More from u/${post.u}`;
+            this.userLink.href = link;
         } else {
-            this.collectionLink.textContent = "(unknown)";
-            this.collectionLink.href = "#";
+            this.userLink.textContent = "";
         }
 
         if(post.srcLink) {
@@ -212,11 +226,11 @@ class Slideshow extends HiddenLayer {
 
     populateFrame(post) {
 
-        // TEST: fancy bg
-        const bg = document.createElement("img");
-        bg.classList.add("slideshow-bg");
-        bg.src = post.versions.preview.url;
-        post.frame.append(bg);
+        const bgimg = document.createElement("img");
+        bgimg.src = post.versions.preview.url;
+        bgimg.referrerPolicy = "no-referrer";
+        bgimg.classList.add("slideshow-bg");
+        post.frame.append(bgimg);
 
         if(post.type === "image") {
             const img = document.createElement("img");

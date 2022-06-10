@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <title>home - photobox</title>
         <link href="stylesheets/main.css" rel="stylesheet">
+        <link href="stylesheets/form.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta property="og:title" content="Photobox">
@@ -79,10 +80,11 @@
             <div id="slideshow-content" class="no-scrollbar" tabindex="0"></div>
             <div id="post-editor">
                 <h1>Edit Post</h1>
-                <p><span id="editor-post-date"></span> &bull; <a id="editor-collection-link"></a></p>
+                <p><span id="editor-post-date"></span> &bull; <a id="editor-collection-link" target="_blank"></a></p>
                 <img id="editor-preview">
                 <p><a id="editor-original-link" target="_blank">View Original</a></p>
                 <p><a id="editor-source-link" target="_blank">View Source</a></p>
+                <p><a id="editor-user-link" target="_blank"></a></p>
                 <p style="margin-bottom: 0"><b>Edit Tags</b></p>
                 <div id="editor-tags"></div>
                 <button id="delete-button">Delete Post</button>
@@ -119,9 +121,7 @@
                         <p><b>Name</b></p>
                         <input type="text" class="rounded" id="new-collection-name" required>
                         <p><b>Storage Engine</b></p>
-                        <select id="storage-engine" class="rounded" required>
-                            <option></option>
-                        </select>
+                        <select id="storage-engine" class="rounded"></select>
                         <button id="create-button" type="submit">Create</button>
                     </form>
                 </div>

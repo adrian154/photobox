@@ -88,7 +88,7 @@ module.exports = async (req, res) => {
 
         } catch(error) {
             console.error(error);
-            throw new Error("Internal processing error");
+            throw new Error("Processing failed");
         }
 
     } catch(error) {

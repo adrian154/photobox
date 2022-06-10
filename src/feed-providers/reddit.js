@@ -49,11 +49,13 @@ const processPost = async (redditPost) => {
         srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author],
         url: redditPost.url_overridden_by_dest, // include url so that posts submitted to multiple places can be filtered
+        u: redditPost.author,
+        r: redditPost.subreddit,
         versions: {}
     };
 
     // handle images
-    if(redditPost.post_hint === "image") {
+    if(redditPost.post_hint === "image" && redditPreview) {
         post.type = "image";
         post.versions.preview = redditPreview;
         post.versions.display = post.versions.original = {url: redditPost.url_overridden_by_dest};

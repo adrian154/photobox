@@ -35,15 +35,12 @@ for(const tag of Object.values(metaTags)) {
 
 app.use(cookieParser());
 
-// authentication middleware
-app.use(require("./src/auth.js"));
-
 // serve static files
 app.use(express.static("static"));
 
-app.get("signout", (req, res) => res.sendStatus(401));
 // --- API stuff
 app.use(express.json());
+app.use(require("./src/auth.js"));
 
 // expose some objects to API route handlers
 app.use((req, res, next) => {

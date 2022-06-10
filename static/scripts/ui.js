@@ -198,6 +198,7 @@ class RedditBrowser extends HiddenLayer {
         destUrl.searchParams.set("sort", this.sort.value);
         destUrl.searchParams.set("period", this.period.value);
         window.open(destUrl, "_blank");
+        this.close();
     }
 
 }

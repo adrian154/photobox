@@ -1,5 +1,3 @@
-//const SCALE = window.innerHeight / 5 / 500;
-
 class PhotoGrid {
 
     constructor() {
@@ -25,11 +23,11 @@ class PhotoGrid {
         img.width = preview.width;
         img.height = preview.height;
         img.src = preview.url;
-        container.style.opacity = "0%";
+        img.style.opacity = "0%";
         container.append(img);
 
         img.addEventListener("load", () => {
-            container.style.opacity = "100%";
+            img.style.opacity = "100%";
         });
 
         // if its a video, add the duration
@@ -47,11 +45,13 @@ class PhotoGrid {
         // video hover preview
         if(post.versions.videoPreview) {
             
-            let playPreviewTimeout, video;
+            let playPreviewTimeout, video, progressBar;
 
             container.addEventListener("mouseenter", () => {
                 if(!video) {
                     playPreviewTimeout = setTimeout(() => {
+                        
+                        // play video
                         video = document.createElement("video")
                         video.classList.add("video-preview");
                         video.muted = true;
@@ -59,6 +59,16 @@ class PhotoGrid {
                         video.loop = true;
                         container.append(video);
                         video.play();
+
+                        // create progress bar
+                        progressBar = document.createElement("div");
+                        progressBar.classList.add("video-preview-progress");
+                        container.append(progressBar);
+
+                        video.addEventListener("timeupdate", event => {
+                            progressBar.style.width = video.currentTime / video.duration * 100 + "%";
+                        })
+
                     }, 200);
                 }
             });
@@ -67,7 +77,9 @@ class PhotoGrid {
                 clearTimeout(playPreviewTimeout);
                 if(video) {
                     video.remove();
+                    progressBar.remove();
                     video = null;
+                    progressBar = null;
                 }
             });
 

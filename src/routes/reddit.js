@@ -5,14 +5,16 @@ const fetch = require("node-fetch");
 // FIXME: The user could potentially supply invalid values to cause some bad shenanigans.
 const getFeedURL = params => {
 
-    let url;
+    let url, name;
     if(params.subreddit) {
+        name = "r/" + params.subreddit;
         if(params.sort) {
             url = new URL(`https://reddit.com/r/${params.subreddit}/${params.sort}.json`);
         } else {
             url = new URL(`https://reddit.com/r/${params.subreddit}.json`);
         }
     } else if(params.user) {
+        name = "u/" + params.user;
         url = new URL(`https://reddit.com/user/${params.user}/submitted.json`);
         if(params.sort) {
             url.searchParams.set("sort", params.sort);
@@ -25,13 +27,13 @@ const getFeedURL = params => {
         if(params.period) url.searchParams.set("t", params.period);
     }
 
-    return url;
+    return {url, name};
 
 };
 
 module.exports = async (req, res) => {
 
-    const url = getFeedURL(req.query);
+    const {url, name} = getFeedURL(req.query);
     if(req.query.after) {
         url.searchParams.set("after", req.query.after);
     }
@@ -42,7 +44,7 @@ module.exports = async (req, res) => {
         const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
 
         res.json({
-            name: "Reddit Preview",
+            name,
             posts,
             after: data.data.after
         });

@@ -1,6 +1,9 @@
 // register service worker
 navigator.serviceWorker?.register("/service-worker.js");
 
+// simple unbiased shuffling algorithm; it's not as fast as a Fisher-Yates shuffle but whatever
+const shuffle = arr => arr.map(value => ({value, x: Math.random()})).sort((a, b) => a.x - b.x).map(({value}) => value);
+
 class App {
 
     constructor() {
@@ -55,7 +58,7 @@ class App {
         if(params.has("collection")) {
             this.url = new URL(`/api/collections/${encodeURIComponent(params.get("collection"))}`, window.origin);
             this.url.searchParams.set("type", "reddit");
-        } else if(params.get("reddit")) {
+        } else if(params.has("reddit")) {
 
             this.url = new URL("/api/reddit", window.location.origin);
 
@@ -72,12 +75,19 @@ class App {
 
         }
 
+        this.shuffle = params.has("shuffle");
+        if(this.shuffle) {
+            this.posts = [];
+        }
+
     }
 
     load() {
 
-        this.statusText.textContent = "Loading...";
-        this.loading = true;
+        if(!this.shuffle) {
+            this.statusText.textContent = "Loading...";
+            this.loading = true;
+        }
 
         fetch(this.url).then(resp => {
             if(!resp.ok) {
@@ -107,13 +117,31 @@ class App {
                 return true;
             }).flat();
 
-            this.consumePosts(posts);
-
             // update url
             if(collection.after) {
                 this.url.searchParams.set("after", collection.after);
             } else {
                 this.url.searchParams.delete("after"); // explicitly delete to indicate that the collection has ended
+            }
+
+            // if shuffling, all posts need to be loaded
+            if(this.shuffle) {
+                
+                // save posts; if there are more, load them asynchronously
+                this.posts.push(...posts);
+                if(collection.after) {
+                    this.statusText.textContent = `Loading... (${this.posts.length})`;
+                    setTimeout(() => this.load());
+                    return;
+                } else {
+                    this.consumePosts(shuffle(this.posts));
+                }
+
+            } else {
+
+                // otherwise, consume and display posts on-the-fly
+                this.consumePosts(posts);
+
             }
 
             // update state

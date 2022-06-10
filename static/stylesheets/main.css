@@ -2,6 +2,12 @@
     --photogrid-scale: 11px;
 }
 
+@media (max-width: 700px) {
+    :root {
+        --photogrid-scale: 7px;
+    }
+}
+
 /* general styles */
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
@@ -26,22 +32,9 @@ h1, h2, b {
     z-index: 1;
 }
 
-.rounded {
-    border: 1px solid #aaaaaa;
-    border-radius: 3px;
-    padding: 0.5em;
-    margin-bottom: 0.7em;
-}
-
-input[type="text"] {
-    width: 100%;
-    font-size: 1.0em;
-    box-sizing: border-box;
-}
-
 /* ----- layout ----- */
 main {
-    max-width: 85em;
+    max-width: 100rem;
     margin: auto;
 }
 
@@ -80,6 +73,7 @@ nav button:hover {
 }
 
 #logo img {
+    display: block;
     height: 32px;
 }
 
@@ -144,13 +138,14 @@ nav button:hover {
     position: relative;
     margin: 2px;
     min-width: 0;
-    transition: 0.3s;
+    background-color: #cacaca;
 }
 
 .photogrid-item img {
     width: 100%;
     height: auto;
     display: block;
+    transition: 0.3s;
 }
 
 .duration {
@@ -160,7 +155,6 @@ nav button:hover {
     bottom: 0.3em;
     right: 0.3em;
     font-weight: 600;
-    z-index: 1;
     font-size: 14pt;
 }
 
@@ -171,6 +165,16 @@ nav button:hover {
     width: 100%;
     height: 100%;
     pointer-events: none;
+}
+
+.video-preview-progress {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 4px;
+    width: 0%;
+    background-image: linear-gradient(to right, #00b3ff, #00f2ff);
+    transition: 0.1s;
 }
 
 /* background for modals/slideshow */
@@ -207,17 +211,6 @@ nav button:hover {
     border-radius: 5px;
 }
 
-/* ----- upload ----- */
-#upload-button, #create-button, #open-button {
-    width: 100%;
-    color: #ffffff;
-    background-color: #2bc266;
-    border: none;
-    padding: 0.5em 1.0em;
-    font-size: 11pt;
-    font-weight: bold;
-}
-
 /* ----- tags ----- */
 .tags {
     margin: 0.5em 0;
@@ -242,6 +235,10 @@ nav button:hover {
 }
 
 /* ----- upload progress ----- */
+#upload-progress .dialog-outer {
+    max-width: 40em;
+}
+
 #progress {
     height: 20em;
     overflow: auto;
@@ -313,8 +310,14 @@ nav button:hover {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: blur(16px);
+    filter: blur(8px);
     z-index: -1;
+}
+
+@media (pointer: coarse) {
+    .slideshow-bg {
+        display: none;
+    }
 }
 
 .no-scrollbar {
@@ -370,7 +373,7 @@ nav button:hover {
     width: 3rem;
     height: 2.1rem;
     padding: 0;
-    background-image: linear-gradient(to right, #00b3ff, #00f2ff);
+    background-image: linear-gradient(to bottom right, #00b3ff, #00f2ff);
 }
 
 #delete-button {
