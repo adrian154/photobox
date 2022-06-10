@@ -53,6 +53,7 @@ nav {
 }
 
 nav button {
+    position: relative;
     border: none;
     background: none;
     color: #ffffff;
@@ -67,10 +68,28 @@ nav button:hover {
 }
 
 .dropdown {
-    background-color: #ff0000;
+    background-color: #f9f9f9;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     display: none;
     position: absolute;
     top: 100%;
+    right: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dropdown li {
+    padding: 1.0em;
+}
+
+.dropdown li:hover {
+    background-color: #f1f1f1;
+}
+
+.dropdown a, .dropdown a:visited {
+    color: #000000;
+    text-decoration: none;
 }
 
 #nav-more:hover .dropdown {
