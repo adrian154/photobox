@@ -18,13 +18,15 @@
         <nav>
             <a href="/" id="logo"><img src="images/logo-header.png"></a>
             <button id="show-upload" style="display: none"><span class="vert-align"><span class="material-icons">upload</span><span>&nbsp; Upload</span></span></button>
-            <button id="show-create-collection"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
-            <button id="browse-reddit"><span class="vert-align"><img src="/images/reddit-logo.png" style="width: 2.0rem"><span>&nbsp; Browse Reddit</span></span></button>
+            <button id="show-create-collection" style="display: none"><span class="vert-align"><span class="material-icons">add</span><span>&nbsp; Create Collection</span></span></button>
+            <button id="browse-reddit"><span class="vert-align"><img src="/images/reddit-logo.png" style="width: 1.8rem"><span>&nbsp; Browse Reddit</span></span></button>
             <button id="nav-more">
                 <span class="vert-align"><span class="material-icons">more_horiz</span><span>&nbsp; More</span>
                 <ul class="dropdown">
-                    <a href="/signin.html"><li>Sign In</li></a>
-
+                    <a id="signin-link" href="/signin.html"><li>Sign In</li></a>
+                    <a id="signout-link" href="/signout"><li>Sign Out</li></a>
+                    <a id="shuffle-link" style="display: none"><li>Shuffle</li></a>
+                    <a href="https://github.com/adrian154/photobox"><li>GitHub</li></a>
                 </ul>
             </button>
         </nav>

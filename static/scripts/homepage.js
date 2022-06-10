@@ -4,14 +4,7 @@ class CreateCollectionDialog extends HiddenLayer {
 
         super("add-collection");
         document.getElementById("show-create-collection").addEventListener("click", () => this.show());
-        
-        // add engine options
-        const enginesList = document.getElementById("storage-engine");
-        fetch("/api/storage-engines").then(resp => resp.json()).then(engines => engines.forEach(engine => {
-            const option = document.createElement("option");
-            option.textContent = engine;
-            enginesList.append(option);
-        }));
+        this.enginesList = document.getElementById("storage-engine");
 
         // logic
         const name = document.getElementById("new-collection-name");
@@ -21,7 +14,7 @@ class CreateCollectionDialog extends HiddenLayer {
                 headers: {"content-type": "application/json"},
                 body: JSON.stringify({
                     name: name.value,
-                    storageEngine: enginesList.value
+                    storageEngine: this.enginesList.value
                 })
             }).then(resp => resp.json()).then(response => {
                 if(response.error) {
@@ -33,6 +26,15 @@ class CreateCollectionDialog extends HiddenLayer {
             event.preventDefault();
         });
 
+    }
+
+    onInfoReceived(info) {
+        info.storageEngines?.forEach(engine => {
+            const option = document.createElement("option");
+            option.textContent = engine;
+            this.enginesList.append(option);
+        });
+        document.getElementById("show-create-collection").style.display = "";
     }
 
 }

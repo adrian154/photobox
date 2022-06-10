@@ -48,11 +48,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// signout route
+app.get("/signout", require("./src/routes/signout.js"));
 
-app.get("/api/tags", require("./src/routes/get-tags.js"));
+app.get("/api/info", require("./src/routes/get-info.js"));
 app.put("/api/tags/:tag", require("./src/routes/create-tag.js"));
 app.get("/api/homepage", require("./src/routes/get-homepage.js"));
-app.get("/api/storage-engines", require("./src/routes/get-storage-engines.js"));
 app.post("/api/collections/create", require("./src/routes/create-collection.js"));
 app.post("/api/collections/:collection", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));

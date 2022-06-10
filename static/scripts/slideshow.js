@@ -33,8 +33,8 @@ class PostEditor {
 
     }
 
-    onTagsLoaded(tags) {
-        this.tags = tags;
+    onInfoReceived(info) {
+        this.tags = info.tags;
         this.resetTagPicker();
     }
 

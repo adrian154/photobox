@@ -30,11 +30,15 @@ These configurations will bind to port 3006 on 127.0.0.1, so no remote connectio
 
 The bind mount for `/app/tmp` is not strictly necessary; you do not need it if you're okay with all temporary files being stored in memory.
 
-Photobox can also be installed standalone; simply install [NodeJS](https://nodejs.org/en/download/), clone this Git repo, run `npm install` in the project root, and start the app with `node index.js` when ready.
+## Standalone Installation
+* Install [NodeJS](https://nodejs.org/en/download/)
+* Clone this GitHub repo: `git clone https://github.com/adrian154/photobox.git`
+* Run `npm install` in the project root
+* Start the app with `node index.js` when ready
 
 # Configuration
 
-Photobox requires a configuration file called `config.json` to be present. A ready-to-use example is available at [config-example.json](https://github.com/adrian154/photobox/blob/master/config-example.json).
+Photobox requires a configuration file called `config.json` to be present. A ready-to-use example is available at [config-example.json](https://github.com/adrian154/photobox/blob/master/config-example.json); simply rename this file to `config.json` and you're up and running.
 
 Here is the full documentation of all fields in the configuration file.
 
@@ -42,10 +46,10 @@ Here is the full documentation of all fields in the configuration file.
 * `processingConcurrency`: how many uploads Photobox will attempt to process at once. If enough resources are available, you could increase this value to speed up processing.
 * `storageEngines`: configuration for each individual storage backend. The object keys are the names of the storage engines, and the values are the configurations for each storage engines.
     * **Local Storage Engine**
-        * `type`: `local`
+        * `type`: `"local"`
         * `path`: the path where objects are stored
     * **Backblaze Storage Engine**
-        * `type`: `backblaze`
+        * `type`: `"backblaze"`
         * `bucket`: the name of the bucket which objects will be uploaded to
         * `bucketID`: the bucket's ID
         * `keyID`: the application key's ID
@@ -53,6 +57,18 @@ Here is the full documentation of all fields in the configuration file.
 * `imgurClientID`: OPTIONAL. The client ID of your Imgur application. Used to process Imgur posts when using Photobox as a Reddit viewer.
 
 You don't need to provide configuration for any storage engines, but the field must exist and contain a valid object.
+
+# Adding Users
+
+For now, users are added using the [configure.js](https://github.com/adrian154/photobox/blob/master/configure.js) tool. To add a user:
+
+`node configure.js adduser <username> <password>`
+
+To remove a user:
+
+`node configure.js deluser <username>`
+
+All users have full access to all collections and posts. Anonymous users cannot view any collections or posts.
 
 # HTTPS
 

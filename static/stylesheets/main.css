@@ -68,6 +68,7 @@ nav button:hover {
 }
 
 .dropdown {
+    min-width: 8em;
     background-color: #f9f9f9;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     display: none;
@@ -81,6 +82,7 @@ nav button:hover {
 
 .dropdown li {
     padding: 1.0em;
+    text-align: right;
 }
 
 .dropdown li:hover {
@@ -97,7 +99,7 @@ nav button:hover {
 }
 
 #logo {
-    padding: 0.5em;
+    padding: 0.6em;
     margin-right: auto;
 }
 

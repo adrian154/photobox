@@ -19,9 +19,15 @@ class App {
         this.redditBrowser = new RedditBrowser();
 
         // load tags; when we do this isn't really important, to be fair
-        fetch("/api/tags").then(resp => resp.json()).then(tags => {
-            this.uploader.onTagsLoaded(tags);
-            this.editor.onTagsLoaded(tags);
+        fetch("/api/info").then(resp => resp.json()).then(info => {
+            if(info.signedIn) {
+                this.uploader.onInfoReceived(info);
+                this.editor.onInfoReceived(info);
+                this.createCollectionDialog.onInfoReceived(info);
+                document.getElementById("signin-link").style.display = "none";
+            } else {
+                document.getElementById("signout-link").style.display = "none";
+            }
         });
 
         // get a few important elements
@@ -45,6 +51,13 @@ class App {
                 }
             });
             observer.observe(this.photoGrid.placeholder);
+
+            // set up shuffle link
+            const shuffleUrl = new URL(window.location);
+            shuffleUrl.searchParams.set("shuffle", 1);
+            const shuffleLink = document.getElementById("shuffle-link");
+            shuffleLink.href = shuffleUrl;
+            shuffleLink.style.display = "";
 
         } else {
             this.collections.render();
