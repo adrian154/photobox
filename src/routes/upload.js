@@ -50,6 +50,10 @@ const readRequest = req => new Promise((resolve, reject) => {
 
 module.exports = async (req, res) => {
 
+    if(!req.session) {
+        return res.sendStatus(401);
+    }
+
     try {
 
         const collection = Collections.get(String(req.params.collection));

@@ -11,6 +11,10 @@ const feeds = require("../feed-providers/feeds.js");
 
 module.exports = async (req, res) => {
     
+    if(!req.session) {
+        return res.sendStatus(401);
+    }
+
     const collection = Collections.get(String(req.params.collection));
     if(!collection) return res.sendStatus(404);
 

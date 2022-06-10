@@ -6,6 +6,10 @@
 const {Posts} = require("../data-layer.js");
 
 module.exports = (req, res) => {
-    Posts.addTag(String(req.params.post), String(req.params.tag));
-    res.sendStatus(200);
+    if(req.session) {
+        Posts.addTag(String(req.params.post), String(req.params.tag));
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(401);
+    }
 };

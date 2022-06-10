@@ -3,7 +3,7 @@ const username = document.getElementById("username"),
 
 document.getElementById("signin-form").addEventListener("submit", event => {
     event.preventDefault();
-    fetch("/signin", {
+    fetch("/api/signin", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
@@ -11,11 +11,11 @@ document.getElementById("signin-form").addEventListener("submit", event => {
             password: password.value
         })
     }).then(resp => {
+        console.log(resp.status);
         if(resp.ok) {
             window.location.href = "/";
         } else if(resp.status == 401) {
-            password.setCustomValidity("Incorrect username or password");
-            password.reportValidity();
+            alert("Incorrect username or password");
         } else {
             alert("Internal error");
         }

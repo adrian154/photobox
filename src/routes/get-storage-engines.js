@@ -3,4 +3,9 @@
  * Response: JSON
  *     [String]
  */
-module.exports = (req, res) => res.json(Object.keys(req.storageEngines));
+module.exports = (req, res) => {
+    if(req.session)
+        res.json(Object.keys(req.storageEngines));
+    else
+        res.json([]);
+};

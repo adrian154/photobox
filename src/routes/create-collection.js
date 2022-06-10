@@ -11,6 +11,10 @@ const {Collections} = require("../data-layer.js");
 
 module.exports = (req, res) => {
 
+    if(!req.session) {
+        return res.sendStatus(401);
+    }
+
     const name = String(req.body.name);
     const storageEngine = String(req.body.storageEngine);
 
