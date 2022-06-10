@@ -46,7 +46,6 @@ nav {
     width: 100%;
     background-color: rgba(0, 0, 0, 75%);
     color: #ffffff;
-    align-items: center;
     box-sizing: border-box;
     z-index: 2;
     padding: 0 1.0em;
@@ -68,6 +67,7 @@ nav button:hover {
 }
 
 .dropdown {
+    background-color: #ff0000;
     display: none;
     position: absolute;
     top: 100%;
