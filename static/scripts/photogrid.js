@@ -6,7 +6,7 @@ class PhotoGrid {
     }
 
     addPost(post) {
-
+        
         const preview = post.versions.preview;
 
         // create container, distribute width proportionally

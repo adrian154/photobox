@@ -173,12 +173,12 @@ module.exports = async (filepath, tags) => {
     }
 
     // swap video stream dimensions based on rotation
-    if(videoStream.tags.rotate == "90" || videoStream.tags.rotate == "270" || videoStream.tags.rotate == "-90") {
+    if(videoStream.tags?.rotate == "90" || videoStream.tags?.rotate == "270" || videoStream.tags?.rotate == "-90") {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 
     // duration may occur under any one of several properties
-    if(videoStream.tags.DURATION) {
+    if(videoStream.tags?.DURATION) {
         const [hours, minutes, seconds] = videoStream.tags.DURATION.split(":");
         videoStream.duration = Number(hours)*60*60 + Number(minutes)*60 + Number(seconds);
     }

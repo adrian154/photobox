@@ -1,66 +1,91 @@
 const fetch = require("node-fetch");
 const tags = require("../tags.js");
 const {imgurClientID} = require("../../config.json");
+const idealPreviewHeight = require("../../config.json").processing.previewHeight;
 
 // reuse imgur item handling code for individual posts and galleries
-const processImgurItem = (basePost, redditPreview, item) => {
+const processImgurItem = (basePost, item) => {
 
     // clone base post
     const clone = Object.assign({}, basePost);
-    clone.versions = {preview: redditPreview};
-    clone.tags = [...basePost.tags, item.tags];
+    clone.tags = [...basePost.tags, ...item.tags];
+    clone.versions = {};
+    
+    // by adding 'l' to the post id, we can get the thumbnail
+    // use the original image's dimensions as the preview dimensions because aspect ratio is all that matters
+    // in the future, if we need accurate preview dimensions for some reason, we could calculate the exact size because the 'l' thumbnail is guaranteed to have a height of 640px
+    const parts = item.link.split('.');
+    parts[parts.length - 2] += "l";
+    clone.versions.preview = {
+        url: parts.join('.'),
+        width: item.width,
+        height: item.height
+    };
 
     if(item.mp4) {
         clone.type = "video";
-        clone.versions.videoPreview = clone.versions.display = clone.versions.original = {url: item.mp4, width: item.width, height: item.height};
+        clone.versions.videoPreview = clone.versions.original = {url: item.mp4, width: item.width, height: item.height};
         clone.tags.push(tags.VIDEO);
         if(item.has_sound) {
             clone.tags.push(tags.SOUND);
         }
     } else {
         clone.type = "image";
-        clone.versions.original = clone.versions.display = {url: item.link, width: item.width, height: item.height};
-        // adding 'm' after the hash yields the medium size thumbnail; we can use the original image's dimensions as the preview's dimensions because aspect ratio is all that matters for now
-        const parts = item.link.split('.');
-        parts[parts.length - 2] += 'l';
-        clone.versions.preview = {url: parts.join('.'), width: item.width, height: item.height}; 
+        clone.versions.original = {url: item.link, width: item.width, height: item.height};
     }
 
     return clone;
 
 };
 
-// The following logic is a little convoluted because the Reddit API can be less than intuitive; I've done my best to justify everything.
-const processPost = async (redditPost) => {
-
-    // Ignore self posts, we know for sure that we have no interest in displaying them
-    if(redditPost.post_hint === "self") {
+// find the resolution closest to the configured preview height
+const getBestResolution = resolutions => {
+    
+    // post may not have previews
+    if(!resolutions) {
         return;
     }
 
-    // There are some displayable posts that don't have a preview, which *really* complicates things.
-    // If previews are available, we use the 3rd resolution, which is reasonably sized. 
-    const redditPreview = redditPost.preview?.images[0]?.resolutions[2] || redditPost.preview?.images[0].resolutions[1] || redditPost.preview?.images[0].resolutions[0];
+    let bestResolution = null, minDiff = Infinity;
+    for(const resolution of resolutions) {
+        const diff = Math.abs(resolution.height - idealPreviewHeight);
+        if(diff < minDiff) {
+            minDiff = diff;
+            bestResolution = resolution;
+        }
+    }
+    return bestResolution;
 
-    // Construct a "base post"
+};
+
+// The following logic is a little convoluted because the Reddit API can be less than intuitive; I've done my best to justify everything.
+const processPost = async (redditPost) => {
+
+    // ignore self posts
+    if(redditPost.post_hint === "self" || redditPost.is_self) {
+        return;
+    }
+
+    // handle crossposts
+    if(redditPost.crosspost_parent_list?.length > 0) {
+        redditPost = redditPost.crosspost_parent_list[0];
+    }
+
+    // on subreddits where thumbnails are enabled, Reddit provides a set of preview images at various resolutions
+    // we prefer the 2nd resolution, falling back on the two lower-res alternatives when not available 
+    const redditPreview = getBestResolution(redditPost.preview?.images[0].resolutions);
+
+    // construct a "base post"
     const post = {
-        id: redditPost.name, // this isn't the post title, it's the post ID
+        id: redditPost.name,
         timestamp: redditPost.created_utc * 1000,
         srcLink: new URL(redditPost.permalink, "https://reddit.com/").href,
         tags: ["r/" + redditPost.subreddit, "u/" + redditPost.author],
-        url: redditPost.url_overridden_by_dest, // include url so that posts submitted to multiple places can be filtered
+        url: redditPost.url_overridden_by_dest, // include url so that duplicate posts can be filtered
         u: redditPost.author,
         r: redditPost.subreddit,
         versions: {}
     };
-
-    // handle images
-    if(redditPost.post_hint === "image" && redditPreview) {
-        post.type = "image";
-        post.versions.preview = redditPreview;
-        post.versions.display = post.versions.original = {url: redditPost.url_overridden_by_dest};
-        return post;
-    }
 
     // Handle redgifs
     const redgifsID = redditPost.url_overridden_by_dest?.match(/redgifs.com\/watch\/(\w+)/)?.[1];
@@ -94,24 +119,32 @@ const processPost = async (redditPost) => {
     }
 
     // handle imgur videos
-    // the imgur API doesn't provide a preview, so if a reddit preview isn't available we can't display the item
-    const imgurID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)\.gifv/)?.[1];
-    if(imgurID && redditPreview && imgurClientID) {
-        const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
+    const imgurVideoID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)\.gifv/)?.[1];
+    if(imgurVideoID && imgurClientID) {
+        const resp = await fetch(`https://api.imgur.com/3/image/${imgurVideoID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
         const result = await resp.json();
-        return processImgurItem(post, redditPreview, result.data);
+        return processImgurItem(post, result.data);
     }
 
     // split imgur galleries into multiple posts
     const imgurGalleryID = redditPost.url_overridden_by_dest?.match(/imgur.com\/a\/(\w+)/)?.[1];
-    if(redditPost.post_hint === "link" && imgurGalleryID && imgurClientID) {
+    if(imgurGalleryID && imgurClientID) {
         const resp = await fetch(`https://api.imgur.com/3/album/${imgurGalleryID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
         const result = await resp.json();
-        return result.data.images.map(item => processImgurItem(post, redditPreview, item));
+        return result.data.images.map(item => processImgurItem(post, item));
     }
 
-    // TODO: reddit hosted video
-    // reddit uses hls so this may not be possible to handle without extensive processing.
+    // handle reddit hosted video
+    // pitfall: we can't handle MPEG-DASH/HLS, and the reddit fallback generally doesn't have sound
+    if(redditPreview && redditPost.secure_media?.reddit_video) {
+        post.type = "video";
+        post.tags.push(tags.VIDEO);
+        post.versions.preview = redditPreview;
+        const redditVideo = redditPost.secure_media.reddit_video;
+        post.versions.videoPreview = post.versions.original = {url: redditVideo.fallback_url, width: redditVideo.width, height: redditVideo.height};
+        post.duration = redditPost.secure_media.reddit_video.duration;
+        return post;
+    }
 
     // handle galleries similarly to regular images
     if(redditPost.gallery_data) {
@@ -121,16 +154,42 @@ const processPost = async (redditPost) => {
             const clone = Object.assign({}, post);
             clone.type = "image";
             clone.versions = {};
-            clone.versions.preview = convert(item.p[2] || item.p[1] || item.p[0]); // `p` contains array of previews; prefer resolution #3, fall back to lower resolutions if not available
-            clone.versions.display = clone.versions.original = convert(item.s);
+            clone.versions.preview = getBestResolution(item.p.map(convert));
+            clone.versions.original = convert(item.s);
             return clone;
         });
+    }
+
+    // hopefully, the content can be displayed as an image
+    if(redditPreview) {
+        post.type = "image";
+        post.versions.preview = redditPreview;
+        post.versions.original = {url: redditPost.url_overridden_by_dest};
+        return post;
+    }
+
+    // if no reddit preview is available but the content is an imgur image, handle it accordingly
+    // unfortunately, there are still quite a few posts in subreddits with thumbnails disabled that simply cannot be displayed
+    const imgurID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)/)?.[1];
+    if(imgurID && imgurClientID) {
+        const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
+        const result = await resp.json();
+        return processImgurItem(post, result.data);
     }
 
 };
 
 // cache previews 
 const previews = {};
+
+const processPosts = async url => {
+    const resp = await fetch(url);
+    const data = (await resp.json()).data;
+    return {
+        posts: (await Promise.allSettled(data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean),
+        after: data.after
+    };
+};
 
 module.exports = {
     getPreview: name => ({name, preview: previews[name]}),
@@ -144,24 +203,21 @@ module.exports = {
         }
 
         try {
-            const resp = await fetch(url);
-            const data = await resp.json();
-            const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
+            const result = await processPosts(url);
 
             // cache preview
             if(!after) {
-
-                // account for post clusters
-                const previewPost = Array.isArray(posts[0]) ? posts[0][0] : posts[0];
+                const previewPost = Array.isArray(result.posts[0]) ? result.posts[0][0] : result.posts[0];
                 previews[collection.name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
-                
             }
 
-            return {posts, after: data.data.after};
+            return result;
         } catch(err) {
-            return {name: "Invalid", posts: []};
+            console.error(err)
+            return {posts: []};
         }
 
     },
+    processPosts,
     processPost
 };

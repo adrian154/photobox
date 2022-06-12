@@ -1,5 +1,4 @@
-const {processPost} = require("../feed-providers/reddit.js");
-const fetch = require("node-fetch");
+const {processPosts} = require("../feed-providers/reddit.js");
 
 // Convert user-supplied parameters to the appropriate Reddit endpoint to fetch posts from
 // FIXME: The user could potentially supply invalid values to cause some bad shenanigans.
@@ -39,15 +38,8 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const resp = await fetch(url);
-        const data = await resp.json();
-        const posts = (await Promise.allSettled(data.data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean);
-
-        res.json({
-            name,
-            posts,
-            after: data.data.after
-        });
+        const {posts, after} = await processPosts(url);
+        res.json({name, posts, after});
     } catch(err) {
         return {name: "Invalid", posts: []};
     }

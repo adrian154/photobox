@@ -235,7 +235,7 @@ class Slideshow extends HiddenLayer {
         if(post.type === "image") {
             const img = document.createElement("img");
             img.classList.add("slideshow-centered");
-            img.src = post.versions.display.url;
+            img.src = post.versions.display?.url || post.versions.original.url;
             img.referrerPolicy = "no-referrer";
             img.loading = "eager"; // we're handling the lazy-loading in JS, so we want the images we've selected to immediately load
             post.frame.append(img);

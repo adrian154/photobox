@@ -108,6 +108,12 @@ nav button:hover {
     height: 32px;
 }
 
+#logo #logo-icon { display: none; }
+@media (max-width: 700px) {
+    #logo #logo-icon { display: initial; }
+    #logo #logo-full { display: none; }
+}
+
 .vert-align {
     display: flex;
     flex-direction: row;
@@ -422,18 +428,19 @@ nav button:hover {
 #collections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    padding: 1.0em;
+    padding: 2.0em;
 }
 
 @media (max-width: 700px) {
     #collections {
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        padding: 0;
     }
 }
 
 .collection-preview {
     flex-basis: 15em;
-    margin: 0.5em;
+    margin: 0.75em;
 }
 
 .collection-preview img {
@@ -441,7 +448,7 @@ nav button:hover {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: 8px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
