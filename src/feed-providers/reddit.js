@@ -183,7 +183,9 @@ const processPost = async (redditPost) => {
 const previews = {};
 
 const processPosts = async url => {
-    const resp = await fetch(url);
+    const resp = await fetch(url, {
+        headers: {"User-Agent": "Photobox"}
+    });
     const data = (await resp.json()).data;
     return {
         posts: (await Promise.allSettled(data.children.map(child => processPost(child.data)))).map(result => result.value).filter(Boolean),
