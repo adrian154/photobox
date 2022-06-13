@@ -9,8 +9,9 @@ class UploadTracker extends HiddenLayer {
         this.indicator.addEventListener("click", () => this.show());
     }
 
-    add(formData, request) {
-        
+    add({formData, request, id}) {
+
+        // update tracking state
         this.numTracked++;
         this.indicator.style.display = "";
         window.onbeforeunload = () => true;
@@ -33,7 +34,7 @@ class UploadTracker extends HiddenLayer {
         progressOuter.append(progressBar);
         tracker.append(progressOuter);
 
-        const onProgress = event => {
+        request.upload.addEventListener("progress", event => {
             const percent = 100 * event.loaded / event.total;
             progressBar.style.width = percent + "%";
             if(event.loaded == event.total) {
@@ -41,9 +42,7 @@ class UploadTracker extends HiddenLayer {
             } else {
                 statusText.textContent = `${Math.floor(percent)}%`;
             }
-        };
-
-        request.upload.addEventListener("progress", onProgress);
+        });
 
         const fail = reason => {
             statusText.textContent = reason || "Failed";
@@ -78,6 +77,15 @@ class UploadTracker extends HiddenLayer {
             }
         });
 
+        return event => {
+            progressBar.classList.add("processing-progress");
+            if(event.stage) {
+                statusText.textContent = event.stage;
+            } else if(event.progress) {
+                progressBar.style.width = event.progress * 100 + "%";
+            }
+        };
+
     }
 
 }
@@ -85,12 +93,30 @@ class UploadTracker extends HiddenLayer {
 class Uploader extends HiddenLayer {
 
     constructor() {
+        
         super("uploader");
         this.filePicker = document.getElementById("upload-files");
         this.layer.querySelector("form").addEventListener("submit", event => {
             this.upload();
             event.preventDefault();
         });
+
+        this.processingEvents = new EventSource("/api/events");
+        this.processingEvents.addEventListener("message", event => {
+
+            const data = JSON.parse(event.data);
+            if(data.sessionID) {
+                this.eventsSessionID = data.sessionID;
+            }
+
+            if(data.id) {
+                this.eventHandlers[data.id]?.(data);
+            }
+
+        });
+
+        this.eventHandlers = {};
+
     }
 
     onInfoReceived(info) {
@@ -136,14 +162,19 @@ class Uploader extends HiddenLayer {
         // open requests
         const uploads = [];
         for(const file of files) {
+            const id = crypto.randomUUID();
             const formData = new FormData();
             formData.append("tags", JSON.stringify(tags));
             formData.append("originalName", file.name);
-            formData.append("file", file);
             formData.append("timestamp", Date.now());
-            const upload = {formData, request: this.openRequest(formData)};
+            formData.append("uploadID", id);
+            formData.append("file", file);
+            if(this.eventsSessionID) {
+                formData.append("eventsSessionID", this.eventsSessionID);
+            }
+            const upload = {formData, id, request: this.openRequest(formData)};
             uploads.push(upload);
-            app.uploadTracker.add(upload.formData, upload.request);
+            this.eventHandlers[id] = app.uploadTracker.add(upload);
         }
 
         // start uploading

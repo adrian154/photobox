@@ -66,7 +66,9 @@ class PhotoGrid {
                         container.append(progressBar);
 
                         video.addEventListener("timeupdate", event => {
-                            progressBar.style.width = video.currentTime / video.duration * 100 + "%";
+                            if(progressBar) {
+                                progressBar.style.width = video.currentTime / video.duration * 100 + "%";
+                            }
                         })
 
                     }, 200);

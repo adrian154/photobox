@@ -8,6 +8,7 @@
 const processUpload = require("../processing/process-upload.js");
 const {Collections, Posts} = require("../data-layer.js");
 const {storeTempFile} = require("../temp-storage.js");
+const EventsSessions = require("../events.js");
 const busboy = require("busboy");
 
 // returns saved file and fields
@@ -70,10 +71,16 @@ module.exports = async (req, res) => {
         const timestamp = Number(fields.timestamp) || Date.now();
         const originalName = String(fields.originalName) || "";
 
+        let tracker;
+        if(fields.eventsSessionID && fields.uploadID) {
+            const session = EventsSessions.getSession(fields.eventsSessionID);
+            tracker = session?.createTracker(fields.uploadID);
+        }
+
         try {
-            
+
             // process upload
-            const result = await processUpload(tempFile.path, originalName, tagSet);
+            const result = await processUpload(tempFile.path, originalName, tagSet, tracker);
             const versions = await storageEngine.save(tempFile.id, result.versions);
 
             // insert into database

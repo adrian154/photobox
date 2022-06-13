@@ -3,6 +3,7 @@ const {generatePath} = require("../temp-storage.js");
 const {processing} = require("../../config.json");
 const {spawn} = require("child_process");
 const metaTags = require("../tags.js");
+const readline = require("readline");
 
 const H264_ENCODE_SETTINGS = ["-pix_fmt", "yuv420p", "-c:v", "libx264", "-preset", "fast", "-tune", "zerolatency", "-crf", "22"];
 
@@ -43,6 +44,25 @@ const mimeTypes = {
 
 const runffmpeg = (...args) => {
     const ffmpeg = spawn(ffmpegPath, args);
+    return new Promise((resolve, reject) => {
+        ffmpeg.on("error", reject);
+        ffmpeg.on("exit", resolve);
+    });
+};
+
+const runffmpegTrackProgress = (onProgress, args) => {
+    args.push("-progress", "pipe:1");
+    const ffmpeg = spawn(ffmpegPath, args);
+    const reader = readline.createInterface({
+        input: ffmpeg.stdout,
+        terminal: false
+    });
+    reader.on("line", line => {
+        const microseconds = line.match(/out_time_us=(\d+)/)?.[1];
+        if(microseconds) {
+            onProgress(Number(microseconds));
+        }
+    });
     return new Promise((resolve, reject) => {
         ffmpeg.on("error", reject);
         ffmpeg.on("exit", resolve);
@@ -100,7 +120,7 @@ const generateVideoPreview = async (filepath, length, originalWidth, originalHei
 
 // generate a display version
 // codecs are selected to maximize compatibility and video is reduced to 480p (or whatever's configured) for mobile vieweing
-const generateDisplayVersion = async (filepath, meta, videoStream, audioStream) => {
+const generateDisplayVersion = async (filepath, meta, videoStream, audioStream, duration, tracker) => {
     
     const flags = ["-i", filepath];
     let needsTranscode, width;
@@ -139,7 +159,9 @@ const generateDisplayVersion = async (filepath, meta, videoStream, audioStream) 
 
     if(needsTranscode) {
         const path = generatePath();
-        await runffmpeg(...flags, path);
+        flags.push(path);
+        tracker.begin("Transcoding...");
+        await runffmpegTrackProgress(us => tracker?.report(us/1e6/duration), flags);
         return {
             path,
             contentType: "video/mp4",
@@ -150,7 +172,7 @@ const generateDisplayVersion = async (filepath, meta, videoStream, audioStream) 
 
 };
 
-module.exports = async (filepath, tags) => {
+module.exports = async (filepath, tags, tracker) => {
 
     const data = await probe(filepath);
 
@@ -177,19 +199,15 @@ module.exports = async (filepath, tags) => {
         [videoStream.width, videoStream.height] = [videoStream.height, videoStream.width];
     }
 
-    // duration may occur under any one of several properties
-    if(videoStream.tags?.DURATION) {
-        const [hours, minutes, seconds] = videoStream.tags.DURATION.split(":");
-        videoStream.duration = Number(hours)*60*60 + Number(minutes)*60 + Number(seconds);
-    }
+    const duration = Number(data.format.duration);
 
     return {
         type: "video",
-        duration: videoStream.duration,
+        duration,
         versions: {
-            preview: await generatePreview(filepath, Math.floor(videoStream.duration * 0.15), videoStream.width, videoStream.height),
-            videoPreview: await generateVideoPreview(filepath, videoStream.duration, videoStream.width, videoStream.height),
-            display: await generateDisplayVersion(filepath, data, videoStream, audioStream),
+            preview: await generatePreview(filepath, Math.floor(duration * 0.15), videoStream.width, videoStream.height),
+            videoPreview: await generateVideoPreview(filepath, duration, videoStream.width, videoStream.height),
+            display: await generateDisplayVersion(filepath, data, videoStream, audioStream, duration, tracker),
             original: {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
         }
     };

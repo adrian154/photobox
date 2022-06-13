@@ -316,6 +316,10 @@ nav button:hover {
     border-radius: inherit;
 }
 
+.processing-progress div {
+    background-color: #4ec268;
+}
+
 /* ----- photo editor ----- */
 #slideshow {
     overflow: hidden;
@@ -511,10 +515,11 @@ nav button:hover {
 }
 
 #editor-preview {
-    max-height: 13em;
+    height: 10em;
     max-width: 100%;
     width: auto;
     display: block;
+    margin: 0 auto;
 }
 
 #post-editor h1 {

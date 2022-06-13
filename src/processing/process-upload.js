@@ -16,7 +16,7 @@ const processImage = require("./process-image.js"),
 // try to infer which processing pipelines are best for a given upload based on file extension
 // this might help to speed up processing a little
 const IMAGE_FORMATS = ["png", "jpeg", "jpg", "webp", "gif", "apng", "avif"];
-const VIDEO_FORMATS = ["mp4", "gifv", "mov", "webm", "avi", "ogv"];
+const VIDEO_FORMATS = ["mp4", "gifv", "mov", "webm", "avi", "ogv", "m4v"];
 const RAW_FORMATS = ["nef", "pef", "raw", "dng", "cr2", "cr3"];
 
 const process = async task => {
@@ -32,7 +32,7 @@ const process = async task => {
 
     for(const pipeline of pipelines) {
         try {
-            return pipeline(task.filePath, task.tagSet);
+            return pipeline(task.filePath, task.tagSet, task.tracker);
         } catch(err) {
             console.error(err);
             continue;
@@ -44,4 +44,4 @@ const process = async task => {
 // trying to process uploads as fast as they are received tends to cause exploding memory usage
 // limit the number of posts which can be processed concurrently
 const queue = new Queue(process, processing.concurrency);
-module.exports = (filePath, originalName, tagSet) => queue.enqueue({filePath, originalName, tagSet});
+module.exports = (filePath, originalName, tagSet, tracker) => queue.enqueue({filePath, originalName, tagSet, tracker});
