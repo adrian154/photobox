@@ -262,11 +262,7 @@ class Filter extends HiddenLayer {
         }
 
         // sort
-        Object.values(this.tags).sort((a, b) => a.count - b.count).forEach(entry => {
-            if(entry.count > 1) {
-                this.tagList.prepend(entry.element)
-            }
-        });
+        Object.values(this.tags).sort((a, b) => a.count - b.count).forEach(entry => this.tagList.prepend(entry.element));
 
     }
 

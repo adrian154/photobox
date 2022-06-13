@@ -66,6 +66,11 @@ app.post("/api/signin", require("./src/routes/signin.js"));
 app.get("/api/reddit", require("./src/routes/reddit.js"));
 app.get("/api/events", require("./src/routes/events.js"));
 
+// 404 handler
+app.use((req, res, next) => {
+    res.redirect("/");
+});
+
 // 500 handler
 app.use((err, req, res, next) => {
     console.error(err);

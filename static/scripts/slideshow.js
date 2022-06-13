@@ -38,6 +38,12 @@ class PostEditor {
         this.resetTagPicker();
     }
 
+    onCollectionLoaded(collection) {
+        if(collection.type === "photobox") {
+            document.getElementById("delete-button").style.display = "";
+        }
+    }
+
     resetTagPicker() {
         
         if(this.tagPickerElement) {

@@ -70,7 +70,8 @@ const runffmpegTrackProgress = (onProgress, args) => {
 };
 
 // generate image preview
-const generatePreview = async (filepath, time, originalWidth, originalHeight) => {
+const generatePreview = async (filepath, time, originalWidth, originalHeight, tracker) => {
+    tracker?.begin("Generating thumbnail...");
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
     const path = generatePath();
     await runffmpeg("-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2", path);
@@ -83,7 +84,9 @@ const generatePreview = async (filepath, time, originalWidth, originalHeight) =>
 };
 
 // generate a video version of the preview, a la a certain website...
-const generateVideoPreview = async (filepath, length, originalWidth, originalHeight) => {
+const generateVideoPreview = async (filepath, length, originalWidth, originalHeight, tracker) => {
+
+    tracker?.begin("Generating video preview...");
 
     // we use a bit of a bitwise 'hack' to round the width to a multiple of 2 (required for H.264 encoding)
     const path = generatePath();
@@ -160,7 +163,7 @@ const generateDisplayVersion = async (filepath, meta, videoStream, audioStream, 
     if(needsTranscode) {
         const path = generatePath();
         flags.push(path);
-        tracker.begin("Transcoding...");
+        tracker?.begin("Transcoding...");
         await runffmpegTrackProgress(us => tracker?.report(us/1e6/duration), flags);
         return {
             path,
@@ -205,8 +208,8 @@ module.exports = async (filepath, tags, tracker) => {
         type: "video",
         duration,
         versions: {
-            preview: await generatePreview(filepath, Math.floor(duration * 0.15), videoStream.width, videoStream.height),
-            videoPreview: await generateVideoPreview(filepath, duration, videoStream.width, videoStream.height),
+            preview: await generatePreview(filepath, Math.floor(duration * 0.15), videoStream.width, videoStream.height, tracker),
+            videoPreview: await generateVideoPreview(filepath, duration, videoStream.width, videoStream.height, tracker),
             display: await generateDisplayVersion(filepath, data, videoStream, audioStream, duration, tracker),
             original: {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
         }

@@ -11,6 +11,10 @@ input[type="text"], input[type="password"] {
     margin-bottom: 0.7em;
 }
 
+button {
+    cursor: pointer;
+}
+
 button[type="submit"] {
     width: 100%;
     color: #ffffff;

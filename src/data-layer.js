@@ -12,7 +12,8 @@ const Collections = new Table(db, "collections", [
     "name STRING PRIMARY KEY NOT NULL",
     "type STRING NOT NULL",
     "storageEngine STRING",
-    "feedURL STRING"
+    "feedURL STRING",
+    "visibility STRING NOT NULL"
 ]);
 
 const PostTags = new Table(db, "postTags", [
@@ -91,10 +92,11 @@ Posts.remove = db.transaction(postid => {
 });
 
 // --- collections
-Collections.addPhotobox = Collections.insert({name: "?", type: "'photobox'", storageEngine: "?"}).fn();
+Collections.addPhotobox = Collections.insert({name: "?", type: "'photobox'", storageEngine: "?", visibility: "?"}).fn();
 Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", feedURL: "?"}).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
 Collections.getAll = Collections.select("*").fn({all: true});
+Collections.getPublic = Collections.select("*").where("visibility = 'public'").fn({all: true});
 Collections.getNumPosts = Posts.select("COUNT(*)").where("collection = ?").fn({pluck: true});
 
 const getPosts = Posts.select("*").where("collection = ?").orderBy("timestamp DESC").fn({all: true});

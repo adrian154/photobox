@@ -106,8 +106,9 @@ class App {
             if(!resp.ok) {
                 if(resp.status === 404) {
                     throw new Error("No such collection :(");
+                } else {
+                    throw new Error("Internal error occurred :(");
                 }
-                throw new Error("Internal error occurred :(");
             }
             return resp.json();
         }).then(collection => {
@@ -175,13 +176,15 @@ class App {
     }
 
     onCollectionLoaded(collection) {
+        
         const collectionName = document.getElementById("collection-name");
         document.title = `${collection.name} - photobox`;
         collectionName.style.display = "";
         collectionName.textContent = collection.name;
-        if(collection.type === "photobox") {
-            this.uploader.onCollectionLoaded(collection);
-        }
+        
+        this.uploader.onCollectionLoaded(collection);
+        this.editor.onCollectionLoaded(collection);
+
     }
 
     consumePosts(posts) {

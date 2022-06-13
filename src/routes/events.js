@@ -6,6 +6,7 @@ module.exports = (req, res) => {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
     res.flushHeaders(); // begin SSE by sending headers
 
     const id = EventsSessions.createSession(res);

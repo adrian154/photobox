@@ -14,10 +14,6 @@ body {
     margin: 0;
 }
 
-button, .clickable {
-    cursor: pointer;
-}
-
 h1, h2, b {
     font-weight: 600;
 }
@@ -435,6 +431,28 @@ nav button:hover {
     padding: 2.0em;
 }
 
+#collections-end {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 50%;
+    cursor: pointer;
+}
+
+.hidden {
+    display: none;
+}
+
+.show-hidden .hidden {
+    display: initial;
+}
+
+/* display correct label based on state */
+#hide-hidden-text { display: none; }
+.show-hidden #hide-hidden-text { display: initial; }
+.show-hidden #show-hidden-text { display: none; }
+
 @media (max-width: 700px) {
     #collections {
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -516,8 +534,8 @@ nav button:hover {
 
 #editor-preview {
     height: 10em;
-    max-width: 100%;
-    width: auto;
+    width: 100%;
+    object-fit: contain;
     display: block;
     margin: 0 auto;
 }

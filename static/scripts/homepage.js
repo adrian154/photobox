@@ -14,7 +14,8 @@ class CreateCollectionDialog extends HiddenLayer {
                 headers: {"content-type": "application/json"},
                 body: JSON.stringify({
                     name: name.value,
-                    storageEngine: this.enginesList.value
+                    storageEngine: this.enginesList.value,
+                    visibility: document.getElementById("collection-visibility").value
                 })
             }).then(resp => resp.json()).then(response => {
                 if(response.error) {
@@ -43,6 +44,10 @@ class Collections {
 
     constructor() {
         this.element = document.getElementById("collections");
+        this.end = document.getElementById("collections-end");
+        this.end.addEventListener("click", () => {
+            this.element.classList.toggle("show-hidden");
+        });
     }
 
     render() {
@@ -50,26 +55,32 @@ class Collections {
     }
 
     consume(collections) {
+        this.element.style.display = "";
         for(const collection of collections) {
-            
+
             // create outer element
             const element = document.createElement("div");
             element.classList.add("collection-preview");
-            this.element.append(element);
+            this.element.insertBefore(element, this.end);
+            if(collection.visibility === "hidden") {
+                element.classList.add("hidden");
+            }
 
+            // add thumbnail
             const a = document.createElement("a");
             a.href = `/?collection=${encodeURIComponent(collection.name)}`;
-
             const img = document.createElement("img");
             img.src = collection.preview || "/images/default-post.png";
             a.append(img);
             element.append(a);
 
+            // add title
             const title = document.createElement("span");
             title.classList.add("collection-title");
             title.textContent = collection.name;
             element.append(title);
             
+            // add post count
             const postCount = document.createElement("span");
             postCount.classList.add("post-count");
             if("numPosts" in collection) {

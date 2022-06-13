@@ -3,6 +3,13 @@ const tags = require("../tags.js");
 const {imgurClientID} = require("../../config.json");
 const idealPreviewHeight = require("../../config.json").processing.previewHeight;
 
+// by adding 'l' to the post id, we can get the thumbnail
+const getImgurThumbnail = link => {
+    const parts = link.split('.');
+    parts[parts.length - 2] += "l";
+    return parts.join('.');  
+};
+
 // reuse imgur item handling code for individual posts and galleries
 const processImgurItem = (basePost, item) => {
 
@@ -11,13 +18,10 @@ const processImgurItem = (basePost, item) => {
     clone.tags = [...basePost.tags, ...item.tags];
     clone.versions = {};
     
-    // by adding 'l' to the post id, we can get the thumbnail
     // use the original image's dimensions as the preview dimensions because aspect ratio is all that matters
     // in the future, if we need accurate preview dimensions for some reason, we could calculate the exact size because the 'l' thumbnail is guaranteed to have a height of 640px
-    const parts = item.link.split('.');
-    parts[parts.length - 2] += "l";
     clone.versions.preview = {
-        url: parts.join('.'),
+        url: getImgurThumbnail(item.link),
         width: item.width,
         height: item.height
     };
@@ -160,21 +164,20 @@ const processPost = async (redditPost) => {
         });
     }
 
+    // post is an imgur link
+    const imgurID = redditPost.url_overridden_by_dest?.match(/imgur.com\/(\w+)/)?.[1];
+    if(imgurID && imgurClientID) {
+        const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
+        const result = await resp.json();
+        return processImgurItem(post, result.data);
+    }
+
     // hopefully, the content can be displayed as an image
     if(redditPreview) {
         post.type = "image";
         post.versions.preview = redditPreview;
         post.versions.original = {url: redditPost.url_overridden_by_dest};
         return post;
-    }
-
-    // if no reddit preview is available but the content is an imgur image, handle it accordingly
-    // unfortunately, there are still quite a few posts in subreddits with thumbnails disabled that simply cannot be displayed
-    const imgurID = redditPost.url_overridden_by_dest?.match(/i.imgur.com\/(\w+)/)?.[1];
-    if(imgurID && imgurClientID) {
-        const resp = await fetch(`https://api.imgur.com/3/image/${imgurID}`, {headers: {"Authorization": `Client-ID ${imgurClientID}`}});
-        const result = await resp.json();
-        return processImgurItem(post, result.data);
     }
 
 };

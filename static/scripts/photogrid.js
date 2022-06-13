@@ -12,8 +12,12 @@ class PhotoGrid {
         // create container, distribute width proportionally
         const container = document.createElement("div");
         container.classList.add("photogrid-item");
-        container.style.flexBasis = preview.width / preview.height * 20 + "em";
-        container.style.flexGrow = preview.width / preview.height * 10; // make sure flex-grow > 1 so things grow, the absolute value isn't important
+        const sizeContainer = (width, height) => {
+            container.style.flexBasis = width / height * 20 + "em";
+            container.style.flexGrow = width / height * 10; // make sure flex-grow > 1 so things grow, the absolute value isn't important
+        };
+
+        sizeContainer(preview.width, preview.height);
         this.grid.insertBefore(container, this.placeholder);
 
         // create image and set intrinsic size
@@ -26,8 +30,13 @@ class PhotoGrid {
         img.style.opacity = "0%";
         container.append(img);
 
+        // often, incorrect sizes are reported for the preview
+        // when the image's actual dimensions become available, determine if we need to fix the sizing 
         img.addEventListener("load", () => {
             img.style.opacity = "100%";
+            if(img.naturalWidth != preview.width || img.naturalHeight != preview.height) {
+                sizeContainer(img.naturalWidth, img.naturalHeight);
+            }
         });
 
         // if its a video, add the duration

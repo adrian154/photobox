@@ -8,13 +8,13 @@ const getFeedURL = params => {
     if(params.subreddit) {
         name = "r/" + params.subreddit;
         if(params.sort) {
-            url = new URL(`https://reddit.com/r/${params.subreddit}/${params.sort}.json`);
+            url = new URL(`https://reddit.com/r/${encodeURIComponent(params.subreddit)}/${encodeURIComponent(params.sort)}.json`);
         } else {
-            url = new URL(`https://reddit.com/r/${params.subreddit}.json`);
+            url = new URL(`https://reddit.com/r/${encodeURIComponent(params.subreddit)}.json`);
         }
     } else if(params.user) {
         name = "u/" + params.user;
-        url = new URL(`https://reddit.com/user/${params.user}/submitted.json`);
+        url = new URL(`https://reddit.com/user/${encodeURIComponent(params.user)}/submitted.json`);
         if(params.sort) {
             url.searchParams.set("sort", params.sort);
         }

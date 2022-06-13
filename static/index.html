@@ -36,7 +36,15 @@
             <p id="collection-name" style="display: none"></p>
             <p id="num-posts"></p>
             <!-- <button id="add-reddit-button">Save to Homepage</button> -->
-            <div id="collections"></div>
+            <div id="collections" style="display: none">
+                <div id="collections-end">
+                    <span style="text-align: center">
+                        <span class="material-icons" style="font-size: 30px">hide_image</span><br>
+                        <span id="show-hidden-text">Show Hidden</span>
+                        <span id="hide-hidden-text">Hide Hidden</span>
+                    </span>
+                </div>
+            </div>
             <div id="photogrid">
                 <div id="photogrid-placeholder" style="flex-grow: 10000"></div>
             </div>
@@ -108,7 +116,7 @@
                 <p><a id="editor-user-link" target="_blank"></a></p>
                 <p style="margin-bottom: 0"><b>Edit Tags</b></p>
                 <div id="editor-tags"></div>
-                <button id="delete-button">Delete Post</button>
+                <button id="delete-button" style="display: none;">Delete Post</button>
                 <button id="handle">
                     <span class="material-icons button-show desktop">chevron_right</span>
                     <span class="material-icons button-hide desktop">chevron_left</span>
@@ -123,7 +131,7 @@
                 <div class="dialog">
                     <form>
                         <h1>Upload Media</h1>
-                        <p>Select images or videos to upload to <b id="upload-collection-name">[COLLECTION NAME]</b>. Meta tags will be automatically added per file.</p>
+                        <p>Select images or videos to upload to <b id="upload-collection-name"></b>. Meta tags will be automatically added per file.</p>
                         <input type="file" id="upload-files" multiple required><br>
                         <p style="margin-bottom: 0"><b>Tags</b></p>
                         <div id="upload-tags"></div>
@@ -143,6 +151,13 @@
                         <input type="text" class="rounded" id="new-collection-name" required>
                         <p><b>Storage Engine</b></p>
                         <select id="storage-engine" class="rounded"></select>
+                        <p><b>Visibility</b></p>
+                        <select id="collection-visibility" class="rounded" required>
+                            <option></option>
+                            <option>public</option>
+                            <option>private</option>
+                            <option>hidden</option>
+                        </select>
                         <button id="create-button" type="submit">Create</button>
                     </form>
                 </div>

@@ -73,12 +73,12 @@ class UploadTracker extends HiddenLayer {
                     window.onbeforeunload = null;
                     location.reload();
                 }
-                app.photoGrid.addPost(request.response);
+                app.consumePosts([request.response]);
             }
         });
 
         return event => {
-            progressBar.classList.add("processing-progress");
+            progressOuter.classList.add("processing-progress");
             if(event.stage) {
                 statusText.textContent = event.stage;
             } else if(event.progress) {
@@ -115,12 +115,16 @@ class Uploader extends HiddenLayer {
 
         });
 
+        this.showButton = document.getElementById("show-upload");
+        this.showButton.addEventListener("click", () => this.show());
+
         this.eventHandlers = {};
 
     }
 
     onInfoReceived(info) {
         this.tags = info.tags;
+        this.signedIn = info.signedIn;
         this.resetTagPicker();
     }
 
@@ -137,9 +141,16 @@ class Uploader extends HiddenLayer {
     onCollectionLoaded(collection) {
         this.collectionName = collection.name;
         document.getElementById("upload-collection-name").textContent = this.collectionName;
-        const button = document.getElementById("show-upload");
-        button.style.display = "";
-        button.addEventListener("click", () => this.show());
+        this.collectionType = collection.type;
+        this.maybeShowButton();
+    }
+
+    // only show the upload button if the collection type is photobox AND the user is signed in
+    // because these two conditions are determined asynchronously, this check may have to be run several times
+    maybeShowButton() {
+        if(this.collectionType === "photobox" && this.signedIn) {
+            this.showButton.style.display = "";
+        }
     }
 
     // open a new request
