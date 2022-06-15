@@ -33,9 +33,9 @@ for(const tag of Object.values(metaTags)) {
     Tags.add(tag);
 }
 
+// set up middlewares
 app.use(cookieParser());
-
-// serve static files
+app.use(require("./src/routes/crawler-stub.js"));
 app.use(express.static("static"));
 
 // --- API stuff
