@@ -55,7 +55,7 @@ class UploadTracker extends HiddenLayer {
                 tracker.remove();
                 this.numTracked--;
                 const request = app.uploader.openRequest();
-                this.add(formData, request);   
+                this.add({formData, request, id}, request);   
                 request.send(formData);
             });
         };
@@ -126,9 +126,13 @@ class Uploader extends HiddenLayer {
         this.tags = info.tags;
         this.signedIn = info.signedIn;
         this.resetTagPicker();
+        this.maybeShowButton();
     }
 
     resetTagPicker() {
+        if(!this.tags) {
+            return;
+        }
         this.tagPicker?.element.remove();
         this.tagPicker = new SetTagPicker(document.getElementById("upload-tags"), this.tags);
     }

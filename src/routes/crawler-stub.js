@@ -20,8 +20,6 @@ const template = ({name, preview, numPosts}) => `<!DOCTYPE html>
 
 module.exports = (req, res, next) => {
 
-    // primitive heuristic for detecting bots
-    // this should get pretty much every crawler
     const userAgent = req.header("user-agent");
     if(req.query.collection && (userAgent.match(/twitterbot/i) || userAgent.match(/discordbot/i))) {
         

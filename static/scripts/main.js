@@ -21,10 +21,10 @@ class App {
 
         // load tags; when we do this isn't really important, to be fair
         fetch("/api/info").then(resp => resp.json()).then(info => {
+            this.uploader.onInfoReceived(info);
+            this.editor.onInfoReceived(info);
+            this.createCollectionDialog.onInfoReceived(info);
             if(info.signedIn) {
-                this.uploader.onInfoReceived(info);
-                this.editor.onInfoReceived(info);
-                this.createCollectionDialog.onInfoReceived(info);
                 document.getElementById("signin-link").style.display = "none";
             } else {
                 document.getElementById("signout-link").style.display = "none";
@@ -45,14 +45,6 @@ class App {
         
             this.load();
 
-            // set up infinite scroll
-            const observer = new IntersectionObserver(() => {
-                if(!this.loading && this.url.searchParams.has("after")) {
-                    this.load();
-                }
-            });
-            observer.observe(this.photoGrid.placeholder);
-
             // set up shuffle link
             const shuffleUrl = new URL(window.location);
             shuffleUrl.searchParams.set("shuffle", 1);
@@ -63,6 +55,35 @@ class App {
         } else {
             this.collections.render();
         }
+
+        // add scroll logic
+        let lastScrollTop = 0;
+        const nav = document.querySelector("nav");
+        window.addEventListener("scroll", event => {
+
+            // hide the navbar on scroll 
+            if(window.scrollY > lastScrollTop) {
+                nav.style.top = "-60px";
+            } else {
+                nav.style.top = 0;
+            }
+            lastScrollTop = window.scrollY;
+
+            // load more posts when close to bottom
+            if(this.url.searchParams.has("after") && window.scrollY + window.innerHeight + 500 > document.body.scrollHeight) {
+                this.load();
+            }
+
+        }, {passive: true});
+
+        // add toggle darkmode logic
+        document.getElementById("darkmode-link").addEventListener("click", () => {
+            if(document.documentElement.classList.toggle("dark")) {
+                localStorage.setItem("dark-theme", 1);
+            } else {
+                localStorage.removeItem("dark-theme");
+            }
+        });
 
     }
 

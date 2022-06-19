@@ -13,6 +13,7 @@ class PostEditor {
         this.collectionLink = document.getElementById("editor-collection-link");
         this.userLink = document.getElementById("editor-user-link");
         this.sourceLink = document.getElementById("editor-source-link");
+        this.deleteButton = document.getElementById("delete-button");
         this.dateFormat = new Intl.DateTimeFormat([], {dateStyle: "long"});
         
         // handle logic
@@ -34,18 +35,33 @@ class PostEditor {
     }
 
     onInfoReceived(info) {
+
         this.tags = info.tags;
+        if(!info.tags) { 
+            document.getElementById("editor-tags").style.display = "none";
+        }
+
+        if(!info.signedIn) {
+            this.deleteButton.style.display = "none";
+        }
+    
         this.resetTagPicker();
     }
 
     onCollectionLoaded(collection) {
-        if(collection.type === "photobox") {
-            document.getElementById("delete-button").style.display = "";
+        // hide delete button if the collection isn't managed
+        if(collection.type !== "photobox") {
+            this.deleteButton.style.display = "none";
         }
     }
 
     resetTagPicker() {
         
+        // skip if no taglist 
+        if(!this.tags) {
+            return;
+        }
+
         if(this.tagPickerElement) {
             this.tagPickerElement.remove();
         }
@@ -58,6 +74,9 @@ class PostEditor {
     }
 
     update(post) {
+
+        // bring the post into view
+        post.photogridContainer.scrollIntoView({block: "center"});
 
         this.post = post;
         this.originalLink.href = post.versions.original.url;
@@ -179,12 +198,15 @@ class Slideshow extends HiddenLayer {
         // we use this to trigger post loading
         this.observer = new IntersectionObserver(entries => {
             for(const entry of entries) {
-                if(entry.isIntersecting) {
+                if(entry.intersectionRatio > 0.5) {
                     app.editor.update(entry.target.post);
                     this.populateFrames(entry.target.post.index);
+                    this.activateFrame(entry.target);
+                } else {
+                    this.deactivateFrame(entry.target);
                 }
             }
-        }, {root: this.slideshow, threshold: 0.9});
+        }, {root: this.slideshow, threshold: [0.9, 0.1]});
 
     }
 
@@ -243,7 +265,6 @@ class Slideshow extends HiddenLayer {
             img.classList.add("slideshow-centered");
             img.src = post.versions.display?.url || post.versions.original.url;
             img.referrerPolicy = "no-referrer";
-            img.loading = "eager"; // we're handling the lazy-loading in JS, so we want the images we've selected to immediately load
             post.frame.append(img);
         } else if(post.type === "video") {
             
@@ -260,10 +281,6 @@ class Slideshow extends HiddenLayer {
             video.loop = true;
             video.textContent = "This video can't be played on your browser :(";
             container.append(video);
-
-            if(post.versions.original?.height) {
-                video.height = post.versions.original.height;
-            }
 
             const original = createSource(post.versions.original),
                   display = post.versions.display && createSource(post.versions.display);
@@ -313,6 +330,20 @@ class Slideshow extends HiddenLayer {
             return;
         }
 
+    }
+
+    activateFrame(frame) {
+        const video = frame.querySelector("video");
+        if(video && new URL(window.location).searchParams.get("autoplay")) {
+            //video.play();
+        }
+    }
+
+    deactivateFrame(frame) {
+        const video = frame.querySelector("video");
+        if(video) {
+            video.pause();
+        }
     }
 
     populateFrames(index) {

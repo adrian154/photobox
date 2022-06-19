@@ -12,6 +12,11 @@
         <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
         <link rel="manifest" href="/site.webmanifest">
+        <script>
+            if(localStorage.getItem("dark-theme")) {
+                document.documentElement.classList.add("dark");
+            }
+        </script>
     </head>
     <body>
 
@@ -27,6 +32,7 @@
                     <a id="signout-link" href="/signout"><li>Sign Out</li></a>
                     <a id="shuffle-link" style="display: none"><li>Shuffle</li></a>
                     <a id="filter-link" style="display: none"><li>Filter</li></a>
+                    <a id="darkmode-link"><li>Toggle dark mode</li></a>
                     <a href="https://github.com/adrian154/photobox"><li>GitHub</li></a>
                 </ul>
             </button>
@@ -37,11 +43,11 @@
             <p id="num-posts"></p>
             <!-- <button id="add-reddit-button">Save to Homepage</button> -->
             <div id="collections" style="display: none">
-                <div id="collections-end">
+                <div id="collections-end" style="display: none">
                     <span style="text-align: center">
                         <span class="material-icons" style="font-size: 30px">hide_image</span><br>
-                        <span id="show-hidden-text">Show Hidden</span>
-                        <span id="hide-hidden-text">Hide Hidden</span>
+                        <span id="show-hidden-text">Show hidden...</span>
+                        <span id="hide-hidden-text">Hide hidden...</span>
                     </span>
                 </div>
             </div>
@@ -114,9 +120,10 @@
                 <p><a id="editor-original-link" target="_blank">View Original</a></p>
                 <p><a id="editor-source-link" target="_blank">View Source</a></p>
                 <p><a id="editor-user-link" target="_blank"></a></p>
-                <p style="margin-bottom: 0"><b>Edit Tags</b></p>
-                <div id="editor-tags"></div>
-                <button id="delete-button" style="display: none;">Delete Post</button>
+                <div id="editor-tags">
+                    <p style="margin-bottom: 0"><b>Edit Tags</b></p>
+                </div>
+                <button id="delete-button">Delete Post</button>
                 <button id="handle">
                     <span class="material-icons button-show desktop">chevron_right</span>
                     <span class="material-icons button-hide desktop">chevron_left</span>

@@ -1,9 +1,30 @@
 :root {
-    --photogrid-scale: 11px;
+    --photogrid-scale: 10px;
+    --bg-color: #ffffff;
+    --fg-color: #000000;
+    --ui-bg-color: #ffffff;
+    --tag-selected-color: #1f92ff;
+    --tag-bg-color: #ffffff;
+    --tag-fg-color: #333333;
+    --tag-border: 1px solid #aaaaaa;
+    --unloaded-color: #cacaca;
+    --progress-bg-color: #cacaca;
+}
+
+:root.dark {
+    --bg-color: #161616;
+    --fg-color: #ffffff;
+    --ui-bg-color: #333333;
+    --tag-bg-color: #888888;
+    --tag-fg-color: #ffffff;
+    --tag-border: none;
+    --unloaded-color: #555555;
+    --progress-bg-color: #555555;
+    color-scheme: dark;
 }
 
 @media (max-width: 700px) {
-    :root {
+    body {
         --photogrid-scale: 7px;
     }
 }
@@ -12,6 +33,8 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     margin: 0;
+    background-color: var(--bg-color);
+    color: var(--fg-color);
 }
 
 h1, h2, b {
@@ -64,7 +87,7 @@ nav button:hover {
 }
 
 .dropdown {
-    min-width: 8em;
+    min-width: 11em;
     background-color: #f9f9f9;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     display: none;
@@ -171,7 +194,7 @@ nav button:hover {
     position: relative;
     margin: 2px;
     min-width: 0;
-    background-color: #cacaca;
+    background-color: var(--unloaded-color);
 }
 
 .photogrid-item img {
@@ -207,7 +230,6 @@ nav button:hover {
     height: 4px;
     width: 0%;
     background-image: linear-gradient(to right, #00b3ff, #00f2ff);
-    transition: 0.1s;
 }
 
 /* background for modals/slideshow */
@@ -239,7 +261,7 @@ nav button:hover {
 
 .dialog {
     position: relative;
-    background-color: #ffffff;
+    background-color: var(--ui-bg-color);
     padding: 1.5em;
     border-radius: 5px;
 }
@@ -252,8 +274,9 @@ nav button:hover {
 .tag {
 	padding: 4px 8px;
     margin: 3px 0;
-    border: 1px solid #aaaaaa;
-    color: #333;
+    border: var(--tag-border);
+    color: var(--tag-fg-color);
+    background-color: var(--tag-bg-color);
     border-radius: 16px;
     font-size: 11pt;
     font-weight: 600;
@@ -262,8 +285,8 @@ nav button:hover {
 }
 
 .tag.selected {
-	border: 1px solid #1f92ff;
-    background-color: #1f92ff;
+	border: 1px solid var(--tag-selected-color);
+    background-color: var(--tag-selected-color);
     color: #ffffff;
 }
 
@@ -300,13 +323,14 @@ nav button:hover {
 
 .progress-bar {
     display: block;
-    background-color: #cacaca;
+    background-color: var(--progress-bg-color);
     border-radius: 6px;
 }
 
 .progress-bar div {
     width: 0;
-    background-color: #3480eb;
+    /*background-color: #3480eb;*/
+    background-image: linear-gradient(to right, #00b3ff, #00f2ff);
     height: 6px;
     transition: 0.3s;
     border-radius: inherit;
@@ -453,6 +477,11 @@ nav button:hover {
 .show-hidden #hide-hidden-text { display: initial; }
 .show-hidden #show-hidden-text { display: none; }
 
+#collections-end:hover #show-hidden-text,
+#collections-end:hover #hide-hidden-text {
+    text-decoration: underline;
+}
+
 @media (max-width: 700px) {
     #collections {
         grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -473,8 +502,6 @@ nav button:hover {
     border-radius: 8px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
-
-.collection-preview span { display: block; }
 
 .collection-title {
     font-size: 15pt;
@@ -506,7 +533,7 @@ nav button:hover {
     width: 17em;
     height: 100%;
     box-sizing: border-box;
-    background-color: #ffffff;
+    background-color: var(--ui-bg-color);
     top: 0;
     left: -17em;
     padding: 1.5em;
@@ -515,6 +542,10 @@ nav button:hover {
 
 #post-editor.shown {
     left: 0;
+}
+
+#post-editor a, #post-editor a:visited {
+    color: #4db5ff;
 }
 
 /* hide one of the icons depending on whether the post editor is going left or right */
@@ -526,7 +557,8 @@ nav button:hover {
     position: absolute;
     left: 99%; /* prevent a 1px gap on safari */
     top: 2.0em;
-    background-color: #ffffff;
+    background-color: var(--ui-bg-color);
+    color: var(--fg-color);
     border: none;
     border-radius: 0 5px 5px 0;
     padding: 1.0em 0.25em;

@@ -30,12 +30,17 @@ class CreateCollectionDialog extends HiddenLayer {
     }
 
     onInfoReceived(info) {
+        
         info.storageEngines?.forEach(engine => {
             const option = document.createElement("option");
             option.textContent = engine;
             this.enginesList.append(option);
         });
-        document.getElementById("show-create-collection").style.display = "";
+        
+        if(info.signedIn) {
+            document.getElementById("show-create-collection").style.display = "";
+        }
+
     }
 
 }
@@ -45,9 +50,21 @@ class Collections {
     constructor() {
         this.element = document.getElementById("collections");
         this.end = document.getElementById("collections-end");
+
+        // remember whether hidden collections are shown
+        if(localStorage.getItem("show-hidden")) {
+            this.element.classList.add("show-hidden");
+        }
+
+        // toggle button logic
         this.end.addEventListener("click", () => {
-            this.element.classList.toggle("show-hidden");
+            if(this.element.classList.toggle("show-hidden")) {
+                localStorage.setItem("show-hidden", 1);
+            } else {
+                localStorage.removeItem("show-hidden");
+            }
         });
+
     }
 
     render() {
@@ -55,16 +72,16 @@ class Collections {
     }
 
     consume(collections) {
+
         this.element.style.display = "";
+        collections = collections.sort((a, b) => a.name.localeCompare(b.name));
+        
         for(const collection of collections) {
 
             // create outer element
             const element = document.createElement("div");
             element.classList.add("collection-preview");
             this.element.insertBefore(element, this.end);
-            if(collection.visibility === "hidden") {
-                element.classList.add("hidden");
-            }
 
             // add thumbnail
             const a = document.createElement("a");
@@ -79,16 +96,23 @@ class Collections {
             title.classList.add("collection-title");
             title.textContent = collection.name;
             element.append(title);
+
+            if(collection.visibility === "hidden") {
+                element.classList.add("hidden");
+                this.end.style.display = "";
+            }
             
             // add post count
-            const postCount = document.createElement("span");
-            postCount.classList.add("post-count");
             if("numPosts" in collection) {
+                const postCount = document.createElement("span");
+                postCount.classList.add("post-count");
                 postCount.textContent = `${collection.numPosts} ${collection.numPosts == 1 ? "post" : "posts"}`;
+                element.append(document.createElement("br"), postCount);
             }
-            element.append(postCount);
+    
             
         }
+
     }
 
 }

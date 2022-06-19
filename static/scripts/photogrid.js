@@ -99,6 +99,7 @@ class PhotoGrid {
         // associate the post with the container so it's easy to delete later on
         // and because it's ✨responsive✨ the layout clears itself up automagically
         post.photogridContainer = container;
+        app.filter.filterPost(post);
 
         // slideshow logic
         app.slideshow.addPost(post);

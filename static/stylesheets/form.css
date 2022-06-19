@@ -11,6 +11,10 @@ input[type="text"], input[type="password"] {
     margin-bottom: 0.7em;
 }
 
+.clickable {
+    cursor: pointer;
+}
+
 button {
     cursor: pointer;
 }

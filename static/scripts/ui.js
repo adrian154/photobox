@@ -1,18 +1,5 @@
 // Base UI classes and other misc ui code
 
-
-// hide nav on scroll
-let lastScrollTop = 0;
-const nav = document.querySelector("nav");
-window.addEventListener("scroll", event => {
-    if(window.scrollY > lastScrollTop) {
-        nav.style.top = "-60px";
-    } else {
-        nav.style.top = 0;
-    }
-    lastScrollTop = window.scrollY;
-}, {passive: true});
-
 class HiddenLayer {
 
     constructor(elementID) {
@@ -154,8 +141,8 @@ class RedditBrowser extends HiddenLayer {
         
         // button logic
         this.layer.querySelector("form").addEventListener("submit", event => {
-            this.go();
             event.preventDefault();
+            this.go();
         });
 
         // restore values based on url
@@ -198,7 +185,7 @@ class RedditBrowser extends HiddenLayer {
         destUrl.searchParams.set("sort", this.sort.value);
         destUrl.searchParams.set("period", this.period.value);
         window.open(destUrl, "_blank");
-        this.close();
+        this.hide();
     }
 
 }
@@ -217,15 +204,21 @@ class Filter extends HiddenLayer {
 
     }
 
-    applyFilter() {
-        for(const post of app.slideshow.posts) {
-            post.photogridContainer.style.display = "none";
+    filterPost(post) {
+        post.photogridContainer.style.display = "";
+        if(this.enabledTags.size > 0) {
             for(const tag of post.tags) {
                 if(this.enabledTags.has(tag) || this.enabledTags.size == 0) {
-                    post.photogridContainer.style.display = "";
-                    break;
+                    return;
                 }
             }
+            post.photogridContainer.style.display = "none";
+        }
+    }
+
+    applyFilter() {
+        for(const post of app.slideshow.posts) {
+            this.filterPost(post);
         }
     }
 
