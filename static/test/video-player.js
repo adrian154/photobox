@@ -73,6 +73,14 @@ class VideoPlayer {
         this.updatePlayButton();
     }
 
+    createPlayButton() {
+        this.playButton = this.button("play_arrow");
+        this.playButton.addEventListener("click", () => this.togglePlayback());
+        this.videoElement.addEventListener("pause", () => this.updatePlayButton());
+        this.videoElement.addEventListener("play", () => this.updatePlayButton());
+        return this.playButton;
+    }
+
     addProgressBar() {
 
         const progressOuter = this.div("video-player-progress-outer");
@@ -157,13 +165,9 @@ class VideoPlayer {
         const buttons = this.div("video-player-buttons");
         this.controls.append(buttons);
 
-        this.playButton = this.button("play_arrow");
         this.volumeButton = this.button("volume_up");
         const settingsButton = this.button("settings"),
               pictureInPictureButton = this.button("picture_in_picture_alt");
-
-        this.videoElement.addEventListener("pause", () => this.updatePlayButton());
-        this.videoElement.addEventListener("play", () => this.updatePlayButton());
 
         // float all buttons after the settings button to the right
         settingsButton.style.marginLeft = "auto";
@@ -177,7 +181,7 @@ class VideoPlayer {
         volumeInner.append(this.div("video-player-volume-handle"));
 
         buttons.append(
-            this.playButton,
+            this.createPlayButton(),
             this.volumeButton,
             this.createVolumePicker(),
             this.createTimeText(),
