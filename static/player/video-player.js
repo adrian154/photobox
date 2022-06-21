@@ -87,24 +87,57 @@ class VideoPlayer {
 
         const progressOuter = this.div("video-player-progress-outer");
         this.controls.append(progressOuter);
+
+        // preview
+        const hoverbox = this.div("video-player-hover");
+        progressOuter.append(hoverbox);
+        const preview = this.div("video-player-preview");
+        if(this.video.sprites) {
+            preview.style.width = this.video.sprites.spriteWidth + "px";
+            preview.style.height = this.video.sprites.spriteHeight + "px";
+            preview.style.background = `url(${this.video.sprites.url})`;
+            hoverbox.append(preview);
+        }
+        const hoverTime = document.createElement("span");
+        hoverbox.append(hoverTime);
+
+        // inner progress bar
         const progressInner = this.div("video-player-progress");
         progressOuter.append(progressInner);
-        this.progressElapsed = this.div("video-player-progress-elapsed");
+        const progressElapsed = this.div("video-player-progress-elapsed");
         const progressHandle = this.div("video-player-progress-handle");
-        progressInner.append(this.progressElapsed, progressHandle);
+        progressInner.append(progressElapsed, progressHandle);
 
-        // we have to interpolate the playback time between timeupdate events, which occur at a fairly low frequency
         let videoTime = 0, lastTime;
         const updateProgressBar = () => {
+
+            // we have to interpolate the playback time between timeupdate events, which occur at a fairly low frequency
             const now = Date.now();
             if(!this.videoElement.paused && lastTime) {
                 videoTime += (now - lastTime) / 1000 * this.videoElement.playbackRate;
+            
             }
             lastTime = now;
-            const proportion = videoTime / this.videoElement.duration;
-            this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
-            progressHandle.style.transform = `translate(${progressInner.getBoundingClientRect().width * proportion - 5}px, -70%)`;
+
+            const proportion = videoTime / this.videoElement.duration,
+                  width = progressInner.getBoundingClientRect().width,
+                  x = width * proportion;
+            progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
+            progressHandle.style.transform = `translate(${x - 5}px, -70%)`;
+            
+            const hoverboxWidth = hoverbox.getBoundingClientRect().width,
+                  hoverboxX = Math.min(Math.max(0, x - hoverboxWidth / 2), width - hoverboxWidth);  
+
+            // update hoverbox
+            hoverbox.style.transform = `translateX(${hoverboxX}px)`;
+            hoverTime.textContent = this.formatTime(this.videoElement.currentTime);
+            const i = Math.floor(this.videoElement.currentTime / this.video.sprites.interval),
+                  spriteX = i % this.video.sprites.width, 
+                  spriteY = Math.floor(i / this.video.sprites.width);
+            preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
+            
             requestAnimationFrame(updateProgressBar);
+
         };
 
         // seek logic

@@ -124,6 +124,7 @@
     background-color: #ff0000;
 }
 
+/* ----- settings ----- */
 .video-player-settings-button {
     margin-left: auto;
     position: relative;
@@ -165,4 +166,28 @@
 
 .video-player-settings div:last-child {
     border-radius: 0 0 8px 8px;
+}
+
+/* ----- preview ----- */
+.video-player-hover {
+    display: inline-flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+}
+
+.video-player-hover span {
+    /*width: 100%;*/
+    text-align: center;
+    margin: 4px 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    font-weight: bold;
+    opacity: 60%;
+    color: #ffffff;
+}
+
+.video-player-preview {
+    border: 2px solid #ffffff;
+    border-radius: 2px;
 }
