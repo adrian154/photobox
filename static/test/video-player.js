@@ -16,8 +16,8 @@ class VideoPlayer {
         this.video = video;
         this.container.classList.add("video-player");
 
-        this.createVideoElement();
-        this.createControls();
+        this.addVideoElement();
+        this.addControls();
 
     }
 
@@ -34,7 +34,7 @@ class VideoPlayer {
         return element;
     }
 
-    createVideoElement() {
+    addVideoElement() {
 
         this.videoElement = document.createElement("video");
         this.container.append(this.videoElement);
@@ -66,12 +66,8 @@ class VideoPlayer {
         }
     }
 
-    createControls() {
+    addProgressBar() {
 
-        this.controls = this.div("video-player-controls");
-        this.container.append(this.controls);
-
-        // add progress bar
         const progressOuter = this.div("video-player-progress-outer");
         this.controls.append(progressOuter);
         const progressInner = this.div("video-player-progress");
@@ -80,6 +76,48 @@ class VideoPlayer {
         const progressHandle = this.div("video-player-progress-handle");
         progressInner.append(this.progressElapsed, progressHandle);
 
+        // we have to interpolate the playback time between timeupdate events, which occur at a fairly low frequency
+        let videoTime = 0, lastTime;
+        const updateProgressBar = () => {
+            const now = Date.now();
+            if(!this.videoElement.paused && lastTime) {
+                videoTime += (now - lastTime) / 1000 * this.videoElement.playbackRate;
+            }
+            lastTime = now;
+            const proportion = videoTime / this.videoElement.duration;
+            this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
+            progressHandle.style.transform = `translateX(${progressInner.getBoundingClientRect().width * proportion}px)`;
+            requestAnimationFrame(updateProgressBar);
+        };
+
+        // seek logic
+
+        updateProgressBar();
+        this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
+
+    }
+
+    createFullscreenButton() {
+        const button = this.button("fullscreen");
+        button.addEventListener("click", () => {
+            if(document.fullscreenElement) {
+                document.exitFullscreen();
+                button.textContent = "fullscreen";
+            } else {
+                this.container.requestFullscreen();
+                button.textContent = "fullscreen_exit";
+            }
+        });
+        return button;
+    }
+
+    addControls() {
+
+        this.controls = this.div("video-player-controls");
+        this.container.append(this.controls);
+
+        this.addProgressBar();
+
         // add buttons
         const buttons = this.div("video-player-buttons");
         this.controls.append(buttons);
@@ -87,8 +125,7 @@ class VideoPlayer {
         this.playButton = this.button("play_arrow");
         const volumeButton = this.button("volume_up"),
               settingsButton = this.button("settings"),
-              pictureInPictureButton = this.button("picture_in_picture_alt"),
-              fullscreenButton = this.button("fullscreen");
+              pictureInPictureButton = this.button("picture_in_picture_alt");
 
         // float all buttons after the settings button to the right
         settingsButton.style.marginLeft = "auto";
@@ -107,35 +144,12 @@ class VideoPlayer {
             volumePicker,
             settingsButton,
             pictureInPictureButton,
-            fullscreenButton
+            this.createFullscreenButton()
         );
-
-        // progress bar logic
-        let videoTime = 0, lastTime;
-        const updateProgressBar = () => {
-            const now = Date.now();
-            if(!this.videoElement.paused && lastTime) {
-                videoTime += (now - lastTime) / 1000 * this.videoElement.playbackRate;
-            }
-            lastTime = now;
-            const proportion = videoTime / this.videoElement.duration;
-            this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
-            progressHandle.style.transform = `translateX(${progressInner.getBoundingClientRect().width * proportion}px)`;
-            //progressHandle
-            requestAnimationFrame(updateProgressBar);
-        };
-
-        updateProgressBar();
-        this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
-
-        /*this.videoElement.addEventListener("timeupdate", event => {
-            this.progressElapsed.style.width = `${this.videoElement.currentTime / this.videoElement.duration * 100}%`;
-        });*/
 
         this.playButton.addEventListener("click", () => this.togglePlayback());
         this.videoElement.addEventListener("click", () => this.togglePlayback());
         pictureInPictureButton.addEventListener("click", () => this.videoElement.requestPictureInPicture());
-        fullscreenButton.addEventListener("click", () => this.videoElement.requestFullscreen());
         
         // volume handler
         // TODO
