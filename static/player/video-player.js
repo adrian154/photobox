@@ -83,49 +83,71 @@ class VideoPlayer {
         return this.playButton;
     }
 
+    addHoverbox() {
+        
+        this.hoverbox = this.div("video-player-hover");
+        this.hoverbox.style.opacity = 0;
+        this.progressOuter.append(this.hoverbox);
+        this.preview = this.div("video-player-preview");
+
+        if(this.video.sprites) {
+            this.preview.style.width = this.video.sprites.spriteWidth + "px";
+            this.preview.style.height = this.video.sprites.spriteHeight + "px";
+            this.preview.style.background = `url(${this.video.sprites.url})`;
+            this.hoverbox.append(this.preview);
+        }
+
+        this.hoverTime = document.createElement("span");
+        this.hoverbox.append(this.hoverTime);
+
+        // show the hoverbox when hovering over progress bar
+        this.progressOuter.addEventListener("mouseenter", () => {
+            this.hoverbox.style.opacity = 1;
+            this.hovering = true;
+        });
+
+        this.progressOuter.addEventListener("mouseleave", () => {
+            if(!this.scrubbing) {
+                this.hoverbox.style.opacity = 0;
+            }
+            this.hovering = false;
+        });
+
+    }
+
+    updateScrubPreview(x) {
+
+        const fullWidth = this.progressInner.getBoundingClientRect().width,
+              hoverboxWidth = this.hoverbox.getBoundingClientRect().width,
+              time = x / fullWidth * this.videoElement.duration,
+              centeredX = x - hoverboxWidth / 2;
+
+        // update hoverbox
+        this.hoverbox.style.transform = `translateX(${Math.min(fullWidth - hoverboxWidth, Math.max(centeredX, 0))}px)`;
+        this.hoverTime.textContent = this.formatTime(time);
+        
+        // update background
+        const i = Math.floor(time / this.video.sprites.interval),
+              spriteX = i % this.video.sprites.width, 
+              spriteY = Math.floor(i / this.video.sprites.width);
+        this.preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
+
+    };
+
     addProgressBar() {
 
         const progressOuter = this.div("video-player-progress-outer");
+        this.progressOuter = progressOuter;
         this.controls.append(progressOuter);
-
-        // preview
-        const hoverbox = this.div("video-player-hover");
-        progressOuter.append(hoverbox);
-        const preview = this.div("video-player-preview");
-        if(this.video.sprites) {
-            preview.style.width = this.video.sprites.spriteWidth + "px";
-            preview.style.height = this.video.sprites.spriteHeight + "px";
-            preview.style.background = `url(${this.video.sprites.url})`;
-            hoverbox.append(preview);
-        }
-        const hoverTime = document.createElement("span");
-        hoverbox.append(hoverTime);
+        this.addHoverbox();
 
         // inner progress bar
         const progressInner = this.div("video-player-progress");
+        this.progressInner = progressInner; 
         progressOuter.append(progressInner);
         const progressElapsed = this.div("video-player-progress-elapsed");
         const progressHandle = this.div("video-player-progress-handle");
         progressInner.append(progressElapsed, progressHandle);
-
-        const updateScrubPreview = x => {
-
-            const fullWidth = progressInner.getBoundingClientRect().width,
-                  hoverboxWidth = hoverbox.getBoundingClientRect().width,
-                  time = x / fullWidth * this.videoElement.duration,
-                  centeredX = x - hoverboxWidth / 2;
-
-            // update hoverbox
-            hoverbox.style.transform = `translateX(${Math.min(fullWidth - hoverboxWidth, Math.max(centeredX, 0))}px)`;
-            hoverTime.textContent = this.formatTime(time);
-            
-            // update background
-            const i = Math.floor(time / this.video.sprites.interval),
-                  spriteX = i % this.video.sprites.width, 
-                  spriteY = Math.floor(i / this.video.sprites.width);
-            preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
-
-        };
 
         let videoTime = 0, lastTime;
         const updateProgressBar = () => {
@@ -148,19 +170,23 @@ class VideoPlayer {
         };
 
         // seek logic
-        const update = (x, endScrub) => {
+        const update = x => {
             const rect = progressInner.getBoundingClientRect();
             const seekTime = (x - rect.left) / rect.width * this.videoElement.duration;
             videoTime = seekTime;
-            if(endScrub) {
+            if(!this.scrubbing) {
                 this.videoElement.currentTime = Math.min(Math.max(0, seekTime), this.videoElement.duration);
                 this.videoElement.play();
+                if(!this.hovering) {
+                    this.hoverbox.style.opacity = 0;
+                }
             }
         };
 
         // touch handling
         progressOuter.addEventListener("touchstart", event => {
             update(event.touches[0].clientX);
+            this.scrubbing = true;
             return false;
         });
 
@@ -168,41 +194,42 @@ class VideoPlayer {
         progressOuter.addEventListener("touchmove", event => {
             lastKnownX = event.touches[0].clientX;
             update(lastKnownX);
-            updateScrubPreview(lastKnownX);
+            this.updateScrubPreview(lastKnownX);
             this.videoElement.pause();
             return false;
         });
 
-        progressOuter.addEventListener("touchend", event => {
-            update(lastKnownX, true);
+        progressOuter.addEventListener("touchend", () => {
+            this.scrubbing = false;
+            update(lastKnownX);
             return false;
         });
 
         // mouse handling
-        let mouseDown = false;
         progressOuter.addEventListener("mousedown", event => {
+            this.scrubbing = true;
             update(event.clientX);
-            mouseDown = true;
         });
 
         window.addEventListener("mousemove", event => {
-            if(mouseDown) {
+            if(this.scrubbing) {
                 this.videoElement.pause();
                 update(event.clientX);
+                this.updateScrubPreview(event.clientX - progressOuter.getBoundingClientRect().left);
                 event.preventDefault();
             }
         });
 
         progressOuter.addEventListener("mousemove", event => {
             if(event.target == progressOuter) {
-                updateScrubPreview(event.offsetX)
+                this.updateScrubPreview(event.offsetX);
             }
         });
 
         window.addEventListener("mouseup", event => {
-            if(mouseDown) {
-                mouseDown = false;
-                update(event.clientX, true);
+            if(this.scrubbing) {
+                this.scrubbing = false;
+                update(event.clientX);
             }
         });
 

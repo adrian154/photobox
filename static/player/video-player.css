@@ -177,16 +177,10 @@
     flex-direction: column;
     margin-bottom: 0.5rem;
     pointer-events: none;
-    opacity: 0;
     transition: opacity 0.2s;
 }
 
-.video-player-progress-outer:hover .video-player-hover {
-    opacity: 1;
-}
-
 .video-player-hover span {
-    /*width: 100%;*/
     text-align: center;
     margin: 4px 0;
     font-family: Arial, Helvetica, sans-serif;
