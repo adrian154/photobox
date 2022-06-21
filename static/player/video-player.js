@@ -108,6 +108,25 @@ class VideoPlayer {
         const progressHandle = this.div("video-player-progress-handle");
         progressInner.append(progressElapsed, progressHandle);
 
+        const updateScrubPreview = x => {
+
+            const fullWidth = progressInner.getBoundingClientRect().width,
+                  hoverboxWidth = hoverbox.getBoundingClientRect().width,
+                  time = x / fullWidth * this.videoElement.duration,
+                  centeredX = x - hoverboxWidth / 2;
+
+            // update hoverbox
+            hoverbox.style.transform = `translateX(${Math.min(fullWidth - hoverboxWidth, Math.max(centeredX, 0))}px)`;
+            hoverTime.textContent = this.formatTime(time);
+            
+            // update background
+            const i = Math.floor(time / this.video.sprites.interval),
+                  spriteX = i % this.video.sprites.width, 
+                  spriteY = Math.floor(i / this.video.sprites.width);
+            preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
+
+        };
+
         let videoTime = 0, lastTime;
         const updateProgressBar = () => {
 
@@ -120,21 +139,9 @@ class VideoPlayer {
             lastTime = now;
 
             const proportion = videoTime / this.videoElement.duration,
-                  width = progressInner.getBoundingClientRect().width,
-                  x = width * proportion;
+                  x = progressInner.getBoundingClientRect().width * proportion;
             progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
             progressHandle.style.transform = `translate(${x - 5}px, -70%)`;
-            
-            const hoverboxWidth = hoverbox.getBoundingClientRect().width,
-                  hoverboxX = Math.min(Math.max(0, x - hoverboxWidth / 2), width - hoverboxWidth);  
-
-            // update hoverbox
-            hoverbox.style.transform = `translateX(${hoverboxX}px)`;
-            hoverTime.textContent = this.formatTime(this.videoElement.currentTime);
-            const i = Math.floor(this.videoElement.currentTime / this.video.sprites.interval),
-                  spriteX = i % this.video.sprites.width, 
-                  spriteY = Math.floor(i / this.video.sprites.width);
-            preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
             
             requestAnimationFrame(updateProgressBar);
 
@@ -161,7 +168,8 @@ class VideoPlayer {
         progressOuter.addEventListener("touchmove", event => {
             lastKnownX = event.touches[0].clientX;
             update(lastKnownX);
-            this.video.pause();
+            updateScrubPreview(lastKnownX);
+            this.videoElement.pause();
             return false;
         });
 
@@ -185,6 +193,12 @@ class VideoPlayer {
             }
         });
 
+        progressOuter.addEventListener("mousemove", event => {
+            if(event.target == progressOuter) {
+                updateScrubPreview(event.offsetX)
+            }
+        });
+
         window.addEventListener("mouseup", event => {
             if(mouseDown) {
                 mouseDown = false;
@@ -204,11 +218,12 @@ class VideoPlayer {
                 document.exitFullscreen();
                 button.textContent = "fullscreen";
             } else {
-                if(this.container.requestFullscreen)
+                if(this.container.requestFullscreen) {
                     this.container.requestFullscreen();
-                else if(this.container.webkitRequestFullscreen)
-                    this.container.webkitRequestFullscreen();
-                button.textContent = "fullscreen_exit";
+                    button.textContent = "fullscreen_exit";
+                } else if(this.videoElement.webkitEnterFullscreen) {
+                    this.videoElement.webkitEnterFullscreen();
+                }
             }
         });
         return button;
