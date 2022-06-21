@@ -124,14 +124,16 @@ class VideoPlayer {
             return false;
         });
 
+        let lastKnownX;
         progressOuter.addEventListener("touchmove", event => {
-            console.log("touchmove");
-            update(event.touches[0].clientX);
+            lastKnownX = event.touches[0].clientX;
+            update(lastKnownX);
+            this.video.pause();
             return false;
         });
 
         progressOuter.addEventListener("touchend", event => {
-            update(event.touches[0].clientX, true);
+            update(lastKnownX, true);
             return false;
         });
 

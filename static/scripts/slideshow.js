@@ -267,63 +267,15 @@ class Slideshow extends HiddenLayer {
             img.referrerPolicy = "no-referrer";
             post.frame.append(img);
         } else if(post.type === "video") {
-            
+
+            const versions = {};
+            if(post.versions.original) versions["original"] = post.versions.original;
+            if(post.versions.display) versions["480p"] = post.versions.display;
+
             // parent
             const container = document.createElement("div");
-            container.classList.add("video-player");
+            post.frame.player = new VideoPlayer(container, {poster: post.versions.preview.url, versions});
             post.frame.append(container);
-
-            // create video
-            const video = document.createElement("video");
-            video.classList.add("slideshow-centered");
-            video.poster = post.versions.preview.url;
-            video.controls = true;
-            video.loop = true;
-            video.textContent = "This video can't be played on your browser :(";
-            container.append(video);
-
-            const original = createSource(post.versions.original),
-                  display = post.versions.display && createSource(post.versions.display);
-            video.append(original, display);
-
-            // add resolution picker
-            if(original && display) {
-
-                const playVersion = version => {
-                    const time = video.currentTime;
-                    video.prepend(version);
-                    video.load();
-                    video.currentTime = time;
-                    video.play();
-                };
-
-                const picker = document.createElement("div");
-                picker.classList.add("video-picker");
-                container.append(picker);
-
-                const playOriginal = document.createElement("button"), 
-                      playDisplay = document.createElement("button");
-                picker.append(playOriginal, playDisplay);
-
-                playOriginal.textContent = "HD";
-                playDisplay.textContent = "SD";
-
-                playOriginal.addEventListener("click", () => {
-                    playVersion(original);
-                    playOriginal.style.display = "none";
-                    playDisplay.style.display = "";
-                });
-
-                playDisplay.addEventListener("click", () => {
-                    playVersion(display);
-                    picker.classList.toggle("hd");
-                    playOriginal.style.display = "";
-                    playDisplay.style.display = "none";
-                });
-
-                playOriginal.style.display = "none";
-
-            }
 
         } else {
             alert("Unsupported post type");

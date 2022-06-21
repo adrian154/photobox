@@ -7,7 +7,7 @@
   }
 
 .video-player {
-    display: inline-block;
+    display: flex;
     position: relative;
 }
 
