@@ -9,7 +9,6 @@
 .video-player {
     display: inline-block;
     position: relative;
-    height: 480px;
 }
 
 .video-player video {
@@ -19,7 +18,7 @@
 }
 
 .video-player-controls {
-    /*opacity: 0;*/
+    opacity: 0;
     transition: 0.2s;
     position: absolute;
     left: 0;
@@ -66,11 +65,9 @@
     height: 10px;
     border-radius: 50%;
     transform: translate(25%, -25%);
-    transition: 0.1s;
 }
 
 .video-player-progress-handle {
-    /*opacity: 0;*/
     background-color: #ffffff;
 }
 

@@ -10,7 +10,7 @@
         <div id="video"></div>
         <script src="video-player.js"></script>
         <script>
-            const player = new VideoPlayer(document.getElementById("video"), {
+            /*const player = new VideoPlayer(document.getElementById("video"), {
                 poster: "/local-objects/uy0vyo0P_8uDuTdb-preview.webp",
                 versions: {
                     "480p": {
@@ -18,6 +18,13 @@
                     },
                     "Original": {
                         url: "/local-objects/uy0vyo0P_8uDuTdb-original.mp4"
+                    }
+                }
+            });*/
+            const player = new VideoPlayer(document.getElementById("video"), {
+                versions: {
+                    "1080p": {
+                        url: "https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-1080p.mp4"
                     }
                 }
             });

@@ -39,6 +39,7 @@ class VideoPlayer {
         this.videoElement = document.createElement("video");
         this.container.append(this.videoElement);
         this.videoElement.loop = true;
+        this.videoElement.playsInline = true;
         this.videoElement.poster = this.video.poster;
 
         // add video versions
@@ -76,6 +77,7 @@ class VideoPlayer {
     createPlayButton() {
         this.playButton = this.button("play_arrow");
         this.playButton.addEventListener("click", () => this.togglePlayback());
+        this.videoElement.addEventListener("click", () => this.togglePlayback());
         this.videoElement.addEventListener("pause", () => this.updatePlayButton());
         this.videoElement.addEventListener("play", () => this.updatePlayButton());
         return this.playButton;
@@ -106,7 +108,54 @@ class VideoPlayer {
         };
 
         // seek logic
-        // TODO
+        const update = (x, endScrub) => {
+            const rect = progressInner.getBoundingClientRect();
+            const seekTime = (x - rect.left) / rect.width * this.videoElement.duration;
+            videoTime = seekTime;
+            if(endScrub) {
+                this.videoElement.currentTime = Math.min(Math.max(0, seekTime), this.videoElement.duration);
+                this.videoElement.play();
+            }
+        };
+
+        // touch handling
+        progressOuter.addEventListener("touchstart", event => {
+            update(event.touches[0].clientX);
+            return false;
+        });
+
+        progressOuter.addEventListener("touchmove", event => {
+            console.log("touchmove");
+            update(event.touches[0].clientX);
+            return false;
+        });
+
+        progressOuter.addEventListener("touchend", event => {
+            update(event.touches[0].clientX, true);
+            return false;
+        });
+
+        // mouse handling
+        let mouseDown = false;
+        progressOuter.addEventListener("mousedown", event => {
+            update(event.clientX);
+            mouseDown = true;
+        });
+
+        window.addEventListener("mousemove", event => {
+            if(mouseDown) {
+                this.videoElement.pause();
+                update(event.clientX);
+                event.preventDefault();
+            }
+        });
+
+        window.addEventListener("mouseup", event => {
+            if(mouseDown) {
+                mouseDown = false;
+                update(event.clientX, true);
+            }
+        });
 
         updateProgressBar();
         this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
@@ -120,10 +169,30 @@ class VideoPlayer {
                 document.exitFullscreen();
                 button.textContent = "fullscreen";
             } else {
-                this.container.requestFullscreen();
+                if(this.container.requestFullscreen)
+                    this.container.requestFullscreen();
+                else if(this.container.webkitRequestFullscreen)
+                    this.container.webkitRequestFullscreen();
                 button.textContent = "fullscreen_exit";
             }
         });
+        return button;
+    }
+
+    createVolumeButton() {
+        this.volumeButton = this.button("volume_up");
+        return this.volumeButton;
+    }
+
+    createSettingsButton() {
+        const button = this.button("settings");
+        button.style.marginLeft = "auto";
+        return button;
+    }
+
+    createPictureInPictureButton() {
+        const button = this.button("picture_in_picture_alt");
+        button.addEventListener("click", () => this.videoElement.requestPictureInPicture());
         return button;
     }
 
@@ -165,13 +234,6 @@ class VideoPlayer {
         const buttons = this.div("video-player-buttons");
         this.controls.append(buttons);
 
-        this.volumeButton = this.button("volume_up");
-        const settingsButton = this.button("settings"),
-              pictureInPictureButton = this.button("picture_in_picture_alt");
-
-        // float all buttons after the settings button to the right
-        settingsButton.style.marginLeft = "auto";
-
         // create volume picker
         const volumePicker = this.div("video-player-volume");
         const volumeOuter = this.div("video-player-volume-outer");
@@ -182,18 +244,14 @@ class VideoPlayer {
 
         buttons.append(
             this.createPlayButton(),
-            this.volumeButton,
+            this.createVolumeButton(),
             this.createVolumePicker(),
             this.createTimeText(),
-            settingsButton,
-            pictureInPictureButton,
+            this.createSettingsButton(),
+            this.createPictureInPictureButton(),
             this.createFullscreenButton()
         );
 
-        this.playButton.addEventListener("click", () => this.togglePlayback());
-        this.videoElement.addEventListener("click", () => this.togglePlayback());
-        pictureInPictureButton.addEventListener("click", () => this.videoElement.requestPictureInPicture());
-        
         // volume handler
         // TODO
 
