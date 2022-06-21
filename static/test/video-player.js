@@ -56,14 +56,21 @@ class VideoPlayer {
 
     }
 
+    updatePlayButton() {
+        if(this.videoElement.paused) {
+            this.playButton.textContent = "play_arrow";
+        } else {
+            this.playButton.textContent = "pause";
+        }
+    }
+
     togglePlayback() {
         if(this.videoElement.paused) {
             this.videoElement.play();
-            this.playButton.textContent = "pause";
         } else {
             this.videoElement.pause();
-            this.playButton.textContent = "play_arrow";
         }
+        this.updatePlayButton();
     }
 
     addProgressBar() {
@@ -86,11 +93,12 @@ class VideoPlayer {
             lastTime = now;
             const proportion = videoTime / this.videoElement.duration;
             this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
-            progressHandle.style.transform = `translateX(${progressInner.getBoundingClientRect().width * proportion}px)`;
+            progressHandle.style.transform = `translate(${progressInner.getBoundingClientRect().width * proportion}px, -70%)`;
             requestAnimationFrame(updateProgressBar);
         };
 
         // seek logic
+        // TODO
 
         updateProgressBar();
         this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
@@ -111,6 +119,33 @@ class VideoPlayer {
         return button;
     }
 
+    createVolumePicker() {
+
+        // create volume picker
+        const volumePicker = this.div("video-player-volume");
+        const volumeOuter = this.div("video-player-volume-outer");
+        volumePicker.append(volumeOuter);
+        const volumeInner = this.div("video-player-volume-inner");
+        volumeOuter.append(volumeInner);
+        volumeInner.append(this.div("video-player-volume-handle"));
+
+        return volumePicker;
+
+    }
+
+    formatTime(time) {
+        return `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
+    }
+
+    createTimeText() {
+        const timeText = document.createElement("span");
+        timeText.classList.add("video-player-time");
+        this.videoElement.addEventListener("timeupdate", () => {
+            timeText.textContent = `${this.formatTime(this.videoElement.currentTime)} / ${this.formatTime(this.videoElement.duration)}`;
+        });
+        return timeText;
+    }
+
     addControls() {
 
         this.controls = this.div("video-player-controls");
@@ -123,9 +158,12 @@ class VideoPlayer {
         this.controls.append(buttons);
 
         this.playButton = this.button("play_arrow");
-        const volumeButton = this.button("volume_up"),
-              settingsButton = this.button("settings"),
+        this.volumeButton = this.button("volume_up");
+        const settingsButton = this.button("settings"),
               pictureInPictureButton = this.button("picture_in_picture_alt");
+
+        this.videoElement.addEventListener("pause", () => this.updatePlayButton());
+        this.videoElement.addEventListener("play", () => this.updatePlayButton());
 
         // float all buttons after the settings button to the right
         settingsButton.style.marginLeft = "auto";
@@ -140,8 +178,9 @@ class VideoPlayer {
 
         buttons.append(
             this.playButton,
-            volumeButton,
-            volumePicker,
+            this.volumeButton,
+            this.createVolumePicker(),
+            this.createTimeText(),
             settingsButton,
             pictureInPictureButton,
             this.createFullscreenButton()
