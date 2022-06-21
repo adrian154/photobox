@@ -69,6 +69,8 @@
 
 .video-player-progress-handle {
     background-color: #ffffff;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 /* ----- buttons ----- */
@@ -120,4 +122,47 @@
     opacity: 1;
     right: 0;
     background-color: #ff0000;
+}
+
+.video-player-settings-button {
+    margin-left: auto;
+    position: relative;
+}
+
+.video-player-settings {
+    position: absolute;
+    bottom: 100%;
+    margin-bottom: 1.5rem;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
+    flex-direction: column;
+    background-color: rgba(50, 50, 50, 75%);
+    border-radius: 8px;
+    color: #ffffff;
+    transition: opacity 0.1s;
+}
+
+.video-player-settings-shown .video-player-settings {
+    display: flex;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.video-player-settings div {
+    text-align: left;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.video-player-settings div:hover {
+    background-color: rgba(255, 255, 255, 25%);
+}
+
+.video-player-settings div:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.video-player-settings div:last-child {
+    border-radius: 0 0 8px 8px;
 }

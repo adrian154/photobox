@@ -103,7 +103,7 @@ class VideoPlayer {
             lastTime = now;
             const proportion = videoTime / this.videoElement.duration;
             this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
-            progressHandle.style.transform = `translate(${progressInner.getBoundingClientRect().width * proportion}px, -70%)`;
+            progressHandle.style.transform = `translate(${progressInner.getBoundingClientRect().width * proportion - 5}px, -70%)`;
             requestAnimationFrame(updateProgressBar);
         };
 
@@ -181,12 +181,42 @@ class VideoPlayer {
 
     createVolumeButton() {
         this.volumeButton = this.button("volume_up");
+        this.volumeButton.addEventListener("click", () => {
+            if(this.videoElement.muted) {
+                this.videoElement.muted = false;
+                this.volumeButton.textContent = "volume_up";
+            } else {
+                this.videoElement.muted = true;
+                this.volumeButton.textContent = "volume_off";
+            }
+        });
         return this.volumeButton;
     }
 
     createSettingsButton() {
-        const button = this.button("settings");
-        button.style.marginLeft = "auto";
+        const button = document.createElement("button");
+        button.classList.add("video-player-settings-button");
+        const text = document.createElement("span");
+        text.classList.add("material-symbols-outlined");
+        text.textContent = "settings";
+        button.append(text);
+        const menu = this.div("video-player-settings");
+        for(const name in this.sources) {
+            const option = document.createElement("div");
+            option.textContent = name;
+            option.addEventListener("click", () => {
+                const currentSource = this.videoElement.querySelector("source");
+                if(this.sources[name] == currentSource) return;
+                const time = this.videoElement.currentTime;
+                this.videoElement.prepend(this.sources[name]);
+                this.videoElement.load();
+                this.videoElement.currentTime = time;
+                this.videoElement.play();
+            });
+            menu.append(option);
+        }
+        button.append(menu);
+        button.addEventListener("click", () => button.classList.toggle("video-player-settings-shown"));
         return button;
     }
 
@@ -245,15 +275,12 @@ class VideoPlayer {
         buttons.append(
             this.createPlayButton(),
             this.createVolumeButton(),
-            this.createVolumePicker(),
+            //this.createVolumePicker(),
             this.createTimeText(),
             this.createSettingsButton(),
             this.createPictureInPictureButton(),
             this.createFullscreenButton()
         );
-
-        // volume handler
-        // TODO
 
     }
 
