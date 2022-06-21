@@ -77,8 +77,8 @@ class VideoPlayer {
         const progressInner = this.div("video-player-progress");
         progressOuter.append(progressInner);
         this.progressElapsed = this.div("video-player-progress-elapsed");
-        progressInner.append(this.progressElapsed);
-        this.progressElapsed.append(this.div("video-player-progress-handle"));
+        const progressHandle = this.div("video-player-progress-handle");
+        progressInner.append(this.progressElapsed, progressHandle);
 
         // add buttons
         const buttons = this.div("video-player-buttons");
@@ -111,22 +111,22 @@ class VideoPlayer {
         );
 
         // progress bar logic
-        let lastTimeUpdate = 0;
+        let videoTime = 0, lastTime;
         const updateProgressBar = () => {
-            let actualTime;
-            if(!this.videoElement.paused && lastTimeUpdate > 0) {
-                console.log((Date.now() - lastTimeUpdate) / 1000);
-                actualTime = this.videoElement.currentTime + (Date.now() - lastTimeUpdate) / 1000 * this.videoElement.playbackRate;
-            } else {
-                actualTime = this.videoElement.currentTime;
-                lastTimeUpdate = 0;
+            const now = Date.now();
+            if(!this.videoElement.paused && lastTime) {
+                videoTime += (now - lastTime) / 1000 * this.videoElement.playbackRate;
             }
-            this.progressElapsed.style.width = `${actualTime / this.videoElement.duration * 100}%`;
+            lastTime = now;
+            const proportion = videoTime / this.videoElement.duration;
+            this.progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
+            progressHandle.style.transform = `translateX(${progressInner.getBoundingClientRect().width * proportion}px)`;
+            //progressHandle
             requestAnimationFrame(updateProgressBar);
         };
 
         updateProgressBar();
-        this.videoElement.addEventListener("timeupdate", () => lastTimeUpdate = Date.now());
+        this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
 
         /*this.videoElement.addEventListener("timeupdate", event => {
             this.progressElapsed.style.width = `${this.videoElement.currentTime / this.videoElement.duration * 100}%`;
