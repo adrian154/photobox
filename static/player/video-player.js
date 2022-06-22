@@ -1,26 +1,32 @@
 class VideoPlayer {
 
-    // video:
-    // {
-    //     poster: String,
-    //     versions: {
-    //         <name>: {
-    //             url: String,
-    //             type: String
-    //         }
-    //     }
-    // }
+    /*
+     * {
+     *   poster?: String,
+     *   previews?: {
+     *     url: String,
+     *     width: Number,
+     *     spriteWidth: Number,
+     *     spriteHeight: Number,
+     *     interval: 5
+     *   },
+     *   versions: {
+     *     <name>: {
+     *       url: String,
+     *       contentType?: String
+     *     }
+     *   }
+     * }
+     */
     constructor(container, video) {
-        
         this.container = container;
         this.video = video;
         this.container.classList.add("video-player");
-
         this.addVideoElement();
         this.addControls();
-
     }
 
+    // DOM helper methods
     div(className) {
         const element = document.createElement("div");
         element.classList.add(className);
@@ -90,10 +96,10 @@ class VideoPlayer {
         this.progressOuter.append(this.hoverbox);
         this.preview = this.div("video-player-preview");
 
-        if(this.video.sprites) {
-            this.preview.style.width = this.video.sprites.spriteWidth + "px";
-            this.preview.style.height = this.video.sprites.spriteHeight + "px";
-            this.preview.style.background = `url(${this.video.sprites.url})`;
+        if(this.video.previews) {
+            this.preview.style.width = this.video.previews.spriteWidth + "px";
+            this.preview.style.height = this.video.previews.spriteHeight + "px";
+            this.preview.style.background = `url(${this.video.previews.url})`;
             this.hoverbox.append(this.preview);
         }
 
@@ -127,10 +133,10 @@ class VideoPlayer {
         this.hoverTime.textContent = this.formatTime(time);
         
         // update background
-        const i = Math.floor(time / this.video.sprites.interval),
-              spriteX = i % this.video.sprites.width, 
-              spriteY = Math.floor(i / this.video.sprites.width);
-        this.preview.style.backgroundPosition = `-${spriteX * this.video.sprites.spriteWidth}px -${spriteY * this.video.sprites.spriteHeight}px`;
+        const i = Math.floor(time / this.video.previews.interval),
+              spriteX = i % this.video.previews.width, 
+              spriteY = Math.floor(i / this.video.previews.width);
+        this.preview.style.backgroundPosition = `-${spriteX * this.video.previews.spriteWidth}px -${spriteY * this.video.previews.spriteHeight}px`;
 
     };
 
@@ -303,20 +309,6 @@ class VideoPlayer {
         return button;
     }
 
-    createVolumePicker() {
-
-        // create volume picker
-        const volumePicker = this.div("video-player-volume");
-        const volumeOuter = this.div("video-player-volume-outer");
-        volumePicker.append(volumeOuter);
-        const volumeInner = this.div("video-player-volume-inner");
-        volumeOuter.append(volumeInner);
-        volumeInner.append(this.div("video-player-volume-handle"));
-
-        return volumePicker;
-
-    }
-
     formatTime(time) {
         return `${Math.floor(time / 60)}:${Math.floor(time % 60).toString().padStart(2, '0')}`;
     }
@@ -352,7 +344,6 @@ class VideoPlayer {
         buttons.append(
             this.createPlayButton(),
             this.createVolumeButton(),
-            //this.createVolumePicker(),
             this.createTimeText(),
             this.createSettingsButton(),
             this.createPictureInPictureButton(),
