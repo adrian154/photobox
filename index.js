@@ -58,7 +58,6 @@ app.post("/api/collections/create", require("./src/routes/create-collection.js")
 app.post("/api/collections/:collection", require("./src/routes/upload.js"));
 app.get("/api/collections/:collection", require("./src/routes/get-collection.js"));
 app.delete("/api/posts/:post", require("./src/routes/delete-post.js"));
-app.put("/api/posts/:post/tags", require("./src/routes/add-tag-to-post.js"));
 app.delete("/api/posts/:post/tags", require("./src/routes/delete-tag-from-post.js"));
 app.put("/api/posts/:post/tags/:tag", require("./src/routes/add-tag-to-post.js"));
 app.delete("/api/posts/:post/tags/:tag", require("./src/routes/delete-tag-from-post.js"));

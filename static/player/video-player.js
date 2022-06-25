@@ -133,10 +133,12 @@ class VideoPlayer {
         this.hoverTime.textContent = this.formatTime(time);
         
         // update background
-        const i = Math.floor(time / this.video.previews.interval),
-              spriteX = i % this.video.previews.width, 
-              spriteY = Math.floor(i / this.video.previews.width);
-        this.preview.style.backgroundPosition = `-${spriteX * this.video.previews.spriteWidth}px -${spriteY * this.video.previews.spriteHeight}px`;
+        if(this.video.previews) {
+            const i = Math.floor(time / this.video.previews.interval),
+                spriteX = i % this.video.previews.width, 
+                spriteY = Math.floor(i / this.video.previews.width);
+            this.preview.style.backgroundPosition = `-${spriteX * this.video.previews.spriteWidth}px -${spriteY * this.video.previews.spriteHeight}px`;
+        }
 
     };
 
@@ -325,6 +327,7 @@ class VideoPlayer {
     addControls() {
 
         this.controls = this.div("video-player-controls");
+        this.controls.classList.add("shown");
         this.container.append(this.controls);
 
         this.addProgressBar();
@@ -349,6 +352,14 @@ class VideoPlayer {
             this.createPictureInPictureButton(),
             this.createFullscreenButton()
         );
+
+        // hover logic
+        this.container.addEventListener("mouseenter", () => this.controls.classList.add("shown"));
+        this.container.addEventListener("mouseleave", () => {
+            if(!this.videoElement.paused) {
+                this.controls.classList.remove("shown")
+            }
+        });
 
     }
 

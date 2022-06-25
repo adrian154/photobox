@@ -285,7 +285,7 @@ nav button:hover {
 }
 
 .tag.selected {
-	border: 1px solid var(--tag-selected-color);
+	border: none;
     background-color: var(--tag-selected-color);
     color: #ffffff;
 }
@@ -353,6 +353,7 @@ nav button:hover {
     position: absolute;
     top: 0;
     left: 0;
+    outline: none;
 
     /* make it occupy full container, */
     display: flex;

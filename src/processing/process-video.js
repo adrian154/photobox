@@ -42,15 +42,7 @@ const mimeTypes = {
 	"webm" : "video/webm"
 };
 
-const runffmpeg = (...args) => {
-    const ffmpeg = spawn(ffmpegPath, args);
-    return new Promise((resolve, reject) => {
-        ffmpeg.on("error", reject);
-        ffmpeg.on("exit", resolve);
-    });
-};
-
-const runffmpegTrackProgress = (onProgress, args) => {
+const runffmpeg = (onProgress, ...args) => {
     args.push("-progress", "pipe:1");
     const ffmpeg = spawn(ffmpegPath, args);
     const reader = readline.createInterface({
@@ -59,7 +51,7 @@ const runffmpegTrackProgress = (onProgress, args) => {
     });
     reader.on("line", line => {
         const microseconds = line.match(/out_time_us=(\d+)/)?.[1];
-        if(microseconds) {
+        if(microseconds && onProgress) {
             onProgress(Number(microseconds));
         }
     });
@@ -74,7 +66,7 @@ const generatePreview = async (filepath, time, originalWidth, originalHeight, tr
     tracker?.begin("Generating thumbnail...");
     const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
     const path = generatePath();
-    await runffmpeg("-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2", path);
+    await runffmpeg(null, "-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2", path);
     return {
         path, 
         contentType: "image/webp",
@@ -93,8 +85,9 @@ const generateVideoPreview = async (filepath, length, originalWidth, originalHei
     const width = Math.round(originalWidth * processing.videoPreviewHeight / originalHeight) & 65534;
 
     // if the video is very short, don't generate clips, just downscale
+    const onProgress = us => tracker?.report(us/1e6/length);
     if(length < 1.5 * processing.videoPreviewClips * processing.videoPreviewClipLength) {
-        await runffmpeg("-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
+        await runffmpeg(onProgress, "-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
     } else {
 
         const filtergraph = [];
@@ -108,7 +101,7 @@ const generateVideoPreview = async (filepath, length, originalWidth, originalHei
         }
 
         filtergraph.push(`${concatFilterInputs}concat=n=${processing.videoPreviewClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
-        await runffmpeg("-i", filepath, "-filter_complex", filtergraph.join('; '), "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
+        await runffmpeg(onProgress, "-i", filepath, "-filter_complex", filtergraph.join('; '), "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
 
     }
 
@@ -164,7 +157,7 @@ const generateDisplayVersion = async (filepath, meta, videoStream, audioStream, 
         const path = generatePath();
         flags.push(path);
         tracker?.begin("Transcoding...");
-        await runffmpegTrackProgress(us => tracker?.report(us/1e6/duration), flags);
+        await runffmpeg(us => tracker?.report(us/1e6/duration), ...flags);
         return {
             path,
             contentType: "video/mp4",
