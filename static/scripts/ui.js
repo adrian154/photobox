@@ -175,17 +175,34 @@ class RedditBrowser extends HiddenLayer {
     }
 
     go() {
+        
+        const params = new URL(window.location).searchParams;
         const destUrl = new URL("/", window.location.origin);
+        let sameWindow = false;
+
         destUrl.searchParams.set("reddit", 1);
         if(this.subredditButton.checked) {
             destUrl.searchParams.set("r", this.name.value);
+            if(params.get("r") === this.name.value) {
+                sameWindow = true;
+            }
         } else {
             destUrl.searchParams.set("u", this.name.value);
+            if(params.get("u") === this.name.value) {
+                sameWindow = true;
+            }
         }
+
         destUrl.searchParams.set("sort", this.sort.value);
         destUrl.searchParams.set("period", this.period.value);
-        window.open(destUrl, "_blank");
+
+        if(sameWindow)
+            window.open(destUrl, "_self")
+        else
+            window.open(destUrl, "_blank");
+    
         this.hide();
+    
     }
 
 }

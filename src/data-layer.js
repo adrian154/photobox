@@ -1,19 +1,21 @@
-// i believe java developers would call this pattern "data access objects"
-// just saying that makes me feel a little disgusted, but whatever
-
 const Database = require("better-sqlite3");
 const Table = require("./crud.js");
 
 const db = new Database("data/site.db");
 db.pragma("foreign_keys = ON");
 
-// tables
+// ----- Tables -----
+
 const Collections = new Table(db, "collections", [
     "name STRING PRIMARY KEY NOT NULL",
     "type STRING NOT NULL",
     "storageEngine STRING",
     "feedURL STRING",
     "visibility STRING NOT NULL"
+]);
+
+const Tags = new Table(db, "tags", [
+    "tag STRING PRIMARY KEY NOT NULL"
 ]);
 
 const PostTags = new Table(db, "postTags", [
@@ -24,8 +26,6 @@ const PostTags = new Table(db, "postTags", [
     "FOREIGN KEY (tag) REFERENCES tags(tag)"
 ]);
 
-// the meaning of `displaySrc` depends on `type`, it's not necessarily a URL!
-// `originalURL` doesn't necessarily lead to the same resource, it could be a permalink to the source
 const Posts = new Table(db, "posts", [
     "postid STRING PRIMARY KEY NOT NULL",
     "collection STRING NOT NULL",
@@ -37,10 +37,6 @@ const Posts = new Table(db, "posts", [
 ]);
 
 db.exec("CREATE INDEX IF NOT EXISTS posts_timestamp ON posts(timestamp)");
-
-const Tags = new Table(db, "tags", [
-    "tag STRING PRIMARY KEY NOT NULL"
-]);
 
 const Users = new Table(db, "users", [
     "username STRING NOT NULL PRIMARY KEY",
@@ -54,7 +50,8 @@ const Sessions = new Table(db, "sessions", [
     "FOREIGN KEY(username) REFERENCES users(username)"
 ]);
 
-// --- posts
+// ----- Queries -----
+
 const rowToPost = row => {
     if(row) {
         return {
@@ -93,7 +90,7 @@ Posts.remove = db.transaction(postid => {
 
 // --- collections
 Collections.addPhotobox = Collections.insert({name: "?", type: "'photobox'", storageEngine: "?", visibility: "?"}).fn();
-Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", feedURL: "?"}).fn();
+Collections.addReddit = Collections.insert({name: "?", type: "'reddit'", feedURL: "?", visibility: "'private'"}).fn();
 Collections.get = Collections.select("*").where("name = ?").fn();
 Collections.getAll = Collections.select("*").fn({all: true});
 Collections.getPublic = Collections.select("*").where("visibility = 'public'").fn({all: true});

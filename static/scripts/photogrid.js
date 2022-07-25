@@ -7,7 +7,7 @@ class PhotoGrid {
 
     addPost(post) {
         
-        const preview = post.versions.preview;
+        const preview = post.versions.thumbnail;
 
         // create container, distribute width proportionally
         const container = document.createElement("div");
@@ -52,7 +52,8 @@ class PhotoGrid {
         }
     
         // video hover preview
-        if(post.versions.videoPreview) {
+        const clips = post.versions.clips || post.versions.original;
+        if(clips) {
             
             let playPreviewTimeout, video, progressBar;
 
@@ -64,7 +65,7 @@ class PhotoGrid {
                         video = document.createElement("video")
                         video.classList.add("video-preview");
                         video.muted = true;
-                        video.src = post.versions.videoPreview.url;
+                        video.src = clips.url;
                         video.loop = true;
                         container.append(video);
                         video.play();

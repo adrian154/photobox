@@ -118,6 +118,10 @@ class App {
 
     load() {
 
+        if(this.loading) {
+            return;
+        }
+
         if(!this.shuffle) {
             this.statusText.textContent = "Loading...";
             this.loading = true;

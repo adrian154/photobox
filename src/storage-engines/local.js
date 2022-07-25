@@ -13,7 +13,6 @@ module.exports = class {
 
     constructor(config, app) {
         this.config = config;
-        console.log("warning: Local storage engine should only be used for testing purposes!");
         app.use("/local-objects", express.static(DIRECTORY));
     }
 

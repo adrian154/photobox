@@ -17,14 +17,15 @@
 * Better video handling
     * Custom player with richer feature support
         * MediaMetadata
-        * thumbnails when hovering over progress bar
-        * basic controls
-            * picture-in-picture
+        * ~~thumbnails when hovering over progress bar~~
+            * still need to generate these
+        * ~~basic controls~~
+            * ~~picture-in-picture~~
             * playback speed
-            * pick quality
-            * volume
-            * fullscreen
-            * scrub
+            * ~~pick quality~~
+            * ~~volume~~
+            * ~~fullscreen~~
+            * ~~scrub~~
     * Generate multiple resolutions?
         * original, 1080p, 720p, 480p, 360p
         * always transcode to H.264/AAC

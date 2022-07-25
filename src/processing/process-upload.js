@@ -7,41 +7,33 @@
  */
 
 const {processing} = require("../../config.json");
-const Queue = require("../queue.js");
+const createQueue = require("../queue.js");
 
 const processImage = require("./process-image.js"),
       processVideo = require("./process-video.js"),
       processRaw = require("./process-raw.js");
 
-// try to infer which processing pipelines are best for a given upload based on file extension
-// this might help to speed up processing a little
-const IMAGE_FORMATS = ["png", "jpeg", "jpg", "webp", "gif", "apng", "avif"];
-const VIDEO_FORMATS = ["mp4", "gifv", "mov", "webm", "avi", "ogv", "m4v"];
-const RAW_FORMATS = ["nef", "pef", "raw", "dng", "cr2", "cr3"];
+const IMAGE_EXTENSIONS = ["png", "jpeg", "jpg", "webp", "gif", "apng", "avif"],
+      VIDEO_EXTENSIONS = ["mp4", "gifv", "mov", "webm", "avi", "ogv", "m4v"],
+      RAW_EXTENSIONS = ["nef", "pef", "raw", "dng", "cr2", "cr3"];
 
-const process = async task => {
-
-    // unless we're confident a file is a video, always try the video pipeline last
-    // otherwise, we risk decoding something that's not a video as a video because of ffprobe's ridiculous promiscuity
-    // it's not a real problem because we restrict the formats ffprobe will accept, but it's still a waste of time
-    const extension = task.originalName.split('.').pop().toLowerCase();
-    const pipelines = IMAGE_FORMATS.includes(extension) ? [processImage, processRaw, processVideo] :
-                      VIDEO_FORMATS.includes(extension) ? [processVideo, processImage, processRaw] :
-                      RAW_FORMATS.includes(extension) ? [processRaw, processImage, processVideo] :
-                      [processImage, processRaw, processVideo];
-
-    for(const pipeline of pipelines) {
-        try {
-            return pipeline(task.filePath, task.tagSet, task.tracker);
-        } catch(err) {
-            console.error(err);
-            continue;
-        }
+module.exports = createQueue((filePath, originalName, tagSet, tracker) => {
+    
+    const extension = originalName.split(".").pop().toLowerCase();
+    let pipeline = null;
+   
+    if(IMAGE_EXTENSIONS.includes(extension)) {
+        pipeline = processImage;
+    } else if(VIDEO_EXTENSIONS.includes(extension)) {
+        pipeline = processVideo;
+    } else if(RAW_EXTENSIONS.includes(extension)) {
+        pipeline = processRaw;
     }
 
-};
+    if(!pipeline) {
+        throw new Error("Unrecognized file extension");
+    }
 
-// trying to process uploads as fast as they are received tends to cause exploding memory usage
-// limit the number of posts which can be processed concurrently
-const queue = new Queue(process, processing.concurrency);
-module.exports = (filePath, originalName, tagSet, tracker) => queue.enqueue({filePath, originalName, tagSet, tracker});
+    return pipeline(filePath, tagSet, tracker);
+
+}, processing.concurrency);

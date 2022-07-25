@@ -79,8 +79,8 @@ class PostEditor {
         post.photogridContainer.scrollIntoView({block: "center"});
 
         this.post = post;
-        this.originalLink.href = post.versions.original.url;
-        this.preview.src = post.versions.preview.url;
+        //this.originalLink.href = post.versions.original.url;
+        this.preview.src = post.versions.thumbnail.url;
         this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
 
         if(post.collection) {
@@ -255,7 +255,7 @@ class Slideshow extends HiddenLayer {
     populateFrame(post) {
 
         const bgimg = document.createElement("img");
-        bgimg.src = post.versions.preview.url;
+        bgimg.src = post.versions.thumbnail.url;
         bgimg.referrerPolicy = "no-referrer";
         bgimg.classList.add("slideshow-bg");
         post.frame.append(bgimg);
@@ -269,12 +269,15 @@ class Slideshow extends HiddenLayer {
         } else if(post.type === "video") {
 
             const versions = {};
-            if(post.versions.original) versions["original"] = post.versions.original;
-            if(post.versions.display) versions["480p"] = post.versions.display;
+            for(const versionName in post.versions) {
+                if(post.versions[versionName].video) {
+                    versions[versionName] = post.versions[versionName];
+                }
+            }
 
             // parent
             const container = document.createElement("div");
-            post.frame.player = new VideoPlayer(container, {poster: post.versions.preview.url, versions});
+            post.frame.player = new VideoPlayer(container, {poster: post.versions.thumbnail.url, versions});
             post.frame.append(container);
 
         } else {

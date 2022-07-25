@@ -1,14 +1,7 @@
 const fetch = require("node-fetch");
 const tags = require("../tags.js");
 const {imgurClientID} = require("../../config.json");
-const idealPreviewHeight = require("../../config.json").processing.previewHeight;
-
-// by adding 'l' to the post id, we can get the thumbnail
-const getImgurThumbnail = link => {
-    const parts = link.split('.');
-    parts[parts.length - 2] += "l";
-    return parts.join('.');  
-};
+const targetThumbnailHeight = require("../../config.json").processing.thumbnailHeight;
 
 // reuse imgur item handling code for individual posts and galleries
 const processImgurItem = (basePost, item) => {
@@ -18,17 +11,17 @@ const processImgurItem = (basePost, item) => {
     clone.tags = [...basePost.tags, ...item.tags];
     clone.versions = {};
     
-    // use the original image's dimensions as the preview dimensions because aspect ratio is all that matters
-    // in the future, if we need accurate preview dimensions for some reason, we could calculate the exact size because the 'l' thumbnail is guaranteed to have a height of 640px
-    clone.versions.preview = {
-        url: getImgurThumbnail(item.link),
+    // use the original image's dimensions as the thumbnail dimensions because aspect ratio is all that matters
+    // in the future, if we need accurate thubmnail dimensions for some reason, we could calculate the exact size because the 'l' thumbnail is guaranteed to have a height of 640px
+    clone.versions.thumbnail = {
+        url: `https://i.imgur.com/${item.id}l.jpg`,
         width: item.width,
         height: item.height
     };
 
     if(item.mp4) {
         clone.type = "video";
-        clone.versions.videoPreview = clone.versions.original = {url: item.mp4, width: item.width, height: item.height};
+        clone.versions.original = {url: item.mp4, width: item.width, height: item.height, video: true};
         clone.tags.push(tags.VIDEO);
         if(item.has_sound) {
             clone.tags.push(tags.SOUND);
@@ -42,17 +35,17 @@ const processImgurItem = (basePost, item) => {
 
 };
 
-// find the resolution closest to the configured preview height
+// find the resolution closest to the configured thumbnail height
 const getBestResolution = resolutions => {
     
-    // post may not have previews
+    // post may not have thumbnails
     if(!resolutions) {
         return;
     }
 
     let bestResolution = null, minDiff = Infinity;
     for(const resolution of resolutions) {
-        const diff = Math.abs(resolution.height - idealPreviewHeight);
+        const diff = Math.abs(resolution.height - targetThumbnailHeight);
         if(diff < minDiff) {
             minDiff = diff;
             bestResolution = resolution;
@@ -76,7 +69,6 @@ const processPost = async (redditPost) => {
     }
 
     // on subreddits where thumbnails are enabled, Reddit provides a set of preview images at various resolutions
-    // we prefer the 2nd resolution, falling back on the two lower-res alternatives when not available 
     const redditPreview = getBestResolution(redditPost.preview?.images[0].resolutions);
 
     // construct a "base post"
@@ -92,7 +84,8 @@ const processPost = async (redditPost) => {
     };
 
     // Handle redgifs
-    const redgifsID = redditPost.url_overridden_by_dest?.match(/redgifs.com\/watch\/(\w+)/)?.[1];
+    const redgifsID = redditPost.url_overridden_by_dest?.match(/redgifs.com\/watch\/(\w+)/)?.[1] ||
+                      redditPost.url_overridden_by_dest?.match(/redgifs.com\/ifr\/(\w+)/)?.[1];
     if(redgifsID) {
 
         const resp = await fetch(`https://api.redgifs.com/v2/gifs/${redgifsID}`);
@@ -107,10 +100,10 @@ const processPost = async (redditPost) => {
         // this has the caveat that its true size is not available, but we can use the video size as it'll have the same aspect ratio
         // this horrible practice might come back to bite me in the future when I try to use the preview dimensions in a meaningful way in the client beyond calculating aspect ratio, but whatever
         post.type = "video";
-        post.versions.preview = redditPreview || {url: result.gif.urls.thumbnail, width: result.gif.width, height: result.gif.height}; 
-        post.versions.videoPreview = {url: result.gif.urls.vthumbnail};
-        post.versions.display = {url: result.gif.urls.sd};
-        post.versions.original = {url: result.gif.urls.hd, width: result.gif.width, height: result.gif.height};
+        post.versions.thumbnail = redditPreview || {url: result.gif.urls.thumbnail, width: result.gif.width, height: result.gif.height}; 
+        post.versions.clips = {url: result.gif.urls.vthumbnail};
+        post.versions.HD = {url: result.gif.urls.hd, width: result.gif.width, height: result.gif.height, video: true};
+        post.versions.SD = {url: result.gif.urls.sd, video: true};
 
         // include redgifs tags; also, add audio tag if necessary
         post.tags.push(tags.VIDEO, ...result.gif.tags);
@@ -143,9 +136,9 @@ const processPost = async (redditPost) => {
     if(redditPreview && redditPost.secure_media?.reddit_video) {
         post.type = "video";
         post.tags.push(tags.VIDEO);
-        post.versions.preview = redditPreview;
+        post.versions.thumbnail = redditPreview;
         const redditVideo = redditPost.secure_media.reddit_video;
-        post.versions.videoPreview = post.versions.original = {url: redditVideo.fallback_url, width: redditVideo.width, height: redditVideo.height};
+        post.versions.original = {url: redditVideo.fallback_url, width: redditVideo.width, height: redditVideo.height, video: true};
         post.duration = redditPost.secure_media.reddit_video.duration;
         return post;
     }
@@ -158,7 +151,7 @@ const processPost = async (redditPost) => {
             const clone = Object.assign({}, post);
             clone.type = "image";
             clone.versions = {};
-            clone.versions.preview = getBestResolution(item.p.map(convert));
+            clone.versions.thumbnail = getBestResolution(item.p.map(convert));
             clone.versions.original = convert(item.s);
             return clone;
         });
@@ -173,12 +166,10 @@ const processPost = async (redditPost) => {
     }
 
     // hopefully, the content can be displayed as an image
-    if(redditPreview) {
-        post.type = "image";
-        post.versions.preview = redditPreview;
-        post.versions.original = {url: redditPost.url_overridden_by_dest};
-        return post;
-    }
+    post.type = "image";
+    post.versions.thumbnail = redditPreview || {url: redditPost.url_overridden_by_dest};
+    post.versions.original = {url: redditPost.url_overridden_by_dest};
+    return post;
 
 };
 
@@ -213,7 +204,7 @@ module.exports = {
             // cache preview
             if(!after) {
                 const previewPost = Array.isArray(result.posts[0]) ? result.posts[0][0] : result.posts[0];
-                previews[collection.name] = previewPost.versions.preview?.url || previewPost.versions.original?.url;
+                previews[collection.name] = previewPost.versions.thumbnail?.url || previewPost.versions.original?.url;
             }
 
             return result;

@@ -43,126 +43,138 @@ const mimeTypes = {
 };
 
 const runffmpeg = (onProgress, ...args) => {
+
+    // print progress to stdout so we can track it
     args.push("-progress", "pipe:1");
+
+    // run the task
     const ffmpeg = spawn(ffmpegPath, args);
     const reader = readline.createInterface({
         input: ffmpeg.stdout,
         terminal: false
     });
+
+    // parse progress info 
     reader.on("line", line => {
         const microseconds = line.match(/out_time_us=(\d+)/)?.[1];
         if(microseconds && onProgress) {
             onProgress(Number(microseconds));
         }
     });
+
     return new Promise((resolve, reject) => {
         ffmpeg.on("error", reject);
         ffmpeg.on("exit", resolve);
     });
+
 };
 
-// generate image preview
-const generatePreview = async (filepath, time, originalWidth, originalHeight, tracker) => {
+// generate thumbnail
+const generateThumbnail = async (filepath, duration, originalWidth, originalHeight, tracker) => {
+
     tracker?.begin("Generating thumbnail...");
-    const width = Math.round(originalWidth * processing.previewHeight / originalHeight);
+    
+    // calculate dimensions of the output
+    const height = processing.thumbnailHeight;
+    const width = Math.round(originalWidth * height / originalHeight);
+    
+    // thumbnail is taken at first 10% of video or 30 seconds, whatever comes first
+    const time = Math.min(Math.floor(duration * 0.1), 30);
+
     const path = generatePath();
-    await runffmpeg(null, "-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.previewHeight}`, "-c:v", "webp", "-f", "image2", path);
+    await runffmpeg(null, "-i", filepath, "-ss", time, "-vframes", "1", "-filter:v", `scale=${width}:${processing.thumbnailHeight}`, "-c:v", "webp", "-f", "image2", path);
     return {
         path, 
         contentType: "image/webp",
         width,
-        height: processing.previewHeight
+        height
     };
+
 };
 
 // generate a video version of the preview, a la a certain website...
-const generateVideoPreview = async (filepath, length, originalWidth, originalHeight, tracker) => {
-
-    tracker?.begin("Generating video preview...");
-
-    // we use a bit of a bitwise 'hack' to round the width to a multiple of 2 (required for H.264 encoding)
-    const path = generatePath();
-    const width = Math.round(originalWidth * processing.videoPreviewHeight / originalHeight) & 65534;
-
-    // if the video is very short, don't generate clips, just downscale
+const generateClips = async (filepath, length, tracker) => {
+    
     const onProgress = us => tracker?.report(us/1e6/length);
-    if(length < 1.5 * processing.videoPreviewClips * processing.videoPreviewClipLength) {
-        await runffmpeg(onProgress, "-i", filepath, "-filter:v", `scale=${width}:${processing.videoPreviewHeight}`, ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
+    const path = generatePath();
+    tracker?.begin("Generating clips...");
+
+    // stepSize = time between the start of each clip
+    const stepSize = (length - processing.video.clipLength) / processing.video.numClips;
+
+    // if there are less than 10 seconds between clips, just downscale
+    if(stepSize - processing.video.clipLength < 10) {
+        await runffmpeg(onProgress, "-i", filepath, "-filter:v", `scale=-2:${processing.video.clipHeight}`, ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
     } else {
 
         const filtergraph = [];
-        const step = (length - 10) / (processing.videoPreviewClips - 1);
         let concatFilterInputs = "";
 
-        for(let i = 0; i < processing.videoPreviewClips; i++) {
-            const t = Math.floor(5 + step * i);
-            filtergraph.push(`[0:v]trim=${t}:${t + processing.videoPreviewClipLength},setpts=PTS-STARTPTS[v${i}]`);
+        for(let i = 0; i < processing.numClips; i++) {
+            const t = i * stepSize;
+            filtergraph.push(`[0:v]trim=${t}:${t + processing.clipLength},setpts=PTS-STARTPTS[v${i}]`);
             concatFilterInputs += `[v${i}]`;
         }
 
-        filtergraph.push(`${concatFilterInputs}concat=n=${processing.videoPreviewClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
+        filtergraph.push(`${concatFilterInputs}concat=n=${processing.video.numClips}:v=1:a=0[out]`, `[out]scale=-2:200[scaled]`);
         await runffmpeg(onProgress, "-i", filepath, "-filter_complex", filtergraph.join('; '), "-map", "[scaled]", ...H264_ENCODE_SETTINGS, "-f", "mp4", path);
 
     }
 
     return {
         path,
-        contentType: "video/mp4",
-        width,
-        height: processing.videoPreviewHeight
+        contentType: "video/mp4"
     }
 
 };
 
-// generate a display version
-// codecs are selected to maximize compatibility and video is reduced to 480p (or whatever's configured) for mobile vieweing
-const generateDisplayVersion = async (filepath, meta, videoStream, audioStream, duration, tracker) => {
+// generate a video version at a certain resolution
+const generateResolution = async (filepath, meta, videoStream, audioStream, duration, height, tracker) => {
     
     const flags = ["-i", filepath];
-    let needsTranscode, width;
+    let needsTranscode = false;
 
-    if(videoStream.height > processing.videoDisplayHeight) {
-        needsTranscode = true;
-        width = Math.floor(videoStream.width * processing.videoDisplayHeight / videoStream.height) & 65534;
-        flags.push("-filter:v", `scale=${width}:${processing.videoDisplayHeight}`);
-    } else {
-        width = videoStream.width;
+    // if the original video is smaller than the requested resolution, exit
+    if(videoStream.height < height) {
+        return;
     }
 
-    // we put this block after any filters are added since if the video is modified, we'll need to reencode anyways 
-    if(needsTranscode || videoStream.codec_name !== "h264") {
-        needsTranscode = true;
-        flags.push(...H264_ENCODE_SETTINGS);
-    } else {
+    // if the video stream is already the right height and is also H.264, no need to transcode
+    if(videoStream.height == height && videoStream.codec_name === "h264") {
         flags.push("-c:v", "copy");
-    }
-
-    if(audioStream?.codec_name !== "aac") {
-        needsTranscode = true;
-        flags.push("-c:a", "aac");
     } else {
-        flags.push("-c:a", "copy");
+        flags.push("-filter:v", `scale=-2:${height}`);
+        needsTranscode = true;
     }
 
-    // detect container
-    // i guess this makes the "needsTranscode" variable a bit of a misnomer since there are situations where we just copy the streams into a new container but whatever
-    // we need to check the major_brand since quicktime MOVs and MP4 are reported as the same format name by ffprobe
+    // re-encode audio if not AAC
+    if(audioStream) {
+        if(audioStream.codec_name === "aac") {
+            flags.push("-c:a", "copy");
+        } else {
+            flags.push("-c:a", "aac");
+            needsTranscode = true;
+        }
+    }
+
+    // make sure the container is MP4
+    // this technically makes `needsTranscode` a bit of a misnomer since there may be situations where we copy both streams into a new container
     if(meta.format.format_name != "mov,mp4,m4a,3gp,3g2,mj2" || meta.format.tags.major_brand != "isom") {
-        needsTranscode = true;        
+        needsTranscode = true; 
     }
 
+    // always output MP4
     flags.push("-f", "mp4");
 
     if(needsTranscode) {
         const path = generatePath();
         flags.push(path);
-        tracker?.begin("Transcoding...");
+        tracker?.begin(`Generating ${height}p...`);
         await runffmpeg(us => tracker?.report(us/1e6/duration), ...flags);
         return {
             path,
             contentType: "video/mp4",
-            width, 
-            height: processing.videoDisplayHeight 
+            video: true
         };
     }
 
@@ -173,7 +185,8 @@ module.exports = async (filepath, tags, tracker) => {
     const data = await probe(filepath);
 
     // ignore unsupported types 
-    if(!mimeTypes[data.format.format_name]) {
+    const mimeType = mimeTypes[data.format.format_name];
+    if(!mimeType) {
         throw new Error("Unsupported format");
     }
 
@@ -184,7 +197,7 @@ module.exports = async (filepath, tags, tracker) => {
     }
 
     // add tags based on detected media properties
-    tags.add(metaTags.VIDEO); // (duh)
+    tags.add(metaTags.VIDEO);
     const audioStream = data.streams.find(stream => stream.codec_type === "audio");
     if(audioStream) {
         tags.add(metaTags.SOUND);
@@ -201,10 +214,12 @@ module.exports = async (filepath, tags, tracker) => {
         type: "video",
         duration,
         versions: {
-            preview: await generatePreview(filepath, Math.floor(duration * 0.15), videoStream.width, videoStream.height, tracker),
-            videoPreview: await generateVideoPreview(filepath, duration, videoStream.width, videoStream.height, tracker),
-            display: await generateDisplayVersion(filepath, data, videoStream, audioStream, duration, tracker),
-            original: {path: filepath, contentType: mimeTypes[data.format.format_name], width: videoStream.width, height: videoStream.height}
+            "thumbnail": await generateThumbnail(filepath, duration, videoStream.width, videoStream.height, tracker),
+            "clips": await generateClips(filepath, duration, tracker),
+            "480p": await generateResolution(filepath, data, videoStream, audioStream, duration, 480, tracker),
+            "720p": await generateResolution(filepath, data, videoStream, audioStream, duration, 720, tracker),
+            "1080p": await generateResolution(filepath, data, videoStream, audioStream, duration, 1080, tracker), 
+            "original": {path: filepath, contentType: mimeType, video: true}
         }
     };
 

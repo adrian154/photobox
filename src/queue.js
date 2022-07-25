@@ -1,57 +1,55 @@
-// shitty work queue
+// A simple, functional work queue
 
-module.exports = class {
+module.exports = (func, concurrency) => {
 
-    constructor(fn, concurrency) {
-        this.tasks = [];
-        this.callbacks = [];
-        this.fn = fn;
-        for(let i = 0; i < concurrency; i++) {
-            this.spawnWorker();
-        }
-    }
+    const tasks = [];
+    const callbacks = new Set();
 
-    enqueue(params) {
-        return new Promise((resolve, reject) => {
-           
-            const task = {data: params, resolve, reject};
-
-            // check if there's a worker waiting to receive a task
-            if(this.callbacks.length > 0) {
-                this.callbacks.pop()(task);
-            } else {
-                // otherwise, add to the queue
-                this.tasks.push(task);
-            }
-
-        });
-    }
-
-    async spawnWorker() {
-        while(true) {
-            const task = await this.nextTask();
-            try {
-                task.resolve(await this.fn(task.data));
-                console.log(`Memory usage (RSS): ${process.memoryUsage.rss()/1024/1024}M`);
-            } catch(error) {
-                task.reject(error);
-            }
-        }
-    }
-
-    nextTask() {
+    const getNextTask = () => {
         
-        // if there's a task immediately available, return it
-        if(this.tasks.length > 0) {
-            return this.tasks.shift();
+        // if there is work available, return it
+        if(tasks.length > 0) {
+            return tasks.shift();
+        }
+        
+        // otherwise, save a callback for when work arrives
+        return new Promise(resolve => {
+            callbacks.add(resolve);
+        });
+        
+    };
+
+    const spawnWorker = async () => {
+        while(true) {
+            const task = await getNextTask();
+            try {
+                task.resolve(func(...task.args));
+            } catch(err) {
+                task.reject(err);
+            }
+        }
+    };
+
+    // spawn workers
+    for(let i = 0; i < concurrency; i++) {
+        spawnWorker();
+    }
+
+    // return fn to enqueue things
+    return (...args) => new Promise((resolve, reject) => {
+
+        const task = {resolve, reject, args};
+
+        // if there is a worker waiting for work, immediately start the task
+        if(callbacks.size > 0) {
+            const callback = callbacks.values().next().value;
+            callbacks.delete(callback);
+            callback(task);
+        } else {
+            // otherwise, queue it up
+            tasks.push(task);
         }
 
-        // otherwise, wait until a task is enqueued
-        let callback;
-        const promise = new Promise(resolve => callback = resolve);
-        this.callbacks.push(callback);
-        return promise;
-
-    }
+    });
 
 };
