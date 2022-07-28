@@ -77,9 +77,9 @@ module.exports = class {
     }
 
     // TODO: exponential backoff
-    async uploadFile(path, name, contentType) {
+    async save(tmpFilePath, name, contentType) {
         
-        const readStream = fs.createReadStream(path);
+        const readStream = fs.createReadStream(tmpFilePath);
         const uploadStream = new UploadStream();
         readStream.pipe(uploadStream);
 
@@ -95,7 +95,7 @@ module.exports = class {
                         "Authorization": authorizationToken,
                         "X-Bz-File-Name": encodeURIComponent(name),
                         "Content-Type": contentType,
-                        "Content-Length": fs.statSync(path).size + 40,
+                        "Content-Length": fs.statSync(tmpFilePath).size + 40,
                         "X-Bz-Content-Sha1": "hex_digits_at_end"
                     },
                     body: uploadStream
@@ -109,8 +109,10 @@ module.exports = class {
 
                 return {
                     url: new URL(`/file/${this.config.bucket}/${response.fileName}`, this.downloadUrl).href,
-                    fileName: response.fileName,
-                    fileId: response.fileId
+                    deleteInfo: {
+                        fileName: response.fileName,
+                        fileId: response.fileId
+                    }
                 }
 
             } catch(error) {
@@ -123,36 +125,22 @@ module.exports = class {
 
     }
 
-    async save(id, versions) {
-        for(const versionName in versions) {
-            const version = versions[versionName];
-            if(!version) continue;
-            const {url, fileName, fileId} = await this.uploadFile(version.path, `${id}-${versionName}`, version.contentType);
-            version.url = url;
-            version.fileName = fileName;
-            version.fileId = fileId;
-            await fsPromises.unlink(version.path);
-            delete version.path;
-        }
-        return versions;
-    }
+    async delete(deleteInfo) {
 
-    async delete(post) {
-        for(const versionName in post.versions) {   
+        const resp = await fetch(this.url("b2_delete_file_version"), {
+            method: "POST",
+            headers: {"Authorization": this.authToken, "Content-Type": "application/json"},
+            body: JSON.stringify({fileId: deleteInfo.fileId, fileName: deleteInfo.fileName})
+        });
 
-            const version = post.versions[versionName];
-            const resp = await fetch(this.url("b2_delete_file_version"), {
-                method: "POST",
-                headers: {"Authorization": this.authToken, "Content-Type": "application/json"},
-                body: JSON.stringify({fileId: version.fileId, fileName: version.fileName})
-            });
-
-            if(!resp.ok) {
-                console.log(await resp.json());
-                throw new Error("Deletion failed; post may be partially deleted");
+        if(!resp.ok) {
+            const resp = await resp.json();
+            if(resp?.code === "file_not_present") {
+                return; // if the file doesn't exist, it's not considered a failure
             }
+            throw new Error("Deletion failed; post may be partially deleted");
+        }
 
-        } 
     }
 
 };

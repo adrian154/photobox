@@ -81,7 +81,14 @@ module.exports = async (req, res) => {
 
             // process upload
             const result = await processUpload(tempFile.path, originalName, tagSet, tracker);
-            const versions = await storageEngine.save(tempFile.id, result.versions);
+
+            // save versions
+            for(const [name, version] of Object.entries(result.versions)) {
+                const {url, deleteInfo} = await storageEngine.save(version.path, `${tempFile.id}-${name}`, version.contentType);
+                version.url = url;
+                version.deleteInfo = deleteInfo;
+                delete version.path;
+            }
 
             // insert into database
             Posts.add({
@@ -89,7 +96,7 @@ module.exports = async (req, res) => {
                 collection: collection.name,
                 type: result.type,
                 duration: result.duration,
-                versions: JSON.stringify(versions),
+                versions: JSON.stringify(result.versions),
                 tags: Array.from(tagSet),
                 timestamp
             });

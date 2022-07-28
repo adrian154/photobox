@@ -17,7 +17,9 @@ module.exports = async (req, res) => {
 
     const storageEngine = req.storageEngines[Collections.get(post.collection)?.storageEngine];
     if(storageEngine) {
-        await storageEngine.delete(post);
+        for(const version of Object.values(post.versions)) {
+            await storageEngine.delete(version.deleteInfo);
+        }
     }
 
     Posts.remove(post.id);
