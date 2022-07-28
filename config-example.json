@@ -1,14 +1,18 @@
 {
     "port": 80,
     "processing": {
-        "concurrency": 1,
-        "previewHeight": 480,
-        "videoPreviewHeight": 180,
-        "videoPreviewClips": 10,
-        "videoPreviewClipLength": 1,
-        "videoDisplayHeight": 480,
-        "minDisplaySize": 900,
-        "maxDisplaySize": 1920
+        "concurrency": 3,
+        "thumbnailHeight": 320,
+        "image": {
+            "minDisplaySize": 900,
+            "maxDisplaySize": 1920
+        },
+        "video": {
+            "clipHeight": 200,
+            "numClips": 12,
+            "clipLength": 1,
+            "resolutions": [480, 720]
+        }
     },
     "storageEngines": {
         "local": {

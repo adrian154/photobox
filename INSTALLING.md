@@ -40,21 +40,7 @@ The bind mount for `/app/tmp` is not strictly necessary; you do not need it if y
 
 Photobox requires a configuration file called `config.json` to be present. A ready-to-use example is available at [config-example.json](https://github.com/adrian154/photobox/blob/master/config-example.json); simply rename this file to `config.json` and you're up and running.
 
-Here is the full documentation of all fields in the configuration file.
-
-* `port`: the port which Photobox will listen on. 
-* `processingConcurrency`: how many uploads Photobox will attempt to process at once. If enough resources are available, you could increase this value to speed up processing.
-* `storageEngines`: configuration for each individual storage backend. The object keys are the names of the storage engines, and the values are the configurations for each storage engines.
-    * **Local Storage Engine**
-        * `type`: `"local"`
-        * `path`: the path where objects are stored
-    * **Backblaze Storage Engine**
-        * `type`: `"backblaze"`
-        * `bucket`: the name of the bucket which objects will be uploaded to
-        * `bucketID`: the bucket's ID
-        * `keyID`: the application key's ID
-        * `key`: the application key
-* `imgurClientID`: OPTIONAL. The client ID of your Imgur application. Used to process Imgur posts when using Photobox as a Reddit viewer.
+*Note:* Recently, some major changes were made to the config file structure, so the out-of-date documentation has been removed. For now, refer to config-example.json; most of the fields should be self-explanatory.
 
 You don't need to provide configuration for any storage engines, but the field must exist and contain a valid object.
 

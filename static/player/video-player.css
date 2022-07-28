@@ -27,6 +27,7 @@
     padding: 0.5rem;
     box-sizing: border-box;
     background: linear-gradient(to top, rgba(0,0,0,75%), rgba(0,0,0,0%));
+    touch-action: none;
 }
 
 .video-player-controls.shown {
