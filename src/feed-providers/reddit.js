@@ -139,7 +139,7 @@ const processPost = async (redditPost) => {
         post.versions.thumbnail = redditPreview;
         const redditVideo = redditPost.secure_media.reddit_video;
         post.versions.original = {url: redditVideo.fallback_url, width: redditVideo.width, height: redditVideo.height, video: true};
-        post.duration = redditPost.secure_media.reddit_video.duration;
+        post.meta.duration = {duration: redditPost.secure_media.reddit_video.duration};
         return post;
     }
 

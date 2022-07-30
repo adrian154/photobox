@@ -212,7 +212,9 @@ module.exports = async (filepath, tags, tracker) => {
 
     return {
         type: "video",
-        duration,
+        meta: {
+            duration
+        },
         versions: {
             "thumbnail": await generateThumbnail(filepath, duration, videoStream.width, videoStream.height, tracker),
             "clips": await generateClips(filepath, duration, tracker),

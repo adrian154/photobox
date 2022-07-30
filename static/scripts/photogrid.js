@@ -40,11 +40,11 @@ class PhotoGrid {
         });
 
         // if its a video, add the duration
-        if(post.type === "video" || post.duration) {
+        if(post.type === "video" || post.meta?.duration) {
             const duration = document.createElement("span");
             duration.classList.add("duration");
-            if(post.duration) {
-                duration.textContent = `${Math.floor(post.duration / 60)}:${Math.round(post.duration % 60).toString().padStart(2, '0')}`;
+            if(post.meta?.duration) {
+                duration.textContent = `${Math.floor(post.meta.duration / 60)}:${Math.round(post.meta.duration % 60).toString().padStart(2, '0')}`;
             } else {
                 duration.textContent = "Video"; // we might not know the duration
             }
@@ -70,17 +70,6 @@ class PhotoGrid {
                         container.append(video);
                         video.play();
 
-                        // create progress bar
-                        progressBar = document.createElement("div");
-                        progressBar.classList.add("video-preview-progress");
-                        container.append(progressBar);
-
-                        video.addEventListener("timeupdate", event => {
-                            if(progressBar) {
-                                progressBar.style.width = video.currentTime / video.duration * 100 + "%";
-                            }
-                        })
-
                     }, 200);
                 }
             });
@@ -89,7 +78,6 @@ class PhotoGrid {
                 clearTimeout(playPreviewTimeout);
                 if(video) {
                     video.remove();
-                    progressBar.remove();
                     video = null;
                     progressBar = null;
                 }
@@ -100,11 +88,19 @@ class PhotoGrid {
         // associate the post with the container so it's easy to delete later on
         // and because it's ✨responsive✨ the layout clears itself up automagically
         post.photogridContainer = container;
-        app.filter.filterPost(post);
 
         // slideshow logic
         app.slideshow.addPost(post);
-        img.addEventListener("click", () => app.slideshow.show(post));
+        img.addEventListener("click", async () => {
+            const elem = post.frame?.querySelector(".video-player, .slideshow-centered");
+            app.slideshow.show(post);
+            if(elem) {
+                await transformFrom(elem, img);
+            }
+        });
+
+        // apply tag filters
+        app.filter.filterPost(post);
 
     }
 

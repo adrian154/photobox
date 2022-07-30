@@ -31,8 +31,8 @@ const Posts = new Table(db, "posts", [
     "collection STRING NOT NULL",
     "timestamp INTEGER NOT NULL",
     "type STRING NOT NULL",
-    "duration REAL",
     "versions STRING NOT NULL",
+    "meta STRING",
     "FOREIGN KEY(collection) REFERENCES collections(name)"
 ]);
 
@@ -54,15 +54,16 @@ const Sessions = new Table(db, "sessions", [
 
 const rowToPost = row => {
     if(row) {
-        return {
+        const result = {
             id: row.postid,
             collection: row.collection,
             timestamp: row.timestamp,
             type: row.type,
-            duration: row.duration,
             versions: JSON.parse(row.versions),
             tags: Posts.getTags(row.postid)
         };
+        if(row.meta) result.meta = JSON.parse(row.meta);
+        return result;
     }
 };
 
@@ -71,7 +72,7 @@ Posts.getTags = PostTags.select("tag").where("postid = ?").fn({all: true, pluck:
 Posts.removeTag = PostTags.delete("postid = ? AND tag = ?").fn();
 Posts.removeAllTags = PostTags.delete("postid = ?").fn();
 
-const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "duration", "versions"]).fn();
+const addPost = Posts.insert(["postid", "collection", "timestamp", "type", "meta", "versions"]).fn();
 Posts.add = db.transaction(post => {
     addPost(post);
     for(const tag of post.tags) {

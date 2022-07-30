@@ -76,10 +76,9 @@ class PostEditor {
     update(post) {
 
         // bring the post into view
-        post.photogridContainer.scrollIntoView({block: "center"});
+        post.photogridContainer.scrollIntoView({block: "nearest"});
 
         this.post = post;
-        //this.originalLink.href = post.versions.original.url;
         this.preview.src = post.versions.thumbnail.url;
         this.postDate.textContent = this.dateFormat.format(new Date(post.timestamp));
 
@@ -210,8 +209,23 @@ class Slideshow extends HiddenLayer {
 
     }
 
-    left() { this.show(this.posts[this.index - 1]); }
-    right() { this.show(this.posts[this.index + 1]); }
+    left() {
+        for(let i = this.index - 1; i >= 0; i--) {
+            if(this.posts[i].frame.style.display !== "none") {
+                this.show(this.posts[i]);
+                return;
+            }
+        }
+    }
+
+    right() {
+        for(let i = this.index + 1; i < this.posts.length; i++) {
+            if(this.posts[i].frame.style.display !== "none") {
+                this.show(this.posts[i]);
+                return;
+            }
+        }
+    }
 
     addPost(post) {
 
@@ -288,10 +302,7 @@ class Slideshow extends HiddenLayer {
     }
 
     activateFrame(frame) {
-        const video = frame.querySelector("video");
-        if(video && new URL(window.location).searchParams.get("autoplay")) {
-            //video.play();
-        }
+        // TODO
     }
 
     deactivateFrame(frame) {
@@ -327,6 +338,8 @@ class Slideshow extends HiddenLayer {
         if(!post) return;
 
         super.show();
+        requestAnimationFrame(() => this.layer.style.opacity = 1);
+
         this.slideshow.focus();
         document.body.classList.add("no-scrollbar")
         this.populateFrames(post.index);
@@ -338,8 +351,16 @@ class Slideshow extends HiddenLayer {
     }
 
     hide() {
+        
+        //super.hide();
         document.body.classList.remove("no-scrollbar");
-        super.hide();
+        this.layer.style.opacity = 0;
+        
+        // fade away post
+        const post = this.posts[this.index];
+        const element = post.frame.querySelector(".video-player, .slideshow-centered");
+        transformInto(element, post.photogridContainer).then(() => super.hide());
+
     }
 
 }

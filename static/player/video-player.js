@@ -157,21 +157,28 @@ class VideoPlayer {
         const progressHandle = this.div("video-player-progress-handle");
         progressInner.append(progressElapsed, progressHandle);
 
-        let videoTime = 0, lastTime;
+        // timeupdate events occur very infrequently (only a couple times per second), so we interpolate the current time to keep the progress bar smooth
+        // while seeking, override the interpolated time with the seek time; in addition, to prevent the progress bar from jumping around, keep the progress bar at the scrub position until the next timeupdate
+        let lastKnownTime = 0,       
+            lastUpdateTimestamp = 0,
+            seekTime = 0,
+            useScrubPosition = false;
+
         const updateProgressBar = () => {
 
-            // we have to interpolate the playback time between timeupdate events, which occur at a fairly low frequency
-            const now = Date.now();
-            if(!this.videoElement.paused && lastTime) {
-                videoTime += (now - lastTime) / 1000 * this.videoElement.playbackRate;
-            
+            let currentTime;
+            if(useScrubPosition) {
+                currentTime = seekTime;
+            } else if(!this.videoElement.paused && lastKnownTime) {
+                currentTime = lastKnownTime + (Date.now() - lastUpdateTimestamp) / 1000 * this.videoElement.playbackRate;
+            } else {
+                currentTime = this.videoElement.currentTime;
             }
-            lastTime = now;
 
-            const proportion = videoTime / this.videoElement.duration,
+            const proportion = currentTime / this.videoElement.duration,
                   x = progressInner.getBoundingClientRect().width * proportion;
             progressElapsed.style.transform = `translateX(${proportion * 100}%)`;
-            progressHandle.style.transform = `translate(${x - 5}px, -70%)`;
+            progressHandle.style.transform = `translate(${x - 5}px, -7px)`;
             
             requestAnimationFrame(updateProgressBar);
 
@@ -180,8 +187,8 @@ class VideoPlayer {
         // seek logic
         const update = x => {
             const rect = progressInner.getBoundingClientRect();
-            const seekTime = (x - rect.left) / rect.width * this.videoElement.duration;
-            videoTime = seekTime;
+            seekTime = (x - rect.left) / rect.width * this.videoElement.duration;
+            useScrubPosition = true;
             if(!this.scrubbing) {
                 this.videoElement.currentTime = Math.min(Math.max(0, seekTime), this.videoElement.duration);
                 this.videoElement.play();
@@ -242,7 +249,13 @@ class VideoPlayer {
         });
 
         updateProgressBar();
-        this.videoElement.addEventListener("timeupdate", () => videoTime = this.videoElement.currentTime);
+        this.videoElement.addEventListener("timeupdate", () => {
+            lastKnownTime = this.videoElement.currentTime;
+            lastUpdateTimestamp = Date.now();
+            if(!this.scrubbing) {
+                useScrubPosition = false;
+            }
+        });
 
     }
 

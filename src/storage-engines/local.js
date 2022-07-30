@@ -22,7 +22,7 @@ module.exports = class {
 
         // to avoid storing MIME types, we let express figure out the correct type at runtime
         // give it a hint through the file extension
-        const filename = name + getExtension(contentType);
+        const filename = name + "." + getExtension(contentType);
     
         // the file is already on the disk, we just need to move it to permanent storage
         const filepath = path.join(DIRECTORY, filename);
@@ -36,7 +36,7 @@ module.exports = class {
 
     }
 
-    async delete(deleteInfo) {
+    delete(deleteInfo) {
         return fsPromises.unlink(deleteInfo);
     }  
 

@@ -20,6 +20,8 @@ module.exports = async (req, res) => {
         for(const version of Object.values(post.versions)) {
             await storageEngine.delete(version.deleteInfo);
         }
+    } else {
+        return res.status(400).json({error: "Storage engine unavailable"});
     }
 
     Posts.remove(post.id);

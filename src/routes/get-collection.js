@@ -22,13 +22,6 @@ module.exports = async (req, res) => {
     const feed = feeds[collection.type];
     const {posts, after} = await feed.getPosts(collection, req.query.after);
 
-    // FIXME (KLUDGE): remove deleteInfo from posts to reduce response size
-    for(const post of posts) {
-        for(const version of Object.values(post.versions)) {
-            delete version.deleteInfo;
-        }
-    }
-
     res.json({
         name: collection.name,
         type: collection.type,

@@ -70,7 +70,7 @@ class App {
             lastScrollTop = window.scrollY;
 
             // load more posts when close to bottom
-            if(this.url.searchParams.has("after") && window.scrollY + window.innerHeight + 500 > document.body.scrollHeight) {
+            if(this.url.searchParams.has("after") && window.scrollY + window.innerHeight + 1000 > document.body.scrollHeight) {
                 this.load();
             }
 

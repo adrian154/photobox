@@ -201,17 +201,21 @@ nav button:hover {
     width: 100%;
     height: auto;
     display: block;
+    position: relative;
     transition: 0.3s;
 }
 
 .duration {
-    text-shadow: 1px 1px 3px #000;
     color: #ffffff;
+    background-color: rgba(0, 0, 0, 50%);
+    border-radius: 3px;
+    padding: 1px 2px;
     position: absolute;
     bottom: 0.3em;
     right: 0.3em;
     font-weight: 600;
-    font-size: 14pt;
+    font-size: 10pt;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .video-preview {
@@ -221,15 +225,6 @@ nav button:hover {
     width: 100%;
     height: 100%;
     pointer-events: none;
-}
-
-.video-preview-progress {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    height: 4px;
-    width: 0%;
-    background-image: linear-gradient(to right, #00b3ff, #00f2ff);
 }
 
 /* background for modals/slideshow */
@@ -299,7 +294,6 @@ nav button:hover {
     height: 20em;
     overflow: auto;
     padding: 1.0em;
-    border: 1px solid #aaaaaa;
 }
 
 #progress div {
@@ -329,8 +323,7 @@ nav button:hover {
 
 .progress-bar div {
     width: 0;
-    /*background-color: #3480eb;*/
-    background-image: linear-gradient(to right, #00b3ff, #00f2ff);
+    background-color: #3480eb;
     height: 6px;
     transition: 0.3s;
     border-radius: inherit;
@@ -345,6 +338,7 @@ nav button:hover {
     overflow: hidden;
     background-color: #111;
     z-index: 3;
+    transition: opacity 0.2s;
 }
 
 #slideshow-content {
@@ -374,6 +368,7 @@ nav button:hover {
     object-fit: cover;
     filter: blur(8px);
     z-index: -1;
+    transform: scale(1.05); /* slightly scale image to deal with weird gradients at borders when using blur() */
 }
 
 @media (pointer: coarse) {

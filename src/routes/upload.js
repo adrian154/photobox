@@ -64,7 +64,7 @@ module.exports = async (req, res) => {
         if(!tempFile) throw new Error("No file was uploaded");
 
         const storageEngine = req.storageEngines[collection.storageEngine];
-        if(!storageEngine) throw new Error("Storage engine not configured");
+        if(!storageEngine) throw new Error("Storage engine unavailable");
 
         // fields validation
         const tagSet = new Set(JSON.parse(fields.tags));
@@ -81,13 +81,20 @@ module.exports = async (req, res) => {
 
             // process upload
             const result = await processUpload(tempFile.path, originalName, tagSet, tracker);
-
+            
             // save versions
             for(const [name, version] of Object.entries(result.versions)) {
+                
+                if(!version) {
+                    delete result.versions[name];
+                    continue;
+                }        
+        
                 const {url, deleteInfo} = await storageEngine.save(version.path, `${tempFile.id}-${name}`, version.contentType);
                 version.url = url;
                 version.deleteInfo = deleteInfo;
                 delete version.path;
+
             }
 
             // insert into database
@@ -95,7 +102,7 @@ module.exports = async (req, res) => {
                 postid: tempFile.id,
                 collection: collection.name,
                 type: result.type,
-                duration: result.duration,
+                meta: JSON.stringify(result.meta),
                 versions: JSON.stringify(result.versions),
                 tags: Array.from(tagSet),
                 timestamp

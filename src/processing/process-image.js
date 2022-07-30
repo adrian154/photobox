@@ -41,7 +41,7 @@ module.exports = async (filepath, tags) => {
         // create a new Sharp object to read all frames of the animated image
         const fullImage = sharp(filepath, {sequentialRead: true, animated: true}).rotate(); 
         result.versions.original = await save(fullImage, MIME(meta.format));
-        result.duration = meta.delay.reduce((a, c) => a + c, 0) / 1000;
+        result.meta = {duration: meta.delay.reduce((a, c) => a + c, 0) / 1000};
 
     } else {
 

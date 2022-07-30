@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #small {
+                z-index: 2;
+                transform-origin: top left;
+                transition: transform 0.5s;
+            }
+
+            #frame {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+            }
+
+            #frame img {
+                margin: auto;
+                max-width: 100%;
+                max-height: 100%;
+                display: block;
+                transform-origin: top left;
+                transition: transform 0.5s;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="frame">
+            <img src="http://localhost/local-objects/_GSumQURv4QSLUgJ-display.webp" id="big">
+        </div>
+        <img src="http://localhost/local-objects/_GSumQURv4QSLUgJ-thumbnail.webp" id="small">
+        <script>
+            // helper function: transform one element to match another
+            const transformInto = (element, target) => {
+                const elemRect = element.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+                element.style.transform = `translate(${targetRect.left - elemRect.left}px, ${targetRect.top - elemRect.top}px) scale(${targetRect.width / elemRect.width})`;
+            };
+
+            setTimeout(() => {
+                transformInto(document.getElementById("small"), document.getElementById("big"))
+                setTimeout(() => {
+                    document.getElementById("small").style.visibility = "hidden";
+                    document.getElementById("small").style.transform = "";
+                    setTimeout(() => {
+                        transformInto(document.getElementById("big"), document.getElementById("small"));
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        </script>
+    </body>
+</html>

@@ -1,4 +1,12 @@
+# Bugs
+
+* Post information section persists even after the post is deleted if there are no more posts in collection
+* ~~Filter doesn't affect slideshow~~
+
 # TODO
+
+* show whether collection is public/private/hidden on the homepage
+* zoom in/out animation when clicking a post
 
 * Delete an entire collection at once
 * Select posts

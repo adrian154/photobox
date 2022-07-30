@@ -1,5 +1,40 @@
 // Base UI classes and other misc ui code
 
+// animate `element` becoming `target`
+const transformInto = (element, target) => new Promise(resolve => {
+    const elemRect = element.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    element.style.transformOrigin = "top left";
+    element.style.transition = "transform 0.2s";
+    element.style.transform = `translate(${targetRect.left - elemRect.left}px, ${targetRect.top - elemRect.top}px) scale(${targetRect.width / elemRect.width})`;
+    setTimeout(() => {
+        element.style.transform = "";
+        element.style.transition = "";
+        resolve();
+    }, 200);
+});
+
+// animate `element` turning from `target` back into natural size
+const transformFrom = (element, target) => new Promise(resolve => {
+
+    // transform the element to the initial state
+    const elemRect = element.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    element.style.transformOrigin = "top left";
+    element.style.transform = `translate(${targetRect.left - elemRect.left}px, ${targetRect.top - elemRect.top}px) scale(${targetRect.width / elemRect.width})`;
+
+    // animate element going towards target state
+    requestAnimationFrame(() => {
+        element.style.transition = "transform 0.2s";
+        element.style.transform = "";
+        setTimeout(() => {
+            element.style.transition = "";
+            resolve();
+        }, 200);
+    });
+
+});
+
 class HiddenLayer {
 
     constructor(elementID) {
@@ -223,13 +258,15 @@ class Filter extends HiddenLayer {
 
     filterPost(post) {
         post.photogridContainer.style.display = "";
+        post.frame.style.display = "";
         if(this.enabledTags.size > 0) {
             for(const tag of post.tags) {
-                if(this.enabledTags.has(tag) || this.enabledTags.size == 0) {
+                if(this.enabledTags.has(tag)) {
                     return;
                 }
             }
             post.photogridContainer.style.display = "none";
+            post.frame.style.display = "none";
         }
     }
 
